@@ -1,0 +1,28 @@
+AdvancedMenu = True
+NudgeDistance = 0.1
+NudgeFactor = 10
+CheckBoxOn = !
+CheckBoxOff = ?
+EnvironmentalChange = False
+ModulePosNormal = <0.0, 0.0, 2.0>
+HideOptions = rotate
+ErrorEmail = error_or_warning@rezmela.com
+PrimSource = fQZWSEYBenhKUABeBQ==
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

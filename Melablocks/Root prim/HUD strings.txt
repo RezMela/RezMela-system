@@ -1,0 +1,17 @@
+// Nudge buttons (text)
+btnNudgeF = Forward
+btnNudgeB = Back
+btnNudgeL = Left
+btnNudgeR = Right
+btnNudgeU = Up
+btnNudgeD = Down
+btnNudge+ = Amount +
+btnNudge- = Amount -
+btnNudgeN = North
+btnNudgeS = South
+btnNudgeW = West
+btnNudgeE = East
+
+BackButtonChar = <
+
+

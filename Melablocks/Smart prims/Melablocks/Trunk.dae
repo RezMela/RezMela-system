@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA version="1.4.0" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+<asset>
+<contributor>
+<author>AC3D exporter- http://www.inivis.com</author>
+<authoring_tool>AC3D</authoring_tool>
+<comments></comments>
+<copyright></copyright>
+</contributor>
+<created></created>
+<modified></modified>
+<up_axis>Y_UP</up_axis>
+<unit meter="1.0" name="meter"/>
+</asset>
+<library_materials>
+<material id="acmat0" name="ac3dmat3">
+<instance_effect url="#Material0-effect" />
+</material>
+<material id="acmat1" name="ac3dmat4">
+<instance_effect url="#Material1-effect" />
+</material>
+<material id="acmat2" name="ac3dmat2">
+<instance_effect url="#Material2-effect" />
+</material>
+<material id="acmat3" name="ac3dmat5">
+<instance_effect url="#Material3-effect" />
+</material>
+</library_materials>
+<library_effects>
+<effect id="Material0-effect" name="ac3dmat3">
+<profile_COMMON>
+<technique sid="common">
+<phong>
+<diffuse>
+<color>1.000000 0.000000 0.000000 1.000000</color>
+</diffuse>
+<specular>
+<color>0.200000 0.200000 0.200000 1.000000</color>
+</specular>
+<reflective>
+<color>1.000000 1.000000 1.000000 1.000000</color>
+</reflective>
+<reflectivity>
+<float>1.000000</float>
+</reflectivity>
+<shininess>
+<float>128.000000</float>
+</shininess>
+<transparent opaque="A_ONE">
+<color>1.000000 1.000000 1.000000 1.000000</color>
+</transparent>
+<transparency><float>0.000000</float></transparency>
+</phong>
+</technique>
+</profile_COMMON>
+</effect>
+<effect id="Material1-effect" name="ac3dmat4">
+<profile_COMMON>
+<technique sid="common">
+<phong>
+<diffuse>
+<color>1.000000 0.466667 0.000000 1.000000</color>
+</diffuse>
+<specular>
+<color>0.200000 0.200000 0.200000 1.000000</color>
+</specular>
+<reflective>
+<color>1.000000 1.000000 1.000000 1.000000</color>
+</reflective>
+<reflectivity>
+<float>1.000000</float>
+</reflectivity>
+<shininess>
+<float>128.000000</float>
+</shininess>
+<transparent opaque="A_ONE">
+<color>1.000000 1.000000 1.000000 1.000000</color>
+</transparent>
+<transparency><float>0.000000</float></transparency>
+</phong>
+</technique>
+</profile_COMMON>
+</effect>
+<effect id="Material2-effect" name="ac3dmat2">
+<profile_COMMON>
+<technique sid="common">
+<phong>
+<diffuse>
+<color>0.627451 0.250980 0.250980 1.000000</color>
+</diffuse>
+<specular>
+<color>0.200000 0.200000 0.200000 1.000000</color>
+</specular>
+<reflective>
+<color>1.000000 1.000000 1.000000 1.000000</color>
+</reflective>
+<reflectivity>
+<float>1.000000</float>
+</reflectivity>
+<shininess>
+<float>128.000000</float>
+</shininess>
+<transparent opaque="A_ONE">
+<color>1.000000 1.000000 1.000000 1.000000</color>
+</transparent>
+<transparency><float>0.000000</float></transparency>
+</phong>
+</technique>
+</profile_COMMON>
+</effect>
+<effect id="Material3-effect" name="ac3dmat5">
+<profile_COMMON>
+<technique sid="common">
+<phong>
+<diffuse>
+<color>1.000000 1.000000 0.000000 1.000000</color>
+</diffuse>
+<specular>
+<color>0.200000 0.200000 0.200000 1.000000</color>
+</specular>
+<reflective>
+<color>1.000000 1.000000 1.000000 1.000000</color>
+</reflective>
+<reflectivity>
+<float>1.000000</float>
+</reflectivity>
+<shininess>
+<float>128.000000</float>
+</shininess>
+<transparent opaque="A_ONE">
+<color>1.000000 1.000000 1.000000 1.000000</color>
+</transparent>
+<transparency><float>0.000000</float></transparency>
+</phong>
+</technique>
+</profile_COMMON>
+</effect>
+</library_effects>
+<library_geometries>
+<geometry id="ID0" name="box">
+<mesh>
+<source id="ID0-Position">
+<float_array count="174" id="ID0-Position-Array">0.473304 0.126821 -0.5 0.424352 0.245 -0.5 0.346482 0.346482 -0.5 0.245 0.424352 -0.5 
+0.126821 0.473304 -0.5 5.96046e-008 0.49 -0.5 -0.126821 0.473304 -0.5 -0.245 0.424352 -0.5 
+-0.346482 0.346482 -0.5 -0.424352 0.245 -0.5 -0.473304 0.126821 -0.5 -0.49 1.90652e-007 -0.5 
+-0.473304 -0.126821 -0.5 -0.424353 -0.245 -0.5 -0.346482 -0.346482 -0.5 -0.245 -0.424352 -0.5 
+-0.126821 -0.473304 -0.5 -1.75668e-007 -0.49 -0.5 0.126821 -0.473304 -0.5 0.245 -0.424353 -0.5 
+0.346482 -0.346483 -0.5 0.424352 -0.245 -0.5 0.473304 -0.126822 -0.5 0.49 -3.81304e-007 -0.5 
+0.473304 0.126821 0.5 0.424352 0.245 0.5 0.346482 0.346482 0.5 0.245 0.424352 0.5 
+0.126821 0.473304 0.5 5.96046e-008 0.49 0.5 -0.126821 0.473304 0.5 -0.245 0.424352 0.5 
+-0.346482 0.346482 0.5 -0.424352 0.245 0.5 -0.473304 0.126821 0.5 -0.49 1.90652e-007 0.5 
+-0.473304 -0.126821 0.5 -0.424353 -0.245 0.5 -0.346482 -0.346482 0.5 -0.245 -0.424352 0.5 
+-0.126821 -0.473304 0.5 -1.75668e-007 -0.49 0.5 0.126821 -0.473304 0.5 0.245 -0.424353 0.5 
+0.346482 -0.346483 0.5 0.424352 -0.245 0.5 0.473304 -0.126822 0.5 0.49 -3.81304e-007 0.5 
+-5.80318e-008 -8.11285e-009 -0.5 -5.80318e-008 -8.11285e-009 0.5 -0.5 0.5 -0.5 0.5 0.5 -0.5 
+0.5 0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 0.5 0.5 -0.5 0.5 
+0.5 -0.5 -0.5 -0.5 -0.5 -0.5 </float_array>
+<technique_common>
+<accessor count="58" source="#ID0-Position-Array" stride="3">
+<param name="X" type="float"/>
+<param name="Y" type="float"/>
+<param name="Z" type="float"/>
+</accessor>
+</technique_common>
+</source>
+<vertices id="ID0-Vertex">
+<input semantic="POSITION" source="#ID0-Position"/>
+</vertices>
+<source id="ID0-Normal">
+<float_array count="792" id="ID0-Normal-Array">
+0.965926 0.258819 0 0.965926 0.258819 0 1 -4.43377e-007 0 1 -4.43377e-007 0 
+1 -4.43377e-007 0 1 -4.43377e-007 0 0.965926 -0.258819 0 0.965926 -0.258819 0 
+0.965926 -0.258819 0 0.965926 -0.258819 0 0.866025 -0.500001 0 0.866025 -0.500001 0 
+0.866025 -0.500001 0 0.866025 -0.500001 0 0.707106 -0.707107 0 0.707106 -0.707107 0 
+0.707106 -0.707107 0 0.707106 -0.707107 0 0.499999 -0.866026 0 0.499999 -0.866026 0 
+0.499999 -0.866026 0 0.499999 -0.866026 0 0.258818 -0.965926 0 0.258818 -0.965926 0 
+0.258818 -0.965926 0 0.258818 -0.965926 0 -3.83258e-007 -1 0 -3.83258e-007 -1 0 
+-3.83258e-007 -1 0 -3.83258e-007 -1 0 -0.25882 -0.965926 0 -0.25882 -0.965926 0 
+-0.25882 -0.965926 0 -0.25882 -0.965926 0 -0.5 -0.866025 0 -0.5 -0.866025 0 
+-0.5 -0.866025 0 -0.5 -0.866025 0 -0.707107 -0.707107 0 -0.707107 -0.707107 0 
+-0.707107 -0.707107 0 -0.707107 -0.707107 0 -0.866026 -0.499999 0 -0.866026 -0.499999 0 
+-0.866026 -0.499999 0 -0.866026 -0.499999 0 -0.965926 -0.258818 0 -0.965926 -0.258818 0 
+-0.965926 -0.258818 0 -0.965926 -0.258818 0 -1 2.47991e-007 0 -1 2.47991e-007 0 
+-1 2.47991e-007 0 -1 2.47991e-007 0 -0.965926 0.258819 0 -0.965926 0.258819 0 
+-0.965926 0.258819 0 -0.965926 0.258819 0 -0.866025 0.5 0 -0.866025 0.5 0 
+-0.866025 0.5 0 -0.866025 0.5 0 -0.707107 0.707107 0 -0.707107 0.707107 0 
+-0.707107 0.707107 0 -0.707107 0.707107 0 -0.5 0.866026 0 -0.5 0.866026 0 
+-0.5 0.866026 0 -0.5 0.866026 0 -0.258819 0.965926 0 -0.258819 0.965926 0 
+-0.258819 0.965926 0 -0.258819 0.965926 0 6.0119e-008 1 0 6.0119e-008 1 0 
+6.0119e-008 1 0 6.0119e-008 1 0 0.258819 0.965926 0 0.258819 0.965926 0 
+0.258819 0.965926 0 0.258819 0.965926 0 0.5 0.866025 0 0.5 0.866025 0 
+0.5 0.866025 0 0.5 0.866025 0 0.707107 0.707107 0 0.707107 0.707107 0 
+0.707107 0.707107 0 0.707107 0.707107 0 0.866025 0.5 0 0.866025 0.5 0 
+0.866025 0.5 0 0.866025 0.5 0 0.965926 0.258819 0 0.965926 0.258819 0 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 -1 0 0 -1 0 0 -1 0 0 -1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+0 0 1 0 0 1 0 0 1 0 0 1 
+1 0 0 1 0 0 1 0 0 1 0 0 
+1 0 0 1 0 0 -1 0 0 -1 0 0 
+-1 0 0 -1 0 0 -1 0 0 -1 0 0 
+0 1 0 0 1 0 0 1 0 0 1 0 
+0 1 0 0 1 0 0 -1 0 0 -1 0 
+0 -1 0 0 -1 0 0 -1 0 0 -1 0 
+
+</float_array>
+<technique_common>
+<accessor count="264" source="#ID0-Normal-Array" stride="3">
+<param name="X" type="float"/>
+<param name="Y" type="float"/>
+<param name="Z" type="float"/>
+</accessor>
+</technique_common>
+</source>
+<source id="ID0-TexCoord">
+<float_array count="528" id="ID0-TexCoord-Array">
+0 1 0 0 0.0416667 0 0.0416667 1 0.0416667 1 0.0416667 0 
+0.0833333 0 0.0833333 1 0.0833333 1 0.0833333 0 0.125 0 0.125 1 
+0.125 1 0.125 0 0.166667 0 0.166667 1 0.166667 1 0.166667 0 
+0.208333 0 0.208333 1 0.208333 1 0.208333 0 0.25 0 0.25 1 
+0.25 1 0.25 0 0.291667 0 0.291667 1 0.291667 1 0.291667 0 
+0.333333 0 0.333333 1 0.333333 1 0.333333 0 0.375 0 0.375 1 
+0.375 1 0.375 0 0.416667 0 0.416667 1 0.416667 1 0.416667 0 
+0.458333 0 0.458333 1 0.458333 1 0.458333 0 0.5 0 0.5 1 
+0.5 1 0.5 0 0.541667 0 0.541667 1 0.541667 1 0.541667 0 
+0.583333 0 0.583333 1 0.583333 1 0.583333 0 0.625 0 0.625 1 
+0.625 1 0.625 0 0.666667 0 0.666667 1 0.666667 1 0.666667 0 
+0.708333 0 0.708333 1 0.708333 1 0.708333 0 0.75 0 0.75 1 
+0.75 1 0.75 0 0.791667 0 0.791667 1 0.791667 1 0.791667 0 
+0.833333 0 0.833333 1 0.833333 1 0.833333 0 0.875 0 0.875 1 
+0.875 1 0.875 0 0.916667 0 0.916667 1 0.916667 1 0.916667 0 
+0.958333 0 0.958333 1 0.958333 1 0.958333 0 1 0 1 1 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 
+0 1 1 0 1 1 1 0 0 1 0 0 
+0 1 1 0 1 1 1 0 0 1 0 0 
+1 0 0 1 0 0 0 1 1 0 1 1 
+1 1 0 0 1 0 0 0 1 1 0 1 
+
+</float_array>
+<technique_common>
+<accessor count="264" source="#ID0-TexCoord-Array" stride="2">
+<param name="S" type="float"/>
+<param name="T" type="float"/>
+</accessor>
+</technique_common>
+</source>
+<polylist count="24" material="acmat0">
+<input offset="0" semantic="VERTEX" source="#ID0-Vertex"/>
+<input offset="1" semantic="NORMAL" source="#ID0-Normal"/>
+<input offset="2" semantic="TEXCOORD" source="#ID0-TexCoord"/>
+<vcount>
+4 4 4 4 4 4 4 4 4 4 4 4 
+4 4 4 4 4 4 4 4 4 4 4 4 
+
+</vcount>
+<p>
+0 0 0 24 1 1 47 2 2 23 3 3 
+23 4 4 47 5 5 46 6 6 22 7 7 
+22 8 8 46 9 9 45 10 10 21 11 11 
+21 12 12 45 13 13 44 14 14 20 15 15 
+20 16 16 44 17 17 43 18 18 19 19 19 
+19 20 20 43 21 21 42 22 22 18 23 23 
+18 24 24 42 25 25 41 26 26 17 27 27 
+17 28 28 41 29 29 40 30 30 16 31 31 
+16 32 32 40 33 33 39 34 34 15 35 35 
+15 36 36 39 37 37 38 38 38 14 39 39 
+14 40 40 38 41 41 37 42 42 13 43 43 
+13 44 44 37 45 45 36 46 46 12 47 47 
+12 48 48 36 49 49 35 50 50 11 51 51 
+11 52 52 35 53 53 34 54 54 10 55 55 
+10 56 56 34 57 57 33 58 58 9 59 59 
+9 60 60 33 61 61 32 62 62 8 63 63 
+8 64 64 32 65 65 31 66 66 7 67 67 
+7 68 68 31 69 69 30 70 70 6 71 71 
+6 72 72 30 73 73 29 74 74 5 75 75 
+5 76 76 29 77 77 28 78 78 4 79 79 
+4 80 80 28 81 81 27 82 82 3 83 83 
+3 84 84 27 85 85 26 86 86 2 87 87 
+2 88 88 26 89 89 25 90 90 1 91 91 
+1 92 92 25 93 93 24 94 94 0 95 95 
+
+</p>
+</polylist>
+<polylist count="24" material="acmat1">
+<input offset="0" semantic="VERTEX" source="#ID0-Vertex"/>
+<input offset="1" semantic="NORMAL" source="#ID0-Normal"/>
+<input offset="2" semantic="TEXCOORD" source="#ID0-TexCoord"/>
+<vcount>
+3 3 3 3 3 3 3 3 3 3 3 3 
+3 3 3 3 3 3 3 3 3 3 3 3 
+
+</vcount>
+<p>
+48 96 96 0 97 97 23 98 98 48 99 99 
+23 100 100 22 101 101 48 102 102 22 103 103 
+21 104 104 48 105 105 21 106 106 20 107 107 
+48 108 108 20 109 109 19 110 110 48 111 111 
+19 112 112 18 113 113 48 114 114 18 115 115 
+17 116 116 48 117 117 17 118 118 16 119 119 
+48 120 120 16 121 121 15 122 122 48 123 123 
+15 124 124 14 125 125 48 126 126 14 127 127 
+13 128 128 48 129 129 13 130 130 12 131 131 
+48 132 132 12 133 133 11 134 134 48 135 135 
+11 136 136 10 137 137 48 138 138 10 139 139 
+9 140 140 48 141 141 9 142 142 8 143 143 
+48 144 144 8 145 145 7 146 146 48 147 147 
+7 148 148 6 149 149 48 150 150 6 151 151 
+5 152 152 48 153 153 5 154 154 4 155 155 
+48 156 156 4 157 157 3 158 158 48 159 159 
+3 160 160 2 161 161 48 162 162 2 163 163 
+1 164 164 48 165 165 1 166 166 0 167 167 
+
+</p>
+</polylist>
+<polylist count="24" material="acmat2">
+<input offset="0" semantic="VERTEX" source="#ID0-Vertex"/>
+<input offset="1" semantic="NORMAL" source="#ID0-Normal"/>
+<input offset="2" semantic="TEXCOORD" source="#ID0-TexCoord"/>
+<vcount>
+3 3 3 3 3 3 3 3 3 3 3 3 
+3 3 3 3 3 3 3 3 3 3 3 3 
+
+</vcount>
+<p>
+49 168 168 47 169 169 24 170 170 49 171 171 
+46 172 172 47 173 173 49 174 174 45 175 175 
+46 176 176 49 177 177 44 178 178 45 179 179 
+49 180 180 43 181 181 44 182 182 49 183 183 
+42 184 184 43 185 185 49 186 186 41 187 187 
+42 188 188 49 189 189 40 190 190 41 191 191 
+49 192 192 39 193 193 40 194 194 49 195 195 
+38 196 196 39 197 197 49 198 198 37 199 199 
+38 200 200 49 201 201 36 202 202 37 203 203 
+49 204 204 35 205 205 36 206 206 49 207 207 
+34 208 208 35 209 209 49 210 210 33 211 211 
+34 212 212 49 213 213 32 214 214 33 215 215 
+49 216 216 31 217 217 32 218 218 49 219 219 
+30 220 220 31 221 221 49 222 222 29 223 223 
+30 224 224 49 225 225 28 226 226 29 227 227 
+49 228 228 27 229 229 28 230 230 49 231 231 
+26 232 232 27 233 233 49 234 234 25 235 235 
+26 236 236 49 237 237 24 238 238 25 239 239 
+
+</p>
+</polylist>
+<polylist count="8" material="acmat3">
+<input offset="0" semantic="VERTEX" source="#ID0-Vertex"/>
+<input offset="1" semantic="NORMAL" source="#ID0-Normal"/>
+<input offset="2" semantic="TEXCOORD" source="#ID0-TexCoord"/>
+<vcount>
+3 3 3 3 3 3 3 3 
+</vcount>
+<p>
+51 240 240 55 241 241 56 242 242 55 243 243 
+51 244 244 52 245 245 53 246 246 57 247 247 
+54 248 248 57 249 249 53 250 250 50 251 251 
+53 252 252 51 253 253 50 254 254 51 255 255 
+53 256 256 52 257 257 55 258 258 57 259 259 
+56 260 260 57 261 261 55 262 262 54 263 263 
+
+</p>
+</polylist>
+</mesh>
+</geometry>
+</library_geometries>
+<library_visual_scenes>
+<visual_scene id="Scene" name="Scene">
+<node id="ID0inst" name="">
+<node id="ID0inst" name="box">
+<translate>-5.96046e-008 0 0</translate>
+<instance_geometry url="#ID0">
+<bind_material>
+<technique_common>
+<instance_material symbol="acmat0" target="#acmat0">
+<bind_vertex_input semantic="TEX0" input_semantic="TEXCOORD" input_set="0" />
+</instance_material>
+<instance_material symbol="acmat1" target="#acmat1">
+<bind_vertex_input semantic="TEX0" input_semantic="TEXCOORD" input_set="0" />
+</instance_material>
+<instance_material symbol="acmat2" target="#acmat2">
+<bind_vertex_input semantic="TEX0" input_semantic="TEXCOORD" input_set="0" />
+</instance_material>
+<instance_material symbol="acmat3" target="#acmat3">
+<bind_vertex_input semantic="TEX0" input_semantic="TEXCOORD" input_set="0" />
+</instance_material>
+</technique_common>
+</bind_material>
+</instance_geometry>
+</node>
+</node>
+</visual_scene>
+</library_visual_scenes><scene>
+<instance_visual_scene url="#Scene"/>
+</scene>
+</COLLADA>

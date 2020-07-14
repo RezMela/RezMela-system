@@ -1,0 +1,32 @@
+// Melablocks water v1.1.0
+
+integer LM_LOADING_COMPLETE = -405530;
+
+default {
+	state_entry() {
+		llParticleSystem([
+			PSYS_PART_FLAGS, PSYS_PART_EMISSIVE_MASK | PSYS_PART_INTERP_COLOR_MASK | PSYS_PART_INTERP_SCALE_MASK | PSYS_PART_FOLLOW_VELOCITY_MASK,
+			PSYS_PART_MAX_AGE, 3.0,
+			PSYS_PART_START_COLOR, <0.8, 0.8, 1.0>,
+			PSYS_PART_END_COLOR, <1.0, 1.0, 1.0>,
+			PSYS_PART_START_SCALE, <0.25, 0.25, 0.25>,
+			PSYS_PART_END_SCALE, <3.0, 3.0, 3.0>,
+			PSYS_SRC_PATTERN, PSYS_SRC_PATTERN_EXPLODE,
+			PSYS_SRC_BURST_RATE, 0.3,
+			PSYS_SRC_ACCEL, <0.0, 0.0, 0.5>,
+			PSYS_SRC_BURST_PART_COUNT, 8,
+			PSYS_SRC_BURST_RADIUS, 0.3,
+			PSYS_SRC_BURST_SPEED_MIN, 0.0,
+			PSYS_SRC_BURST_SPEED_MAX, 0.5,
+			PSYS_SRC_INNERANGLE, 0.65,
+			PSYS_SRC_OUTERANGLE, 0.1,
+			PSYS_SRC_TEXTURE, "",
+			PSYS_PART_START_ALPHA, 0.25,
+			PSYS_PART_END_ALPHA, 0.0
+				]);
+		llSetTextureAnim(ANIM_ON | SMOOTH | LOOP, ALL_SIDES, 1, 1, 1.0, 1.0, 0.3);
+	}
+	link_message(integer Sender, integer Number, string Text, key Id) {
+		if (Number == LM_LOADING_COMPLETE) llRemoveInventory(llGetScriptName());
+	}
+}
