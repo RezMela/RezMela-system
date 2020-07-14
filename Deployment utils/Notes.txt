@@ -1,0 +1,6 @@
+
+In testing, I've found something else that's not quite right. Sometimes when you first load a scene containing text display objects, clicks on the hamburger are ignored because the text display script doesn't know that someone is signed into the App. This needs further investigation.
+
+Load scene 'John'.
+
+LoggedId is null in the projector, but apparently not in the Text display C.
