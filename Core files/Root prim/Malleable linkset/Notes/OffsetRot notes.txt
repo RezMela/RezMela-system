@@ -1,0 +1,37 @@
+
+ML's rotation calculations (simplified):
+
+
+	rotation InitialRot = llEuler2Rot(<0.0, 0.0, 270.0> * DEG_TO_RAD);
+
+	rotation SpecifiedRot = [value of OffsetRot]
+
+	rotation BasicRot = llAxes2Rot(Binormal, Normal % Binormal, Normal);	// acquiring rotation of target surface
+
+	rotation ObjectRot = InitialRot * SpecifiedRot;		// adding 90° fix to  offset rot
+
+	ObjectRot = ObjectRot * BasicRot;					// adding target normal rotation
+	
+	
+Needs of editor's algorithm:
+
+	Should take in-world rotation (ie region rotation) and convert to OffsetRot
+
+
+Test objects:
+
+	To get the resultant rotation these are rezzed on a horizontal surface of an object rotated <0, 0, 0> (ie the root base)
+
+	Cube
+		* OffsetRot	<0, 0, 0>
+		* Rezzed   	<0, 0, 0>
+
+	Text display C
+	
+		* OffsetRot	<0, 90, 0>
+		* Rezzed	<270, 0, 0>
+
+	Cylinder 1 (modified C card for testing)
+	
+		* OffsetRot	<180, 0, 90>
+		* Rezzed	<180, 0, 270>
