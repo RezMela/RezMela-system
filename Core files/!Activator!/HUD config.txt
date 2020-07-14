@@ -1,0 +1,143 @@
+// Configuration for RezMela HUD - resides in HUD prim along with HUD server script
+// Current palette
+// #EDFAFD - Glass
+// #AED9DA - Chill
+// #3DDAD7 - Californian coral
+// #2A93D5 - Bondi blue
+// #135589 - Marina
+
+[General]
+TimerFrequency = 1000   // milliseconds between HUD checks for server existence
+BackgroundColor = FFEDFAFD
+SplashPrim = 48666924-46f9-43ec-bb4d-ea4bd733a8a8
+Logo = faad1a7f-c3c7-45d3-a543-6eb09ab1f234
+MinMax = b7477e55-5f17-4902-830d-dfeae7bd72f1
+IntegrityCheck = 1      // 1 to check integrity, 0 for faster performance when stable
+HUDTitle = "Melablocks" 
+PrimTitleSides = 1,2,3,4
+PrimTitleFontSize = 32
+PrimTitleTextColor = ff135589   // Marina
+PrimTitleBackColor = ffedfafd   // Glass
+PrimTitleFontName = "Arial"
+
+[Sizes]
+WidthM = 0.26                 // Page prim width (m)
+HeightM = 0.52               // Page prim height (m)
+TextureSize = 1024       // Texture will be created square, then cropped to width
+
+[Heading]
+MarginX = 80
+MarginY = 94
+FontName = Arial
+FontSize = 26
+Color = FF135589
+
+[BackButton]
+X = 20
+Y = 84
+Char = <
+FontName = Arial
+FontSize = 32
+Color = FF135589
+
+[Breadcrumb]
+MarginX = 20
+MarginY = 30
+Gap = 30
+FontName = Arial
+FontSize = 24
+Color = FF2A93D5
+SepChar = >
+
+[Button]
+SizeX = 225
+SizeY = 120
+MarginX = 20
+MarginY = 160
+GapX = 20
+GapY = 10
+Color = FF2A93D5
+TextMarginX = 6
+TextMarginY = 10
+TextFontName = Arial
+TextFontSize = 36
+TextColor = FFEDFAFD
+
+[List]
+MarginX = 20
+MarginY = 160
+SizeY = 72
+ThumbSize = 72
+GapY = 2
+PrevNextArrowX = 50
+PrevNextArrowY = 35
+PrevNextBarColor = FF2A93D5
+PrevNextArrowColor = FFEDFAFD
+PrevNextSizeY = 50
+PrevMarginY = 90
+TextMarginX = 12
+TextMarginY = 12
+TextFontName = Arial
+TextFontSize = 28
+TextColor = FF2A93D5
+BottomMargin = 60
+
+[Status]
+CenterY = 400
+MarginX = 12
+TextMaxHeight = 700
+TextFontName = Arial
+TextFontSize = 28
+TextColor = FF2A93D5
+LineSpacing = 10    // space between lines (as %age of line height)
+
+[Alert]
+MarginX = 12
+TextCenterY = 350
+TextMaxHeight = 500
+TextFontName = Arial
+TextFontSize = 36
+TextColor = FF2A93D5
+LineSpacing = 10    // space between lines (as %age of line height)
+ButtonY = 700
+ButtonColorPrimary = FF135589
+ButtonColorSecondary = FF2A93D5
+ButtonSizeX = 300
+ButtonSizeY = 96
+ButtonGap = 36
+ButtonTextMarginX = 10
+ButtonTextFontName = Arial
+ButtonTextFontSize = 36
+ButtonTextColor = FFEDFAFD
+
+[Custom]
+TextFontName = Arial
+TextFontSize = 28
+TextColor = FF2A93D5
+
+[ImageText]
+ImageMarginX = 40
+ImageMarginY = 160
+TextMarginX = 12
+TextCenterY = 780
+TextMaxHeight = 300
+LineSpacing = 10    // space between lines (as %age of line height)
+TextFontName = Arial
+TextFontSize = 28
+TextColor = FF2A93D5
+
+[Title]
+CanvasSize = 1024
+ForeColor = FF135589
+BackColor = FFFFFFFF
+FontName = Arial
+FontSize = 60
+LeftMargin = 40
+TopMargin = 8
+
+[BottomText]    // i.e. status line at bottom of HUD
+FloatBackColor = FF135589
+FloatBackHeight = 0.03
+FloatTextColor = FFEDFAFD
+FloatTextPos = 0.018    // vertical position
+
