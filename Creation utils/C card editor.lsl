@@ -16,6 +16,7 @@
 // is strictly forbidden unless prior written permission is obtained
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
+// More information about C cards is available here http://wiki.rezmela.org/doku.php/c_cards
 
 // v1.2 - add more fields
 
