@@ -1,0 +1,321 @@
+My thinking currently is that a food script could reside in the root prim - I agree, this would be better as a separate script from the ML, for several reasons, but with ML integration via link messages. The food items could be identified by their name (the description being used by the ML, although if necessary I guess we could combine the two).
+
+1. When you click on a food item to feed an NPC, the food script broadcasts your avatar's UUID and the calorific value on a hidden chat channel (one channel for all these communications), once a second or something. The calorific value could come from the name, maybe? (eg "+banana [90]" for a 90-calorie banana, "+" being an indicator that it's a food item).
+
+At the same time, the food script listens on that channel for an "eaten" signal. The food prim could emit particles to indicate that it's been selected for eating, maybe something like expanding/fading concentric rings.
+
+2. Then you click on the NPC's sphere, and the NPC script listens for a few seconds on the chat channel for the message from #1. If the clicking avatar's UUID matches the UUID from a chat channel, the sphere replies with an "eaten" signal. The food item would pick that up, hide the food (by a link message to the ML), and stop broadcasting.
+
+This (1 & 2) means that there will be two listeners, but only for the period between the food being clicked and the NPC "eating" the food. I've not (yet?) figured out any way to avoid having those listeners.
+
+3. When the NPC is directed to sit on an exercise object, the NPC's script listens for the object to tell it (via RegionSayTo) how many calories are burnt by the exercise. This is a cheap listener because it can listen only to the object the NPC is sitting on, and the exercise machine's script doesn't need a listener - it's one-way traffic.
+
+4. The NPC's sphere is therefore receiving calorie data from both food script and exercise script, and can adjust the NPC's shape accordingly.
+
+
+
+
+
+
+
+
+All your points sound reasonable and I think should work well.
+I have an alternative suggestion for your 1 and 2, that may be bypass the need for the selected food item to broadcast the signal periodically containing data:who_selected#+calories (am not sure the name of the item is significant .. including the name might open doors later on)
+My alternative:
+1. Food item gets selected, 
+    food item listens on a channel X, 
+    food item captures data: who_selected
+
+ 2. NPC is clicked, NPC sends out message on channel X containing the following data: who_clicked#UUID of NPC 
+ +F
+ 
+
+3. Food item unpacks data from NPC, to get who_clicked and NPC UUID.
+If who_clicked == who_selected, food item sends back NPC UUID#calories on channel X
+
+4. NPC also listens on channel X, checks if NPC UUID is equal to its own and then use the colories info to change shape, send message to food item that it is eaten on channel X , #ateyou, and so that food item can hide itself and shut down its listener 
+
+If you check out the NPC control.lsl script I think the X could be the NPC_control_channel 
+
+
+Next stage:
+
+1. Swapping of NPC bodies - including offloading/reloading of data
+2. Exercise script should work in both standalone and linked prims
+3. Exercise script reads calorie burning rate from prim name
+4. Simple calorie meter for NPCs
+5. NPCs burn calories for (a) movement and (b) non-moving time
+6. Simple race from point A to point B, with fittest NPC winning
+
+
+[13:26:59] Ramesh Ramloll: ok here it is
+[13:27:34] Ramesh Ramloll: the colored balls are animations
+[13:27:39] Handy Low: ah yes
+[13:28:01] Ramesh Ramloll: I have no clue
+[13:28:14] Ramesh Ramloll: why it forces the avie to sit first
+[13:28:25] Ramesh Ramloll: I thought the animations should start immediately
+[13:28:44] Handy Low: yes, there's some delay there
+[13:28:58] Ramesh Ramloll: there are better ones down there ... the path
+[13:29:02] Ramesh Ramloll: but basically
+[13:29:16] Ramesh Ramloll: this is where they will be exercising
+[13:29:22] Handy Low: OK
+[13:29:39] Ramesh Ramloll: I see that you have implemented both for linked and unlinked exercise prims
+[13:29:42] Ramesh Ramloll: which is great
+[13:29:48] Ramesh Ramloll: I could have a treadmill in the house
+[13:29:54] Handy Low: I did? I didn't test it linked :)
+[13:30:04] Handy Low: so that's luck really
+[13:30:04] Ramesh Ramloll: ah ok, I thought it was
+[13:30:29] Handy Low: but I'll make sure I do from now on
+[13:30:35] Ramesh Ramloll: ok
+[13:31:26] Ramesh Ramloll: the part where the body of the NPC changes is easy. I just need to create a notecard for every NPC ... after changing body size etc.. and then trigger them as neeeded
+[13:31:41] Handy Low: yes, that should be no problem
+[13:32:05] Handy Low: I really like the way NPCs work in Opensim
+[13:32:46] Ramesh Ramloll: I tested the other day to see if there were any issues... seems to be find, at least the NPC is still there, you see the change in real time.
+[13:32:58] Ramesh Ramloll: At first I thought I would remove the NPC all together
+[13:33:03] Ramesh Ramloll: then create another
+[13:33:08] Ramesh Ramloll: but then I would lose data
+[13:33:35] Handy Low: yes, I can imagine it would look quite interesting :)
+[13:34:07] Handy Low: I must admit, I'd wondered before why that command was there
+[13:34:58] Ramesh Ramloll: I was thinking there needs to be some value on each exercise ball that could be read... so that the amount of colories is decremented accordingly
+[13:35:05] Handy Low: yes
+[13:35:21] Handy Low: again, something from the name or description - or even a notecard if necessary
+[13:35:43] Handy Low: I'm assuming we're having an animation script in each ball, rather than a central one?
+[13:35:52] Ramesh Ramloll: yes
+[13:35:57] Ramesh Ramloll: each ball has an animation
+[13:36:19] Handy Low: they don't need listeners, so that's not a problem
+[13:36:51] Ramesh Ramloll: I am trying to tie all these parts into a meaningful 'game'. It hasn't gelled quite yet.
+[13:37:06] Handy Low: maybe it will when the parts are in place
+[13:37:47] Ramesh Ramloll: Is it easy for NPCs to retain data even after region shutdown? prob not.
+[13:37:59] Handy Low: hmm, no - shutdown kills them
+[13:38:08] Handy Low: they'd have to export their data somehow
+[13:38:19] Ramesh Ramloll: yeah... some web based soln.
+[13:38:22] Handy Low: send it to a server and retrieve it
+[13:38:25] Ramesh Ramloll: right
+[13:38:34] Handy Low: or even an object in-world
+[13:38:53] Handy Low: if the object could persist
+[13:38:55] Ramesh Ramloll: aha but that world needs to on all the time.
+[13:39:05] Handy Low: yes
+[13:39:27] Handy Low: so it would have to be via the web, I guess
+[13:39:43] Handy Low: a bit of PHP, perhaps
+[13:39:54] Ramesh Ramloll: yep ...
+[13:40:17] Ramesh Ramloll: I am wondering before we progress to that point, whether we could design some game that would engage during one session
+[13:40:32] Handy Low: yes
+[13:40:53] Ramesh Ramloll: May be they cannot exercise if they haven't eaten
+[13:40:56] Handy Low: do you have any ideas? I can think about it and see what I can come up with
+[13:41:32] Handy Low: that's one thing - if they exercise but don't eat, currently they just stop losing calories at a floor value
+[13:41:44] Handy Low: and there's no ceiling value
+[13:42:19] Ramesh Ramloll: ok, so may be a fainting animation can be triggered when the cal falls below the threshold
+[13:42:24] Handy Low: yes
+[13:42:34] Ramesh Ramloll: Am just trying to find some motivation
+[13:42:39] Ramesh Ramloll: for them to exercise
+[13:42:53] Handy Low: and maybe they ought to lose calories slowly anyway through time
+[13:43:00] Ramesh Ramloll: yes
+[13:43:01] Handy Low: just normal body functions using up energy
+[13:43:05] Ramesh Ramloll: right
+[13:43:13] Handy Low: more if they walk?
+[13:43:19] Ramesh Ramloll: sure
+[13:43:53] Ramesh Ramloll: thing is how is the decrease in energy represented, I promised the client that I will not use numbers
+[13:44:04] Handy Low: perhaps there could be some clothes of a certain size that they only fit into within a band of stored calories (or whatever we use)
+[13:44:32] Handy Low: maybe we can have a thermometer type of prim above their heads
+[13:44:39] Ramesh Ramloll: something that is organic, e.g. may slowed down walking ...
+[13:44:59] Handy Low: hard to control the speed of walking, though
+[13:45:02] Ramesh Ramloll: lethargic walk
+[13:45:11] Ramesh Ramloll: how about make the NPC wear an AO
+[13:45:14] Handy Low: they could walk in short bursts
+[13:45:28] Handy Low: the AO wouldn't affect their rate of movement
+[13:45:42] Ramesh Ramloll: ok something simpler
+[13:45:44] Handy Low: we could make them walking motion slower, but they'd move at the same rate
+[13:46:04] Ramesh Ramloll: an attachment with a force opposite to direction of motion
+[13:46:09] Handy Low: yes
+[13:46:24] Ramesh Ramloll: just brainstorming here
+[13:46:35] Handy Low: I did something like that for a swimmer AO a long time ago, and it worked quite well
+[13:46:59] Ramesh Ramloll: so if someone has the right amount of cal, resistance is 0
+[13:47:04] Handy Low: yes
+[13:47:23] Handy Low: would the NPCs be moving around autonomously?
+[13:47:41] Ramesh Ramloll: nope they will be following their 'care takers'
+[13:47:54] Ramesh Ramloll: baby sitters ... kind of
+[13:48:03] Handy Low: might it be hard for them to see the NPCs walking
+[13:48:04] Handy Low: ?
+[13:48:14] Handy Low: if their "own" NPC is behind them
+[13:49:28] Ramesh Ramloll: there are courses currently for e.g. where students are given some fake baby to take care of ... fake baby = baby manikin with sensors etc... and they have to make sure it is fed, washed etc...
+[13:49:38] Ramesh Ramloll: so here we instead of babies,
+[13:49:40] Handy Low: yes
+[13:49:41] Ramesh Ramloll: we have NPCs
+[13:49:51] Ramesh Ramloll: that students will take care of
+[13:49:56] Handy Low: as you said the other day, a kind of tamagochi
+[13:50:00] Ramesh Ramloll: yes
+[13:50:20] Ramesh Ramloll: prob with autonomous navigation is that it is hard
+[13:50:31] Handy Low: yes, I agree
+[13:50:37] Ramesh Ramloll: we do not have the infrastructure in place.
+[13:50:48] Handy Low: pathfinding and all that
+[13:50:53] Ramesh Ramloll: yes
+[13:51:13] Ramesh Ramloll: so really just trying to find a solution through constraints
+[13:51:13] Handy Low: but if there were physical activites that they could do apart from exercise
+[13:51:32] Ramesh Ramloll: like egg hunting for e.g.
+[13:51:44] Ramesh Ramloll: or treasure hunt
+[13:51:52] Handy Low: with fixed, straight paths
+[13:52:12] Ramesh Ramloll: ok like a race
+[13:52:20] Handy Low: ah, competition!
+[13:52:33] Handy Low: get "your" athlete fit so they can win the race
+[13:52:43] Ramesh Ramloll: that looks like a cool one
+[13:53:02] Handy Low: and the race could have lanes, so no obstructions for autonomous movement
+[13:53:13] Ramesh Ramloll: right
+[13:53:23] Handy Low: they could be running races or swimming
+[13:53:42] Ramesh Ramloll: yes
+[13:54:06] Handy Low: even cycling, with a bike and an AO
+[13:54:08] Ramesh Ramloll: I think with way finder points it is even possible to make them follow a road
+[13:54:19] Handy Low: yes, that would work
+[13:54:51] Handy Low: and looking at the way the NPCs behave in your setups, it doesn't matter if they mingle, they do still look quite realistic when they're bumping into each other
+[13:55:01] Ramesh Ramloll: Yes i do agree
+[13:55:02] Handy Low: except on bikes, of course :)
+[13:55:25] Ramesh Ramloll: so let's dial back and go for the simplest activity which is running
+[13:55:29] Handy Low: yes
+[13:55:57] Handy Low: they could have NPCs that start in a variety of initial conditions - overweight, underweight, hungry, full ..
+[13:56:11] Ramesh Ramloll: yes, that would determine resistance
+[13:56:24] Handy Low: how about two meters above their heads - showing calorie levels and appetite?
+[13:56:42] Handy Low: if we add in appetite, that could encourage people to find foods that are filling but not fattening
+[13:57:06] Ramesh Ramloll: yes I think that could work
+[13:57:29] Handy Low: so their hunger would increase gradually, then drop according to a "filling" factor in the food, as well as the calories the food has
+[13:57:53] Ramesh Ramloll: yes, you mentioned something earlier about clothes fitting/not
+[13:57:57] Handy Low: yes
+[13:58:16] Ramesh Ramloll: I thought clothes in SL/opensim just wrap around body of any size
+[13:58:39] Handy Low: yes, but we could code it so they can't wear the clothes if they're not the right size
+[13:59:12] Handy Low: Maybe there's a changing room, the NPC goes inside to change, and only comes out wearing the clothes if they were in the right range
+[13:59:47] Handy Low: or simpler, just automatically having more attractive clothes in the mid-range than at the extremes
+[13:59:59] Ramesh Ramloll: simpler is better
+[14:00:02] Handy Low: yes
+[14:00:14] Handy Low: that would just be the clothes in the appropriate notecards
+[14:00:55] Ramesh Ramloll: I am wondering if the note cards store info about how tight or loose the clothes are, I think they don't do they?
+[14:01:03] Ramesh Ramloll: they should ...
+[14:01:13] Handy Low: the clothes are just recorded as they were on the avatar
+[14:01:24] Ramesh Ramloll: right ... so we have no problem then
+[14:01:29] Handy Low: yes
+[14:01:33] Ramesh Ramloll: super
+[14:01:36] Ramesh Ramloll: we have a plan
+[14:01:39] Handy Low: OK
+[14:01:48] Ramesh Ramloll: may be record the chat
+[14:01:57] Handy Low: yes
+[14:02:00] Ramesh Ramloll: then prioritize
+[14:02:04] Handy Low: OK
+[14:02:24] Ramesh Ramloll: I still like the idea of solo exercising... like taichi, yoga etc...
+[14:02:36] Ramesh Ramloll: so that would also be included
+[14:02:40] Handy Low: what do you think of the idea of a meter for calories - no numbers or gradations, just a thermometer-style meter above the NPC's head?
+[14:03:07] Handy Low: yes, I think it would work well like this, different exercises in the garden giving different levels of benefit
+[14:03:39] Ramesh Ramloll: Ok, hopefully there wont be the need for too many of them. then things become a bit too busy visually
+[14:03:49] Handy Low: yes
+[14:03:54] Handy Low: a very simple design would work
+[14:04:00] Ramesh Ramloll: ok
+[14:04:09] Ramesh Ramloll: ah I remember something
+[14:04:17] Ramesh Ramloll: let me share a video I made some time back
+[14:04:21] Ramesh Ramloll: I use meters there
+[14:04:24] Handy Low: OK
+[14:05:36] Ramesh Ramloll: hmm... I am still searching give me a min
+[14:05:42] Handy Low: no rush
+[14:05:54] Handy Low: I was admiring the butterflies - a nice flying effect
+[14:06:55] Ramesh Ramloll: https://www.youtube.com/watch?v=eOOZ39i2sa8
+[14:07:07] Handy Low: looking at that now
+[14:07:43] Handy Low: cool
+[14:08:27] Ramesh Ramloll: I was trying to provide inhale and exhale viz info ...which is missing in current yoga videos
+[14:08:33] Ramesh Ramloll: breathing is the most important part
+[14:08:38] Handy Low: yes
+[14:08:54] Handy Low: and it's nicely realised there
+[14:09:12] Handy Low: in time with the music
+[14:09:22] Ramesh Ramloll: Initially I had a bar chart kind of viz, but then I settled for a sphere about the head,
+[14:09:32] Ramesh Ramloll: and slapped the bar chart as a HUD
+[14:09:40] Handy Low: yes, I think for that the sphere works really well
+[14:09:51] Handy Low: a kind of visualisation of the lungs
+[14:10:18] Ramesh Ramloll: yes, this video reminds some sad things about SL ... I was losing my islands at that time
+[14:10:29] Ramesh Ramloll: I had 4 of them
+[14:10:34] Ramesh Ramloll: and spent a fortune
+[14:10:35] Handy Low: that is sad
+[14:10:49] Handy Low: I never had that much, but I do miss the places I did have
+[14:11:07] Handy Low: it's so expensive
+[14:11:10] Ramesh Ramloll: when I add all the money I gave to LL, I might have got a very nice car today
+[14:11:28] Ramesh Ramloll: it was like 300 USD per month
+[14:11:34] Ramesh Ramloll: for each
+[14:11:42] Handy Low: yes, I can imagine how it would add up
+[14:11:47] Handy Low: they really should lower their prices
+[14:11:50] Ramesh Ramloll: had them for 4 years
+[14:12:09] Ramesh Ramloll: that was when I was still working in govt.
+[14:12:19] Ramesh Ramloll: anyway... back on track.
+[14:12:29] Ramesh Ramloll: I feel so free with opensim.
+[14:12:49] Handy Low: yes, it's so different
+[14:13:07] Handy Low: I built 12 regions for my girlfriend on my own grid
+[14:13:18] Handy Low: never once worried about prims or costs or anything
+[14:13:24] Ramesh Ramloll: Exactly.
+[14:13:43] Ramesh Ramloll: Hey John, I have to run now. forgot I had to buy bread and milk.
+[14:13:48] Handy Low: OK
+[14:14:03] Ramesh Ramloll: so may be write up a plan, for me check to night.
+[14:14:04] Handy Low: talk soon, and I keep thinking about this
+[14:14:09] Handy Low: OK
+[14:14:12] Ramesh Ramloll: thanks
+[14:14:16] Handy Low: just the next stage
+[14:14:22] Ramesh Ramloll: talk to you soon. yes.
+[14:14:26] Handy Low: bye for now
+[14:14:50] Ramesh Ramloll: and keep me informed about current cost level, so that I can adjust.
+[14:14:56] Handy Low: OK, will do
+[14:14:59] Ramesh Ramloll: bye
+[14:15:01] Handy Low: bye
+[14:15:02] Ramesh Ramloll is offline.
+
+*** From me, 20th March:
+
+Anyway, I think the following could constitute the next stage of development:
+
+1. Swapping of NPC bodies - including offloading/reloading of data
+2. Exercise script should work in both standalone and linked prims
+3. Exercise script reads calorie burning rate from prim name
+4. Simple calorie meter for NPCs
+5. NPCs burn calories for (a) movement and (b) non-moving time
+6. Simple race from point A to point B, with fittest NPC winning
+
+For the work so far this week, I think USD 40 should cover it.
+
+
+*** By me, edited as thoughts change:
+
+	Given the problems that seem to happen when an attachment initiates
+    osNpcLoadAppearance() on the NPC it's attached to, I'm pretty sure
+    now that using a server to do the change itself (as well as store
+    the calorie data during the change) is a good idea.
+
+    It struck me that we needn't add anything new into the scene to do
+    this, because we already have a specialised food server in the ML
+    for the eating process, which already has a listener open.
+
+    This would mean that the avatar notecards would need to reside in
+    the ML root prim, and I'm thinking that for ease of use the
+    notecards themselves could indicate the calorie thresholds in their
+    name (although I think it would be possible, but more complex, to
+    utilise the notecard description if that would confer any advantage).
+
+    So I suggest that the notecards have a naming format:
+
+    B/<NPC name>/<Min. Calories>/<Starting value?>
+
+    ("B" standing for Body, partly to keep them together in an inventory
+    listing)
+
+    So for example, you might have the following notecards for an NPC
+    called John Doe:
+
+    B/John Doe/0
+    B/John Doe/500
+    B/John Doe/800/1
+    B/John Doe/1000
+    B/John Doe/1100
+    B/John Doe/1200
+
+    So, at the beginning, it's assumed that John Doe already has the
+    800-cal body, because that's the starting value (with the 1).
+    Obviously, since the server isn't rezzing the original body, it
+    would need to be manually kept in line with the RezMela NPCs notecards.
+
+     From there on, each time John Doe's weight changed, the NPC script
+    would tell the server the new weight. If the server found that the
+    weight was over or under a threshold value (according to the
+    notecards), it would load the NPC's new appearance card. There would
+    be simple handshaking with the new NPC script which would load it
+    with the calorie data from the previous incarnation.
+    
+   

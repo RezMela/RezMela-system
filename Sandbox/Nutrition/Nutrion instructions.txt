@@ -1,0 +1,48 @@
+NPC notecards
+-------------
+
+The format of NPC notecard names is: 
+
+B/<first name> <last name>/<calories>/<default?>
+
+For example, the following notecards:
+
+B/John Doe/600
+B/John Doe/800
+B/John Doe/900/1
+B/John Doe/1100
+B/John Doe/1200
+
+represent five different body weight ranges (<800, 800-899, 900-1099, 1100-1199, 1200+) with the 900 one being the starting notecard. Weight below 600 will use the 600 card, so in effect that value could be anything below 800.
+
+To begin with, the script calculates the middle value for the default range. In that example, the 900 card will represent the range 900-1100, with 1000 being the median. Thus, John Doe will start with a weight of 1000, using the 900 notecard.
+
+The value of 1000 calories is also the "ideal" weight, with walking/running speed being slowed proportional to the difference between the current weight and the ideal weight. This calculated in the script as being the median between the minimum and maximum weights. The minimum weight is 200, the maximum 1800, and weight will not go outside of that range. The 200/1800 values are defined in constants at the top of the Nutrition LM script.
+
+The NPC attachment script also contains those min/max values, which are used to calibrate the meter. Any changes to those values should be reflected in both scripts.
+
+So, with the weight given in the "John Doe" example above, the NPC will be created with the ideal (1000) weight, although it's not essential - you could set it up so that they start off as overweight or underweight.
+
+Ideally, the NPC rezzer should use the same notecard as the default ("/1") in the LM object. If a different card is used, then the NPC will visibly change appearance shortly after being rezzed, as the Nutrition LM script recognises the NPC and updates its weight.
+
+When eating and exercising, the NPC informs the main nutrition script of the changes in calorie values (ie calorie gain or loss), and the main script then compares the new stored calorie value against the available notecards, and reloads the NPC appearance if the change takes the NPC into a different weight band.
+
+Note that the NPC will communicate only with the nutrition server that was nearest when the NPC was rezzed. If that server is deleted, the NPC will not attempt to switch to another server. The NPC attachment script broadcasts a ping, and uses the nearest server that responds with a pong during the next 1 second.
+
+
+Food items
+----------
+
+Food items have names in the format:
+
++F <name>/<calories>
+
+For example, "+F orange/50" for an orange containing 50 calories. When a food item is eaten, the NPC attachment script tells the nutrition script that that particular NPC has received food from a given user, and the nutrition script uses that data to find the food item that the specified user has selected, and updates the specified NPC's data with the food data from that item.
+
+
+Exercise objects
+----------------
+
+An exercise object works in a similar way to a food object (with calories subtracted instead of added), although the mechanism is different. While an NPC is using an exercise object, the calories that object burns are sent periodically to the NPC; the NPC attachment script then picks up that data and passes it directly to the server, which then deducts the calories from the NPC's stored calorie data.
+
+The calories are deducted every 10 seconds (set in the constant CALORIE_PERIOD in the exercise script), and the calorific value is taken from the object's description (or a default of 50).

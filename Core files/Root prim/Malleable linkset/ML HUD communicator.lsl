@@ -16,6 +16,7 @@
 // is strictly forbidden unless prior written permission is obtained
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
+// More detailed information about the HUD communicator script is available here http://wiki.rezmela.org/doku.php/hud-communicator-script
 
 // v1.11.7 - replaced UUID by NULL_KEY to fix deleted scene not updating HUD
 // v1.11.6 - send HUD server messages direct to prim

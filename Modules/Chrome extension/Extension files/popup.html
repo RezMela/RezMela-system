@@ -1,0 +1,149 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+  <head>
+    <title>RezMela</title>
+	<meta charset="UTF-8">
+    <style>
+      body {
+        font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+        font-size: 100%;
+      }
+    </style>
+    <script src="popup.js"></script>
+  </head>
+  <body>
+	<div 
+		style="background-color:#881111;
+		color: #FFFFFF;
+		font-size: 20px;			
+		text-align: center;
+		line-height: 48px;"
+		>
+		RezMela
+	</div>  
+	<div 
+		id="useriddiv"
+		style="background-color:#FFFFFF;
+		text-align: center;
+		padding: 8px;		
+		">
+		<p>
+			User ID:&nbsp;
+			<input type="text" id="userid" size="8">
+		</p>
+		<p hidden>
+			URL:&nbsp;
+			<span id="url"></span>
+			<span id="pagetype"></span>
+		</p>
+	</div>
+	<div
+		id="bookmarkdiv"
+		style="display: none;"		
+		>
+		<div
+			style="background-color:#AACCFF;
+			text-align: center;
+			padding: 8px;
+			min-width: 600px;
+			max-width: 600px;			
+			">
+			<b>Bookmark</b>
+			<p> 
+			Description:&nbsp;
+			  <input type="text" id="description" size="40">
+			</p>
+			<p>
+			Colors:&nbsp;
+				<select id="titlecolor">
+				 <option value="Green">Green</option>
+				 <option value="Blue">Blue</option>
+				 <option value="Red">Red</option>
+				 <option value="Gray">Gray</option>
+				 <option value="Black">Black</option>
+				 <option value="White">White</option>
+				 <option value="Yellow">Yellow</option>
+				 <option value="Purple">Purple</option>
+				 <option value="Pink">Pink</option>
+				 <option value="Aqua">Aqua</option>
+				 <option value="Brown">Brown</option>
+				</select>
+				&nbsp;text,&nbsp;
+				<select id="covercolor">
+				 <option value="Green">Green</option>
+				 <option value="Blue">Blue</option>
+				 <option value="Red">Red</option>
+				 <option value="Gray">Gray</option>
+				 <option value="Black">Black</option>
+				 <option value="Yellow">Yellow</option>
+				 <option value="Purple">Purple</option>
+				 <option value="Pink">Pink</option>
+				 <option value="Aqua">Aqua</option>
+				 <option value="Olive">Olive</option>
+				 <option value="Brown">Brown</option>
+				</select>		
+				 &nbsp;background
+				 &nbsp;
+				 &nbsp;
+				<input type="checkbox" name="savecolors" value="save">Save colors
+			</p>
+		</div>
+	</div>
+	<div
+		id="panodiv"
+		style="display: none;"
+		>
+		<div
+			style="background-color:#AACCFF;
+			text-align: center;
+			padding: 8px;	
+			min-width: 600px;
+			max-width: 600px;	
+			">
+			<b>Street View panorama</b>
+			<p> 
+			Description:&nbsp;
+			  <input type="text" id="panodesc" size="40">
+			</p>
+			<p>			
+			<p>The current panorama will be sent to your RezMela panorama object in-world</p>
+			<span id="panoid" hidden></span>
+			<span id="panolat" hidden></span>
+			<span id="panolon" hidden></span>
+		</div>
+	</div>
+    <div 
+		id="statusdiv"
+		style="display: none;"
+		>
+		<div
+		id="statustext"
+		style="background-color:#FF4400;		text-align: center;
+		padding: 8px;"
+		>
+		</div>
+	</div>
+	<div style="
+		text-align: center;
+		">
+		<button id="sendbutton" style="
+			background-color:#881111;
+			border: none;
+			color: #FFFFFF;
+			padding: 15px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;			
+		">
+		Send
+		</button>	
+	</div>
+  </body>
+</html>
+

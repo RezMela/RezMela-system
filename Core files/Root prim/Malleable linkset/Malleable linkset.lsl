@@ -16,6 +16,7 @@
 // is strictly forbidden unless prior written permission is obtained
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
+// Additional documentation about ML, ML Linkset limits http://wiki.rezmela.org/doku.php/ml-limits?s[]=primsource
 
 // v1.21.13 refactor to use object's UUID instead of link number for internal tables
 // v1.21.12 add HideOptions to ML config

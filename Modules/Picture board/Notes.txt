@@ -1,0 +1,5 @@
+It seems that the label board uses an old version of the worldobject script
+which has a deprecated method of supplying extra data on rezzing from a save.
+
+I need to update the picture board so it's using the current method - at the moment
+it's using 0.4 (not 0.6) of the RWO script.

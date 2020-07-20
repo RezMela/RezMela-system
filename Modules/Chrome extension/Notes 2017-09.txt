@@ -1,0 +1,19 @@
+[04:48] Ramesh: @jfhopkin Just got two pano links for you to test (if you have time). The first is a picture in New Zeland before an earthquake, and the next is after the event.
+[04:48] Ramesh: https://www.google.com/maps/@-43.5270741,172.6336174,3a,75y,301.86h,82.98t/data=!3m7!1e1!3m5!1s79E9wgjuUSwuyKtZYgEn6Q!2e0!5s20150801T000000!7i3328!8i1664
+[04:49] Ramesh: https://www.google.com/maps/@-43.5270931,172.633621,3a,75y,301.86h,82.98t/data=!3m7!1e1!3m5!1sAi-TLMQ8FV57okNME_hNUg!2e0!5s20150801T000000!7i13312!8i6656
+[04:51] Ramesh: In this case, it appears that the panoIDs are different so looks like we won't even need to extract the time parameter (in any case, as far as I can see, the street view api does not return this value yet, I have subscribed to the issue to get notifications if Google fixes it)
+[04:51] Ramesh: https://issuetracker.google.com/issues/35826204
+
+Pano id: Ai-TLMQ8FV57okNME_hNUg
+Pano:
+https://www.google.com/maps/@-43.5270931,172.633621,3a,75y,301.86h,82.98t/data=!3m7!1e1!3m5!1sAi-TLMQ8FV57okNME_hNUg!2e0!5s20150801T000000!7i13312!8i6656
+Map:
+https://www.google.com/maps/@-43.5270926,172.6336186,15z
+
+http://www.rezmela.net/extint/v1/RecordPano.php?uid=R65654O&panoid=Ai-TLMQ8FV57okNME_hNUg&lat=53.1234&lon=0.6543&desc=Test%201
+
+Narbonne:
+https://www.google.co.uk/maps/@43.1819364,3.0051938,3a,75y,21.72h,99.08t/data=!3m8!1e1!3m6!1sAF1QipO2QRj5JUjQwesmDlsOTiUhJfsUuoQLLq0iBE75!2e10!3e11!6shttps:%2F%2Flh5.googleusercontent.com%2Fp%2FAF1QipO2QRj5JUjQwesmDlsOTiUhJfsUuoQLLq0iBE75%3Dw203-h100-k-no-pi-0-ya154.14731-ro-0-fo100!7i6000!8i3000
+
+AF1QipO2QRj5JUjQwesmDlsOTiUhJfsUuoQLLq0i
+Ai-TLMQ8FV57okNME_hNUg
