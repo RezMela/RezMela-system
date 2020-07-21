@@ -1,0 +1,711 @@
+[06:43:01] Text block: Displaying: Let's try something
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 508
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 504
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 500
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 496
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 492
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 488
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 484
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 480
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 476
+[06:43:01] Text block: Word: <Let's>
+[06:43:01] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:01] Text block: Word: <try>
+[06:43:01] Text block: Comparing 1: try, try, 0, 780
+[06:43:01] Text block: Word: <something>
+[06:43:01] Text block: Comparing 1: something, something, 0, 780
+[06:43:01] Text block:     Too big 472
+[06:43:01] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 468
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 464
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 460
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 456
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 452
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 448
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 444
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 440
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 436
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 432
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 428
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 424
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 420
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, something, 0, 780
+[06:43:02] Text block:     Too big 416
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, try something, 773, 780
+[06:43:02] Text block: Comparing 2: try, 773, 780
+[06:43:02] Text block:     Too big 412
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, try something, 766, 780
+[06:43:02] Text block: Comparing 2: try, 766, 780
+[06:43:02] Text block:     Too big 408
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, try something, 759, 780
+[06:43:02] Text block: Comparing 2: try, 759, 780
+[06:43:02] Text block:     Too big 404
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, try something, 751, 780
+[06:43:02] Text block: Comparing 2: try, 751, 780
+[06:43:02] Text block:     Too big 400
+[06:43:02] Text block: Word: <Let's>
+[06:43:02] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:02] Text block: Word: <try>
+[06:43:02] Text block: Comparing 1: try, try, 0, 780
+[06:43:02] Text block: Word: <something>
+[06:43:02] Text block: Comparing 1: something, try something, 744, 780
+[06:43:03] Text block: Comparing 2: try, 744, 780
+[06:43:03] Text block:     Too big 396
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 736, 780
+[06:43:03] Text block: Comparing 2: try, 736, 780
+[06:43:03] Text block:     Too big 392
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 729, 780
+[06:43:03] Text block: Comparing 2: try, 729, 780
+[06:43:03] Text block:     Too big 388
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 722, 780
+[06:43:03] Text block: Comparing 2: try, 722, 780
+[06:43:03] Text block:     Too big 384
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 715, 780
+[06:43:03] Text block: Comparing 2: try, 715, 780
+[06:43:03] Text block:     Too big 380
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 707, 780
+[06:43:03] Text block: Comparing 2: try, 707, 780
+[06:43:03] Text block:     Too big 376
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 700, 780
+[06:43:03] Text block: Comparing 2: try, 700, 780
+[06:43:03] Text block:     Too big 372
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 692, 780
+[06:43:03] Text block: Comparing 2: try, 692, 780
+[06:43:03] Text block:     Too big 368
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 684, 780
+[06:43:03] Text block: Comparing 2: try, 684, 780
+[06:43:03] Text block:     Too big 364
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 677, 780
+[06:43:03] Text block: Comparing 2: try, 677, 780
+[06:43:03] Text block:     Too big 360
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 669, 780
+[06:43:03] Text block: Comparing 2: try, 669, 780
+[06:43:03] Text block:     Too big 356
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 662, 780
+[06:43:03] Text block: Comparing 2: try, 662, 780
+[06:43:03] Text block:     Too big 352
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 655, 780
+[06:43:03] Text block: Comparing 2: try, 655, 780
+[06:43:03] Text block:     Too big 348
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 648, 780
+[06:43:03] Text block: Comparing 2: try, 648, 780
+[06:43:03] Text block:     Too big 344
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 640, 780
+[06:43:03] Text block: Comparing 2: try, 640, 780
+[06:43:03] Text block:     Too big 340
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 632, 780
+[06:43:03] Text block: Comparing 2: try, 632, 780
+[06:43:03] Text block:     Too big 336
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 625, 780
+[06:43:03] Text block: Comparing 2: try, 625, 780
+[06:43:03] Text block:     Too big 332
+[06:43:03] Text block: Word: <Let's>
+[06:43:03] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:03] Text block: Word: <try>
+[06:43:03] Text block: Comparing 1: try, try, 0, 780
+[06:43:03] Text block: Word: <something>
+[06:43:03] Text block: Comparing 1: something, try something, 618, 780
+[06:43:03] Text block: Comparing 2: try, 618, 780
+[06:43:03] Text block:     Too big 328
+[06:43:03] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 610, 780
+[06:43:04] Text block: Comparing 2: try, 610, 780
+[06:43:04] Text block:     Too big 324
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 603, 780
+[06:43:04] Text block: Comparing 2: try, 603, 780
+[06:43:04] Text block:     Too big 320
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 595, 780
+[06:43:04] Text block: Comparing 2: try, 595, 780
+[06:43:04] Text block:     Too big 316
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 587, 780
+[06:43:04] Text block: Comparing 2: try, 587, 780
+[06:43:04] Text block:     Too big 312
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 580, 780
+[06:43:04] Text block: Comparing 2: try, 580, 780
+[06:43:04] Text block:     Too big 308
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 573, 780
+[06:43:04] Text block: Comparing 2: try, 573, 780
+[06:43:04] Text block:     Too big 304
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 566, 780
+[06:43:04] Text block: Comparing 2: try, 566, 780
+[06:43:04] Text block:     Too big 300
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 558, 780
+[06:43:04] Text block: Comparing 2: try, 558, 780
+[06:43:04] Text block:     Too big 296
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 551, 780
+[06:43:04] Text block: Comparing 2: try, 551, 780
+[06:43:04] Text block:     Too big 292
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 543, 780
+[06:43:04] Text block: Comparing 2: try, 543, 780
+[06:43:04] Text block:     Too big 288
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 536, 780
+[06:43:04] Text block: Comparing 2: try, 536, 780
+[06:43:04] Text block:     Too big 284
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 528, 780
+[06:43:04] Text block: Comparing 2: try, 528, 780
+[06:43:04] Text block:     Too big 280
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 520, 780
+[06:43:04] Text block: Comparing 2: try, 520, 780
+[06:43:04] Text block:     Too big 276
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 513, 780
+[06:43:04] Text block: Comparing 2: try, 513, 780
+[06:43:04] Text block:     Too big 272
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 506, 780
+[06:43:04] Text block: Comparing 2: try, 506, 780
+[06:43:04] Text block:     Too big 268
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 498, 780
+[06:43:04] Text block: Comparing 2: try, 498, 780
+[06:43:04] Text block:     Too big 264
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 491, 780
+[06:43:04] Text block: Comparing 2: try, 491, 780
+[06:43:04] Text block:     Too big 260
+[06:43:04] Text block: Word: <Let's>
+[06:43:04] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:04] Text block: Word: <try>
+[06:43:04] Text block: Comparing 1: try, try, 0, 780
+[06:43:04] Text block: Word: <something>
+[06:43:04] Text block: Comparing 1: something, try something, 484, 780
+[06:43:04] Text block: Comparing 2: try, 484, 780
+[06:43:04] Text block:     Too big 256
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, try, 0, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 476, 780
+[06:43:05] Text block: Comparing 2: try, 476, 780
+[06:43:05] Text block:     Too big 252
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, try, 0, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 469, 780
+[06:43:05] Text block: Comparing 2: try, 469, 780
+[06:43:05] Text block:     Too big 248
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 780, 780
+[06:43:05] Text block: Comparing 2: Let's, 780, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 462, 780
+[06:43:05] Text block: Comparing 2: try, 462, 780
+[06:43:05] Text block:     Too big 244
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 768, 780
+[06:43:05] Text block: Comparing 2: Let's, 768, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 455, 780
+[06:43:05] Text block: Comparing 2: try, 455, 780
+[06:43:05] Text block:     Too big 240
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 755, 780
+[06:43:05] Text block: Comparing 2: Let's, 755, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 446, 780
+[06:43:05] Text block: Comparing 2: try, 446, 780
+[06:43:05] Text block:     Too big 236
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 743, 780
+[06:43:05] Text block: Comparing 2: Let's, 743, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 438, 780
+[06:43:05] Text block: Comparing 2: try, 438, 780
+[06:43:05] Text block:     Too big 232
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 729, 780
+[06:43:05] Text block: Comparing 2: Let's, 729, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 431, 780
+[06:43:05] Text block: Comparing 2: try, 431, 780
+[06:43:05] Text block:     Too big 228
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 717, 780
+[06:43:05] Text block: Comparing 2: Let's, 717, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 424, 780
+[06:43:05] Text block: Comparing 2: try, 424, 780
+[06:43:05] Text block:     Too big 224
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 705, 780
+[06:43:05] Text block: Comparing 2: Let's, 705, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 417, 780
+[06:43:05] Text block: Comparing 2: try, 417, 780
+[06:43:05] Text block:     Too big 220
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 692, 780
+[06:43:05] Text block: Comparing 2: Let's, 692, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 410, 780
+[06:43:05] Text block: Comparing 2: try, 410, 780
+[06:43:05] Text block:     Too big 216
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 679, 780
+[06:43:05] Text block: Comparing 2: Let's, 679, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 401, 780
+[06:43:05] Text block: Comparing 2: try, 401, 780
+[06:43:05] Text block:     Too big 212
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 667, 780
+[06:43:05] Text block: Comparing 2: Let's, 667, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 394, 780
+[06:43:05] Text block: Comparing 2: try, 394, 780
+[06:43:05] Text block:     Too big 208
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 655, 780
+[06:43:05] Text block: Comparing 2: Let's, 655, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 387, 780
+[06:43:05] Text block: Comparing 2: try, 387, 780
+[06:43:05] Text block:     Too big 204
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 643, 780
+[06:43:05] Text block: Comparing 2: Let's, 643, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 380, 780
+[06:43:05] Text block: Comparing 2: try, 380, 780
+[06:43:05] Text block:     Too big 200
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 630, 780
+[06:43:05] Text block: Comparing 2: Let's, 630, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 373, 780
+[06:43:05] Text block: Comparing 2: try, 373, 780
+[06:43:05] Text block:     Too big 196
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 617, 780
+[06:43:05] Text block: Comparing 2: Let's, 617, 780
+[06:43:05] Text block: Word: <something>
+[06:43:05] Text block: Comparing 1: something, try something, 364, 780
+[06:43:05] Text block: Comparing 2: try, 364, 780
+[06:43:05] Text block:     Too big 192
+[06:43:05] Text block: Word: <Let's>
+[06:43:05] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:05] Text block: Word: <try>
+[06:43:05] Text block: Comparing 1: try, Let's try, 604, 780
+[06:43:05] Text block: Comparing 2: Let's, 604, 780
+[06:43:05] Text block: Word: <something>
+[06:43:06] Text block: Comparing 1: something, try something, 357, 780
+[06:43:06] Text block: Comparing 2: try, 357, 780
+[06:43:06] Text block:     Too big 188
+[06:43:06] Text block: Word: <Let's>
+[06:43:06] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:06] Text block: Word: <try>
+[06:43:06] Text block: Comparing 1: try, Let's try, 592, 780
+[06:43:06] Text block: Comparing 2: Let's, 592, 780
+[06:43:06] Text block: Word: <something>
+[06:43:06] Text block: Comparing 1: something, try something, 349, 780
+[06:43:06] Text block: Comparing 2: try, 349, 780
+[06:43:06] Text block:     Too big 184
+[06:43:06] Text block: Word: <Let's>
+[06:43:06] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:06] Text block: Word: <try>
+[06:43:06] Text block: Comparing 1: try, Let's try, 579, 780
+[06:43:06] Text block: Comparing 2: Let's, 579, 780
+[06:43:06] Text block: Word: <something>
+[06:43:06] Text block: Comparing 1: something, try something, 342, 780
+[06:43:06] Text block: Comparing 2: try, 342, 780
+[06:43:06] Text block:     Too big 180
+[06:43:06] Text block: Word: <Let's>
+[06:43:06] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:06] Text block: Word: <try>
+[06:43:06] Text block: Comparing 1: try, Let's try, 567, 780
+[06:43:06] Text block: Comparing 2: Let's, 567, 780
+[06:43:06] Text block: Word: <something>
+[06:43:06] Text block: Comparing 1: something, try something, 335, 780
+[06:43:06] Text block: Comparing 2: try, 335, 780
+[06:43:06] Text block:     Too big 176
+[06:43:06] Text block: Word: <Let's>
+[06:43:06] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:06] Text block: Word: <try>
+[06:43:06] Text block: Comparing 1: try, Let's try, 554, 780
+[06:43:06] Text block: Comparing 2: Let's, 554, 780
+[06:43:06] Text block: Word: <something>
+[06:43:06] Text block: Comparing 1: something, try something, 327, 780
+[06:43:06] Text block: Comparing 2: try, 327, 780
+[06:43:06] Text block:     Too big 172
+[06:43:06] Text block: Word: <Let's>
+[06:43:06] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:06] Text block: Word: <try>
+[06:43:06] Text block: Comparing 1: try, Let's try, 541, 780
+[06:43:06] Text block: Comparing 2: Let's, 541, 780
+[06:43:06] Text block: Word: <something>
+[06:43:06] Text block: Comparing 1: something, try something, 320, 780
+[06:43:06] Text block: Comparing 2: try, 320, 780
+[06:43:06] Text block:     Too big 168
+[06:43:06] Text block: Word: <Let's>
+[06:43:06] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:06] Text block: Word: <try>
+[06:43:06] Text block: Comparing 1: try, Let's try, 530, 780
+[06:43:06] Text block: Comparing 2: Let's, 530, 780
+[06:43:06] Text block: Word: <something>
+[06:43:06] Text block: Comparing 1: something, try something, 313, 780
+[06:43:06] Text block: Comparing 2: try, 313, 780
+[06:43:06] Text block:     Too big 164
+[06:43:06] Text block: Word: <Let's>
+[06:43:06] Text block: Comparing 1: Let's, Let's, 0, 780
+[06:43:06] Text block: Word: <try>
+[06:43:06] Text block: Comparing 1: try, Let's try, 517, 780
+[06:43:06] Text block: Comparing 2: Let's, 517, 780
+[06:43:06] Text block: Word: <something>
+[06:43:06] Text block: Comparing 1: something, try something, 305, 780
+[06:43:06] Text block: Comparing 2: try, 305, 780
+[06:43:06] Text block:     Not too big 164
+[06:43:06] Text block: Calculated 164
+[06:43:06] Text block: Commands: PenColor White, MoveTo 0,0, FillRectangle 1024,1024, FontName Noto Sans, FontSize 164, PenColor Black
+[06:43:06] Text block: SaveData: Let's try something
+[06:43:06] Text block: Saving manual font size 0
+[06:43:06] Text block: Saved Let's try something at 164
+[06:43:06] Text block: SaveData: Let's try something
+[06:43:06] Text block: Saving manual font size 0
+[06:43:06] Text block: Saved Let's try something at 164
