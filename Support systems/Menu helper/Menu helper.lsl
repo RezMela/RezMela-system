@@ -1,4 +1,4 @@
-// Blue menu controller v1.0.3
+// Menu helper v1.0.4
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.0.4 - changed name from "Blue menu controller" to "Menu helper"
 // v1.0.3 - fixed spurious timeout on textbox; removed timeout message
 
 // TODO:
@@ -282,4 +283,4 @@ default {
 		AvId = NULL_KEY;
 	}
 }
-// Blue menu controller v1.0.3
+// Menu helper v1.0.4
