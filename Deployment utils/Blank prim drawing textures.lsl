@@ -1,5 +1,8 @@
+// Blank prim-drawing textures in App v1.0.1
 
 // Drop this into an App to blank out prim-drawing textures on the App itself
+
+// v1.0.1 - changed name of Activator prim
 
 default {
 	state_entry() {
@@ -10,7 +13,7 @@ default {
 		// Activator prim
 		integer Activator = -1;
 		for (P = 1; P <= PrimCount; P++) {
-			if (llGetLinkName(P) == "Activator") Activator = P;
+			if (llGetLinkName(P) == "!Activator!") Activator = P;
 		}
 		if (Activator == -1) {
 			llOwnerSay("ERROR! Can't find prim named 'Activator'");
