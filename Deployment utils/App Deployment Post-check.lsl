@@ -1,4 +1,4 @@
-// App Deployment Post-check v1.0
+// App Deployment Post-check v1.0.1
 
 // Drop into App (must be logged in as RezMela Apps)
 
@@ -18,6 +18,8 @@
 // is strictly forbidden unless prior written permission is obtained
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 //
+
+// v1.0.1 - add menu helper to known scripts
 
 key APP_CREATOR = "2627e425-6fbc-4e82-9699-7ed2a650d82e";
 
@@ -78,6 +80,7 @@ CheckRootContents() {
 	KnownScripts += FindScript("Error handler", TRUE);
 	KnownScripts += FindScript("ML environment", TRUE);
 	KnownScripts += FindScript("ML touch handler", TRUE);
+	KnownScripts += FindScript("Menu helper", FALSE);
 	// Look for additional scripts
 	AdditionalScripts(KnownScripts);
 	// Now check notecards
@@ -416,3 +419,4 @@ default {
 		llRemoveInventory(ThisScriptName);
 	}
 }
+// App Deployment Post-check v1.0.1
