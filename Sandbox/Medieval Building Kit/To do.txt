@@ -1,0 +1,57 @@
+ROOF
+
+
+Y coords for roof
+
+inside 1.0 - 0.174 Y
+outside 1.0 - 0.151 Y (but UV square, 0.0 - 1.0 on both axes?)
+ridge 0.5 - 0.54 Y
+
+FOUNDATIONS, etc
+
+Foundation is slightly taller than 0.8m? Stuff rezzed on it is Z=75.05050m, etc
+
+Maybe courtyard flagstones?
+
+GENERAL TEXTURING
+
+My objects tend to need a 2x2 repeat on the solid wood
+Also, solid wood isn't tileable
+Sooo, use solid wood to make new texture that is double dense and also tiles
+
+Maybe some shading needed? Gable ends especially
+
+
+STAIRCASE
+
+Narrow side should use basic wood texture (but keep UV placement).
+   This will need a different side number for the appropriate Stickpoint!
+Make a flipped  one
+
+
+CEILING/FLOOR 
+
+Have beams/joists underneath?
+
+
+DOORS
+
+Sounds? Handy must have a good open/close pair
+
+
+ADDITIONAL OBJECTS FROM PACK
+
+Reorganise naming of all objects, set categories.
+
+Different types of window
+Different types of wall
+
+FIREPLACE
+
+Needs chimney section, and should stack vertically
+
+
+OTHER IDEAS
+
+Double doors!?
+Another one with retexture for black&white half-timber exterior

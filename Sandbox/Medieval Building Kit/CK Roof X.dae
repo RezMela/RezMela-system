@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.80.75 commit date:2019-07-29, commit time:14:47, hash:f6cb5f54494e</authoring_tool>
+    </contributor>
+    <created>2019-11-28T22:20:11</created>
+    <modified>2019-11-28T22:20:11</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="Solid_wood-effect">
+      <profile_COMMON>
+        <newparam sid="BetterGrid_tga_001-surface">
+          <surface type="2D">
+            <init_from>BetterGrid_tga_001</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="BetterGrid_tga_001-sampler">
+          <sampler2D>
+            <source>BetterGrid_tga_001-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="BetterGrid_tga_001-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_inside-effect">
+      <profile_COMMON>
+        <newparam sid="BetterGrid_tga_001-surface">
+          <surface type="2D">
+            <init_from>BetterGrid_tga_001</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="BetterGrid_tga_001-sampler">
+          <sampler2D>
+            <source>BetterGrid_tga_001-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="BetterGrid_tga_001-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_tiles-effect">
+      <profile_COMMON>
+        <newparam sid="BetterGrid_tga_001-surface">
+          <surface type="2D">
+            <init_from>BetterGrid_tga_001</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="BetterGrid_tga_001-sampler">
+          <sampler2D>
+            <source>BetterGrid_tga_001-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="BetterGrid_tga_001-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_bottom_edge-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_end_1-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_inside_001-effect">
+      <profile_COMMON>
+        <newparam sid="BetterGrid_tga_001-surface">
+          <surface type="2D">
+            <init_from>BetterGrid_tga_001</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="BetterGrid_tga_001-sampler">
+          <sampler2D>
+            <source>BetterGrid_tga_001-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="BetterGrid_tga_001-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_tiles_001-effect">
+      <profile_COMMON>
+        <newparam sid="BetterGrid_tga_001-surface">
+          <surface type="2D">
+            <init_from>BetterGrid_tga_001</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="BetterGrid_tga_001-sampler">
+          <sampler2D>
+            <source>BetterGrid_tga_001-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="BetterGrid_tga_001-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_bottom_edge_001-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_end_2-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Ridge_tiles-effect">
+      <profile_COMMON>
+        <newparam sid="TinyGrid_tga-surface">
+          <surface type="2D">
+            <init_from>TinyGrid_tga</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="TinyGrid_tga-sampler">
+          <sampler2D>
+            <source>TinyGrid_tga-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="TinyGrid_tga-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_end_3-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Roof_end_4-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images>
+    <image id="BetterGrid_tga_001" name="BetterGrid_tga_001">
+      <init_from>BetterGrid.tga.001.tga</init_from>
+    </image>
+    <image id="TinyGrid_tga" name="TinyGrid_tga">
+      <init_from>TinyGrid.tga</init_from>
+    </image>
+  </library_images>
+  <library_materials>
+    <material id="Solid_wood-material" name="Solid wood">
+      <instance_effect url="#Solid_wood-effect"/>
+    </material>
+    <material id="Roof_inside-material" name="Roof inside">
+      <instance_effect url="#Roof_inside-effect"/>
+    </material>
+    <material id="Roof_tiles-material" name="Roof tiles">
+      <instance_effect url="#Roof_tiles-effect"/>
+    </material>
+    <material id="Roof_bottom_edge-material" name="Roof bottom edge">
+      <instance_effect url="#Roof_bottom_edge-effect"/>
+    </material>
+    <material id="Roof_end_1-material" name="Roof end 1">
+      <instance_effect url="#Roof_end_1-effect"/>
+    </material>
+    <material id="Roof_inside_001-material" name="Roof inside.001">
+      <instance_effect url="#Roof_inside_001-effect"/>
+    </material>
+    <material id="Roof_tiles_001-material" name="Roof tiles.001">
+      <instance_effect url="#Roof_tiles_001-effect"/>
+    </material>
+    <material id="Roof_bottom_edge_001-material" name="Roof bottom edge.001">
+      <instance_effect url="#Roof_bottom_edge_001-effect"/>
+    </material>
+    <material id="Roof_end_2-material" name="Roof end 2">
+      <instance_effect url="#Roof_end_2-effect"/>
+    </material>
+    <material id="Ridge_tiles-material" name="Ridge tiles">
+      <instance_effect url="#Ridge_tiles-effect"/>
+    </material>
+    <material id="Roof_end_3-material" name="Roof end 3">
+      <instance_effect url="#Roof_end_3-effect"/>
+    </material>
+    <material id="Roof_end_4-material" name="Roof end 4">
+      <instance_effect url="#Roof_end_4-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Cube-mesh" name="Cube">
+      <mesh>
+        <source id="Cube-mesh-positions">
+          <float_array id="Cube-mesh-positions-array" count="243">-8.52346e-6 -2.5 2.683352 -8.52346e-6 -2.5 2.791613 -8.76188e-6 2.5 2.683352 -8.76188e-6 2.5 2.791613 -0.1414213 -2.5 2.672658 0 -2.5 2.81408 -0.1414213 2.5 2.672658 0 2.5 2.81408 0 -2.5 2.531237 0.1414213 -2.5 2.672658 0 2.5 2.531237 0.1414213 2.5 2.672658 2.5 -8.41419e-6 2.683352 2.5 -8.41419e-6 2.791613 -2.5 -8.87116e-6 2.683352 -2.5 -8.87116e-6 2.791613 2.5 -0.1414212 2.672658 2.5 0 2.81408 -2.5 -0.1414214 2.672658 -2.5 0 2.81408 2.5 0 2.531237 2.5 0.1414214 2.672658 -2.5 0 2.531237 -2.5 0.1414212 2.672658 2.5 2.5 0.2949292 -2.387632 2.499998 0.2949376 -2.500003 2.499997 0.2949376 -2.500002 2.387614 0.2949378 -2.5 -2.5 0.2949464 2.5 2.387623 0.2949294 2.499997 -2.500003 0.2949373 2.387623 2.5 0.2949294 -2.387623 -2.5 0.2949461 2.387615 -2.500001 0.2949373 2.499999 -2.387632 0.2949371 -2.5 -2.387624 0.2949462 -5.75185e-6 -5.75185e-6 2.791613 -5.75185e-6 -5.75185e-6 2.683352 0 0 -1 0 0 -1 0 0 2.79161 -2.663777 -2.522356 -0.07068789 -2.871958 -2.730537 -0.07068777 -0.05242633 0.08899497 2.531859 -0.1342091 0.007212162 2.695025 -2.522356 -2.663777 -0.07068789 -2.730537 -2.871958 -0.07068777 0.08899497 -0.05242633 2.531859 0.007212162 -0.1342091 2.695025 -2.522356 2.663777 -0.07068789 -2.730537 2.871958 -0.07068777 0.08899497 0.05242633 2.531859 0.007212162 0.1342091 2.695025 -2.663777 2.522356 -0.07068789 -2.871958 2.730537 -0.07068777 -0.05242633 -0.08899497 2.531859 -0.1342091 -0.007212162 2.695025 2.663776 2.522356 -0.07068789 2.871958 2.730537 -0.07068777 0.05242633 -0.08899497 2.531859 0.1342091 -0.007212162 2.695025 2.522355 2.663777 -0.07068789 2.730536 2.871958 -0.07068777 -0.08899497 0.05242633 2.531859 -0.007212162 0.1342091 2.695025 2.522356 -2.663776 -0.07068789 2.730537 -2.871957 -0.07068777 -0.08899497 -0.05242633 2.531859 -0.007212162 -0.1342091 2.695025 2.663777 -2.522355 -0.07068789 2.871958 -2.730536 -0.07068777 0.05242633 0.08899497 2.531859 0.1342091 0.007212162 2.695025 0 -0.2828427 2.33188 -0.2828427 0 2.33188 0.2828427 0 2.33188 0 0.2828427 2.33188 0 -0.2828427 2.640196 -0.2828427 0 2.640196 0.2828427 0 2.640196 0 0.2828427 2.640196</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-positions-array" count="81" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube-mesh-normals">
+          <float_array id="Cube-mesh-normals-array" count="273">-0.7066362 7.55779e-7 0.7075771 0.7066354 -9.7171e-7 0.7075779 -7.98848e-7 1 0 0.7071072 0 -0.7071065 -0.7071072 0 -0.7071065 -1 0 0 1 0 0 0 -0.7071067 0.7071069 0 0.7071067 -0.7071069 0 -0.7071067 -0.7071069 0 0.7071067 0.7071069 8.63747e-7 -0.7066361 0.7075771 -7.55773e-7 -0.7066369 0.7075764 -0.7066369 -8.09757e-7 0.7075763 -9.7171e-7 0.7066352 0.707578 -5.99135e-7 -1 0 8.09753e-7 0.7066361 0.7075772 0.7066361 9.71704e-7 0.7075771 0 1 0 0 -1 0 -0.7072239 -9.60116e-7 -0.7069897 -8.47161e-7 -0.7072238 -0.7069897 -0.7072238 9.03646e-7 -0.7069898 0.7072239 -7.34215e-7 -0.7069897 -7.90693e-7 0.7072239 -0.7069897 9.03646e-7 -0.7072238 -0.7069897 0.7072239 7.90687e-7 -0.7069897 7.34209e-7 0.7072238 -0.7069897 8.40709e-6 -0.7066329 -0.7075805 0.6906668 0.7231732 0 7.20544e-6 0.7066407 -0.7075726 -0.6906661 -0.7231739 0 0.7231743 -0.6906656 0 -0.7066352 0 -0.707578 -0.7231739 0.690666 0 0.7066365 -1.20097e-6 -0.7075768 0 0 1 -0.7071068 0.7071068 2.1954e-7 0.7071068 -0.7071068 0 0.4073292 0.4073292 -0.8174142 0.707107 0.7071066 0 -0.7071068 -0.7071068 0 0.4073293 -0.4073287 -0.8174144 0.7071068 -0.7071068 -3.0818e-7 -0.7071068 0.7071068 0 -0.4073294 -0.4073289 -0.8174142 -0.7071065 -0.7071071 0 0.7071068 0.7071068 0 -0.4073292 0.4073292 -0.8174142 1.49012e-6 0 -1 7.45058e-7 0 -1 0.7071067 0.7071069 0 0.7071068 -0.7071067 0 -0.7071067 -0.7071069 0 -0.7071068 0.7071067 0 0.7071062 0 0.7071074 -0.7071062 0 0.7071074 -1.06085e-5 1 6.79851e-6 -1 -3.3991e-6 -1.90989e-7 1 0 0 0 -0.7071067 0.7071069 0 0.7071067 -0.7071069 0 -0.7071067 -0.7071069 0 0.7071067 0.7071069 -1.2729e-5 -1 -1.01968e-5 0 1 -8.49768e-7 -1 -1.04092e-5 -9.38022e-6 0 -1 3.39911e-6 1 -1.72087e-5 1.38213e-5 -0.7231739 -0.690666 0 0.7066389 6.00452e-6 -0.7075744 0.7231732 0.6906668 0 -0.706631 8.40708e-6 -0.7075822 -2.40191e-6 -0.7066371 -0.7075762 -0.6906667 0.7231733 0 -1.20097e-6 0.7066359 -0.7075774 0.6906668 -0.7231732 0 -0.7071074 0.7071062 0 0.7071073 -0.7071064 -1.46402e-7 0.4073292 0.4073289 -0.8174144 0.7071074 0.7071062 0 -0.7071073 -0.7071064 -1.46402e-7 0.407329 -0.4073293 -0.8174142 0.7071071 -0.7071065 0 -0.707107 0.7071067 4.39205e-7 -0.407329 -0.4073293 -0.8174142 -0.7071074 -0.7071062 0 0.7071069 0.7071067 0 -0.4073291 0.4073294 -0.8174141 -1.49012e-6 0 -1 -7.45058e-7 0 -1</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-normals-array" count="91" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube-mesh-map-0">
+          <float_array id="Cube-mesh-map-0-array" count="654">1 0.151 1 0.9999998 0.5 1 0.4999989 0.9995117 3.27826e-7 1 -1.49012e-7 0.151 0.244642 0.8319255 0.9353858 0.8473477 0.9200754 0.8320373 0.4291977 0.3235489 0.4161103 0.6507415 0.4161099 0.3235489 0.9510233 0.3548294 0.6238307 0.3417416 0.9510233 0.3417416 0.13923 0.7947205 0.8299722 0.8101428 0.8146616 0.7948324 0.8269519 0.1504008 0.8423742 0.841147 0.8270637 0.8258365 1 0.5400001 0 0.5 1 0.5 0.4301596 0.6507413 0.4432474 0.3235489 0.4432474 0.6507413 0.4572971 0.3235489 0.4442097 0.6507413 0.4442093 0.3235489 1 0.54 0 0.5000001 1 0.5 0.4999996 1 1.04308e-6 1 1.16229e-6 0.151 0.4999996 1 1 0.151 1 1 0.5 1 -2.68221e-7 0.9999998 2.68221e-7 0.151 0.5000013 0.9999999 1 0.151 0.9999999 1.000001 0.8331522 0.1690044 0.8485745 0.8597491 0.8332641 0.8444387 4.76837e-7 1 4.76837e-7 0.151 0.5000013 0.9999999 0.9999998 0.9995123 0.4999989 0.9995117 0.9999998 0.151 0.9353858 0.8473477 0.9199637 0.1566016 0.9200754 0.8320373 0.8299722 0.8101428 0.8145499 0.1193983 0.8146616 0.7948324 0.8485745 0.8597491 0.1578323 0.8443269 0.8332641 0.8444387 0.8423742 0.841147 0.1516302 0.8257246 0.8270637 0.8258365 0.5 1 0 1 0 0.174 0.5 1 1 0.174 1 1.000096 0.5 1 1 0.174 1 1 0.5 1 0 1 0 0.174 0.5 1 1 0.174 1 1 0 1 0 0.174 0.5 1 1 0.174 1 1 0.5 1 0.5 1 0 1 0 0.174 0.2223919 0.6025322 0.2283946 0.3235492 0.2283946 0.6067795 0.3881298 0.3277966 0.3941329 0.6067713 0.3883014 0.6027477 0.3607335 0.6025308 0.3667368 0.3235492 0.3667368 0.6067786 0.4656126 0.232686 0.6203904 4.80973e-4 0.6228688 0.007117807 0.2224176 0.04360622 0.2284206 0.3225873 0.2225881 0.3185631 0.4512941 0.2794651 0.4572971 4.80973e-4 0.4572971 0.2837127 0.3950949 0.3277968 0.4010983 0.6067983 0.3952686 0.602776 0.5896354 0.6749987 0.5956384 0.3960165 0.5956384 0.6792461 0.1880282 0.6466183 0.1880282 0.9053108 0.1835134 0.9052714 0.2451052 0.9050194 0.5407142 0.8919316 0.5407502 0.9050194 0.5407142 0.9311947 0.2451051 0.9181059 0.5407502 0.918107 0.5407502 0.918107 0.2451052 0.9050194 0.5407502 0.9050194 0.2451051 0.9452446 0.5407142 0.9321566 0.5407501 0.9452444 0.5407142 0.9714197 0.2451051 0.9583311 0.5407501 0.958332 0.5407501 0.958332 0.2451051 0.9452446 0.5407501 0.9452444 0.9194744 0.3819705 0.6238665 0.3950546 0.6238307 0.3819665 0.623867 0.3557913 0.9194746 0.3688832 0.6238309 0.3688789 0.6238309 0.3688789 0.9194744 0.3819705 0.6238307 0.3819665 0.8943031 0.9823126 0.5986933 0.9953925 0.5986577 0.9823051 0.5986942 0.9561297 0.8943034 0.9692248 0.598658 0.9692174 0.598658 0.9692174 0.8943031 0.9823126 0.5986577 0.9823051 0.3122627 0.5 0.6877374 0.5 0.5 0.3122627 0.4999999 0.7208415 0.5000001 0.7208415 0.5000001 0.7208415 1 0.602663 0.4999999 0.397337 0.4999999 0.602663 0 0.602663 0.5000001 0.397337 0.5000001 0.602663 0 0.602663 0.5000001 0.397337 0.5000001 0.602663 1 0.602663 0.4999999 0.397337 0.4999999 0.602663 -5.88998e-4 0.54 1.000589 0.5023923 0.9994111 0.5400001 1 0.4998096 0 0.5400001 0 0.4998097 0.9385644 0.8505238 0.8985644 0.8105239 0.8985644 0.8505238 0.8331506 0.8133189 0.7931507 0.7733189 0.7931507 0.8133189 0.811753 0.8229252 0.851753 0.8629252 0.811753 0.8629252 0.8055526 0.8043231 0.8455527 0.844323 0.8055527 0.844323 0.244642 0.8319255 0.2287504 0.8478171 0.9353858 0.8473477 0.4291977 0.3235489 0.4291977 0.6507415 0.4161103 0.6507415 0.9510233 0.3548294 0.6238307 0.354829 0.6238307 0.3417416 0.13923 0.7947205 0.1233376 0.810613 0.8299722 0.8101428 0.8269519 0.1504008 0.8428444 0.1345083 0.8423742 0.841147 1 0.5400001 0 0.54 0 0.5 0.4301596 0.6507413 0.43016 0.3235489 0.4432474 0.3235489 0.4572971 0.3235489 0.4572971 0.6507413 0.4442097 0.6507413 1 0.54 0 0.54 0 0.5000001 0.8331522 0.1690044 0.8490455 0.1531112 0.8485745 0.8597491 0.9353858 0.8473477 0.9358561 0.1407091 0.9199637 0.1566016 0.8299722 0.8101428 0.8304432 0.103505 0.8145499 0.1193983 0.8485745 0.8597491 0.1419399 0.8602192 0.1578323 0.8443269 0.8423742 0.841147 0.1357386 0.8416162 0.1516302 0.8257246 0.2223919 0.6025322 0.2225645 0.3275718 0.2283946 0.3235492 0.3881298 0.3277966 0.3941329 0.3235489 0.3941329 0.6067713 0.3607335 0.6025308 0.3609043 0.3275735 0.3667368 0.3235492 0.4656126 0.232686 0.4582591 0.2327326 0.6203904 4.80973e-4 0.2224176 0.04360622 0.2284206 0.03935861 0.2284206 0.3225873 0.4512941 0.2794651 0.4514662 0.004504144 0.4572971 4.80973e-4 0.3950949 0.3277968 0.4010983 0.3235489 0.4010983 0.6067983 0.5896354 0.6749987 0.5898091 0.4000385 0.5956384 0.3960165 0.2451052 0.9050194 0.2293568 0.8939211 0.5407142 0.8919316 0.5407142 0.9311947 0.2293566 0.9292042 0.2451051 0.9181059 0.5407502 0.918107 0.2451051 0.9181059 0.2451052 0.9050194 0.2451051 0.9452446 0.2293568 0.9341464 0.5407142 0.9321566 0.5407142 0.9714197 0.2293566 0.9694295 0.2451051 0.9583311 0.5407501 0.958332 0.2451051 0.9583311 0.2451051 0.9452446 0.9194744 0.3819705 0.9352226 0.3930689 0.6238665 0.3950546 0.623867 0.3557913 0.9352226 0.3577855 0.9194746 0.3688832 0.6238309 0.3688789 0.9194746 0.3688832 0.9194744 0.3819705 0.8943031 0.9823126 0.9100511 0.9934112 0.5986933 0.9953925 0.5986942 0.9561297 0.9100511 0.9581278 0.8943034 0.9692248 0.598658 0.9692174 0.8943034 0.9692248 0.8943031 0.9823126 0.3122627 0.5 0.5 0.6877374 0.6877374 0.5 0.4999999 0.7208415 0.4999999 0.7208415 0.5000001 0.7208415 1 0.602663 1 0.397337 0.4999999 0.397337 0 0.602663 0 0.397337 0.5000001 0.397337 0 0.602663 0 0.397337 0.5000001 0.397337 1 0.602663 1 0.397337 0.4999999 0.397337 -5.88998e-4 0.54 5.88998e-4 0.5023923 1.000589 0.5023923 1 0.4998096 1 0.54 0 0.5400001 0.9385644 0.8505238 0.9385644 0.8105238 0.8985644 0.8105239 0.8331506 0.8133189 0.8331506 0.7733189 0.7931507 0.7733189 0.811753 0.8229252 0.851753 0.8229252 0.851753 0.8629252 0.8055526 0.8043231 0.8455527 0.8043231 0.8455527 0.844323</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-map-0-array" count="327" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube-mesh-vertices">
+          <input semantic="POSITION" source="#Cube-mesh-positions"/>
+        </vertices>
+        <lines count="10">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <p>48 44 42 46 56 52 50 54 64 60 58 62 72 68 66 70 1 5 36 7</p>
+        </lines>
+        <triangles material="Solid_wood-material" count="60">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <p>11 3 9 8 3 10 10 3 11 10 4 12 4 4 13 6 4 14 23 8 24 20 8 25 22 8 26 22 9 27 16 9 28 18 9 29 25 28 90 36 28 91 26 28 92 27 29 93 36 29 94 37 29 95 33 30 96 36 30 97 30 30 98 34 31 99 36 31 100 37 31 101 31 32 102 36 32 103 37 32 104 29 33 105 36 33 106 24 33 107 32 34 108 36 34 109 37 34 110 35 35 111 36 35 112 28 35 113 41 37 117 44 37 118 43 37 119 48 38 120 45 38 121 47 38 122 47 39 123 41 39 124 43 39 125 49 40 126 52 40 127 51 40 128 56 41 129 53 41 130 55 41 131 55 42 132 49 42 133 51 42 134 57 43 135 60 43 136 59 43 137 64 44 138 61 44 139 63 44 140 63 45 141 57 45 142 59 45 143 65 46 144 68 46 145 67 46 146 72 47 147 69 47 148 71 47 149 71 48 150 65 48 151 67 48 152 74 49 153 75 49 154 73 49 155 78 50 156 79 50 157 77 50 158 79 51 159 76 51 160 80 51 161 77 52 162 75 52 163 79 52 164 78 53 165 73 53 166 77 53 167 80 54 168 74 54 169 78 54 170 11 3 192 9 3 193 8 3 194 10 4 195 8 4 196 4 4 197 23 61 207 21 61 208 20 61 209 22 62 210 20 62 211 16 62 212 25 69 231 37 69 232 36 69 233 27 70 234 26 70 235 36 70 236 33 71 237 37 71 238 36 71 239 34 72 240 30 72 241 36 72 242 31 73 243 24 73 244 36 73 245 29 74 246 37 74 247 36 74 248 32 75 249 28 75 250 36 75 251 35 76 252 37 76 253 36 76 254 41 77 255 42 77 256 44 77 257 48 78 258 46 78 259 45 78 260 47 79 261 45 79 262 41 79 263 49 80 264 50 80 265 52 80 266 56 81 267 54 81 268 53 81 269 55 82 270 53 82 271 49 82 272 57 83 273 58 83 274 60 83 275 64 84 276 62 84 277 61 84 278 63 85 279 61 85 280 57 85 281 65 86 282 66 86 283 68 86 284 72 87 285 70 87 286 69 87 287 71 88 288 69 88 289 65 88 290 74 89 291 76 89 292 75 89 293 78 90 294 80 90 295 79 90 296 79 51 297 75 51 298 76 51 299 77 38 300 73 38 301 75 38 302 78 53 303 74 53 304 73 53 305 80 44 306 76 44 307 74 44 308</p>
+        </triangles>
+        <triangles material="Roof_inside-material" count="8">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <p>37 20 66 2 20 67 31 20 68 37 21 69 29 21 70 12 21 71 37 22 72 33 22 73 0 22 74 37 23 75 0 23 76 32 23 77 37 24 78 35 24 79 14 24 80 14 25 81 27 25 82 37 25 83 25 26 84 2 26 85 37 26 86 37 27 87 12 27 88 34 27 89</p>
+        </triangles>
+        <triangles material="Roof_tiles-material" count="8">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <p>28 0 0 1 0 1 36 0 2 36 1 3 1 1 4 30 1 5 36 11 33 15 11 34 28 11 35 36 12 36 30 12 37 13 12 38 36 13 39 3 13 40 26 13 41 36 14 42 26 14 43 15 14 44 13 16 48 24 16 49 36 16 50 3 17 51 36 17 52 24 17 53</p>
+        </triangles>
+        <triangles material="Roof_end_1-material" count="7">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <p>29 6 18 13 6 19 12 6 20 13 6 63 34 6 64 12 6 65 40 36 114 39 36 115 38 36 116 20 6 186 17 6 187 16 6 188 29 59 201 24 59 202 13 59 203 13 68 228 30 68 229 34 68 230 20 6 324 21 6 325 17 6 326</p>
+        </triangles>
+        <triangles material="Roof_end_2-material" count="6">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <p>25 2 6 3 2 7 2 2 8 3 18 54 31 18 55 2 18 56 7 18 177 10 18 178 6 18 179 25 57 189 26 57 190 3 57 191 3 65 219 24 65 220 31 65 221 7 18 315 11 18 316 10 18 317</p>
+        </triangles>
+        <triangles material="Ridge_tiles-material" count="8">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <p>17 7 21 18 7 22 16 7 23 19 10 30 21 10 31 23 10 32 5 55 171 11 55 172 7 55 173 4 56 174 7 56 175 6 56 176 17 60 204 19 60 205 18 60 206 19 63 213 17 63 214 21 63 215 5 55 309 9 55 310 11 55 311 4 56 312 5 56 313 7 56 314</p>
+        </triangles>
+        <triangles material="Roof_end_3-material" count="6">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <p>35 5 15 15 5 16 14 5 17 15 5 57 27 5 58 14 5 59 19 5 180 22 5 181 18 5 182 35 58 198 28 58 199 15 58 200 15 66 222 26 66 223 27 66 224 19 5 318 23 5 319 22 5 320</p>
+        </triangles>
+        <triangles material="Roof_end_4-material" count="6">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <p>33 15 45 1 15 46 0 15 47 1 19 60 32 19 61 0 19 62 8 19 183 5 19 184 4 19 185 33 64 216 30 64 217 1 64 218 1 67 225 28 67 226 32 67 227 8 19 321 9 19 322 5 19 323</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_animations>
+    <animation id="action_container-Outer" name="Outer"/>
+  </library_animations>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="Outer" name="Outer" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#Cube-mesh" name="Outer">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Solid_wood-material" target="#Solid_wood-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_inside-material" target="#Roof_inside-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_tiles-material" target="#Roof_tiles-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_bottom_edge-material" target="#Roof_bottom_edge-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_end_1-material" target="#Roof_end_1-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_inside_001-material" target="#Roof_inside_001-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_tiles_001-material" target="#Roof_tiles_001-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_bottom_edge_001-material" target="#Roof_bottom_edge_001-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_end_2-material" target="#Roof_end_2-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Ridge_tiles-material" target="#Ridge_tiles-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_end_3-material" target="#Roof_end_3-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Roof_end_4-material" target="#Roof_end_4-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

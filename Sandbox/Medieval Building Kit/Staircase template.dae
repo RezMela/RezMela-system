@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+	<asset>
+		<contributor>
+			<author>John Origin</author>
+			<authoring_tool>Firestorm-Releasex64 6.0.2.56680</authoring_tool>
+		</contributor>
+		<created>2019-12-01T16:40:14</created>
+		<modified>2019-12-01T16:40:14</modified>
+		<unit/>
+		<up_axis>Z_UP</up_axis>
+	</asset>
+	<library_images/>
+	<library_geometries>
+		<geometry id="prim0-mesh">
+			<mesh>
+				<source id="prim0-positions">
+					<float_array id="prim0-positions-array" count="48">-0.5 -0.5 0.5 -0.5 -0.166667 0.5 -0.5 0.166667 0.5 -0.5 0.5 0.5 -0.166667 -0.5 0.5 -0.166667 -0.166667 0.5 -0.166667 0.166667 0.5 -0.166667 0.5 0.5 0.166667 -0.5 0.5 0.166667 -0.166667 0.5 0.166667 0.166667 0.5 0.166667 0.5 0.5 0.5 -0.5 0.5 0.5 -0.166667 0.5 0.5 0.166667 0.5 0.5 0.5 0.5</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim0-positions-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim0-normals">
+					<float_array id="prim0-normals-array" count="48">0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim0-normals-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim0-map0">
+					<float_array id="prim0-map0-array" count="32">-4.5 -2.5 -4.5 -0.5 -4.5 1.5 -4.5 3.5 -1.16667 -2.5 -1.16667 -0.5 -1.16667 1.5 -1.16667 3.5 2.16667 -2.5 2.16667 -0.5 2.16667 1.5 2.16667 3.5 5.5 -2.5 5.5 -0.5 5.5 1.5 5.5 3.5</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim0-map0-array" stride="2">
+							<param name="S" type="float"/>
+							<param name="T" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="prim0-vertices">
+					<input semantic="POSITION" source="#prim0-positions"/>
+				</vertices>
+				<polylist count="18" material="Material0-material">
+					<input offset="0" semantic="VERTEX" source="#prim0-vertices" set="0"/>
+					<input offset="0" semantic="NORMAL" source="#prim0-normals" set="0"/>
+					<input offset="0" semantic="TEXCOORD" source="#prim0-map0" set="0"/>
+					<vcount>3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3</vcount>
+					<p>0 4 5 5 1 0 4 8 9 9 5 4 8 12 13 13 9 8 1 5 6 6 2 1 5 9 10 10 6 5 9 13 14 14 10 9 2 6 7 7 3 2 6 10 11 11 7 6 10 14 15 15 11 10</p>
+				</polylist>
+			</mesh>
+		</geometry>
+		<geometry id="prim1-mesh">
+			<mesh>
+				<source id="prim1-positions">
+					<float_array id="prim1-positions-array" count="48">0.5 0.5 -0.5 0.166667 0.5 -0.5 -0.166667 0.5 -0.5 -0.5 0.5 -0.5 0.5 0.5 -0.166667 0.166667 0.5 -0.166667 -0.166667 0.5 -0.166667 -0.5 0.5 -0.166667 0.5 0.5 0.166667 0.166667 0.5 0.166667 -0.166667 0.5 0.166667 -0.5 0.5 0.166667 0.5 0.5 0.5 0.166667 0.5 0.5 -0.166667 0.5 0.5 -0.5 0.5 0.5</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim1-positions-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim1-normals">
+					<float_array id="prim1-normals-array" count="48">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0.999892 0 0 0.999892 0 0 0.999892 0 0 0.999892 0</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim1-normals-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim1-map0">
+					<float_array id="prim1-map0-array" count="32">-4.5 -0.5 -1.16667 -0.5 2.16667 -0.5 5.5 -0.5 -4.5 0.166667 -1.16667 0.166667 2.16667 0.166667 5.5 0.166667 -4.5 0.833333 -1.16667 0.833333 2.16667 0.833333 5.5 0.833333 -4.5 1.5 -1.16667 1.5 2.16667 1.5 5.5 1.5</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim1-map0-array" stride="2">
+							<param name="S" type="float"/>
+							<param name="T" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="prim1-vertices">
+					<input semantic="POSITION" source="#prim1-positions"/>
+				</vertices>
+				<polylist count="18" material="Material0-material">
+					<input offset="0" semantic="VERTEX" source="#prim1-vertices" set="0"/>
+					<input offset="0" semantic="NORMAL" source="#prim1-normals" set="0"/>
+					<input offset="0" semantic="TEXCOORD" source="#prim1-map0" set="0"/>
+					<vcount>3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3</vcount>
+					<p>0 5 4 0 1 5 1 6 5 1 2 6 2 7 6 2 3 7 4 9 8 4 5 9 5 10 9 5 6 10 6 11 10 6 7 11 8 13 12 8 9 13 9 14 13 9 10 14 10 15 14 10 11 15</p>
+				</polylist>
+			</mesh>
+		</geometry>
+		<geometry id="prim2-mesh">
+			<mesh>
+				<source id="prim2-positions">
+					<float_array id="prim2-positions-array" count="27">-0.5 0.5 -0.5 -0.5 -5.96046e-008 -0.5 -0.5 -0.5 -0.5 -0.5 0.5 0 -0.5 -5.96046e-008 0 -0.5 -0.5 0 -0.5 0.5 0.5 -0.5 -5.96046e-008 0.5 -0.5 -0.5 0.5</float_array>
+					<technique_common>
+						<accessor count="9" source="#prim2-positions-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim2-normals">
+					<float_array id="prim2-normals-array" count="27">-0.999756 -1.1918e-007 0 -0.999756 -1.1918e-007 0 -0.999756 -1.1918e-007 0 -0.999756 -1.1918e-007 0 -0.999756 -1.1918e-007 0 -0.999756 -1.1918e-007 0 -0.999909 -1.19198e-007 0 -0.999909 -1.19198e-007 0 -0.999909 -1.19198e-007 0</float_array>
+					<technique_common>
+						<accessor count="9" source="#prim2-normals-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim2-map0">
+					<float_array id="prim2-map0-array" count="18">-1.5 -0.5 0.5 -0.5 2.5 -0.5 -1.5 0.5 0.5 0.5 2.5 0.5 -1.5 1.5 0.5 1.5 2.5 1.5</float_array>
+					<technique_common>
+						<accessor count="9" source="#prim2-map0-array" stride="2">
+							<param name="S" type="float"/>
+							<param name="T" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="prim2-vertices">
+					<input semantic="POSITION" source="#prim2-positions"/>
+				</vertices>
+				<polylist count="8" material="Material0-material">
+					<input offset="0" semantic="VERTEX" source="#prim2-vertices" set="0"/>
+					<input offset="0" semantic="NORMAL" source="#prim2-normals" set="0"/>
+					<input offset="0" semantic="TEXCOORD" source="#prim2-map0" set="0"/>
+					<vcount>3 3 3 3 3 3 3 3</vcount>
+					<p>0 4 3 0 1 4 1 5 4 1 2 5 3 7 6 3 4 7 4 8 7 4 5 8</p>
+				</polylist>
+			</mesh>
+		</geometry>
+		<geometry id="prim3-mesh">
+			<mesh>
+				<source id="prim3-positions">
+					<float_array id="prim3-positions-array" count="48">0.5 0.5 -0.5 0.166667 0.5 -0.5 -0.166667 0.5 -0.5 -0.5 0.5 -0.5 0.5 0.5 -0.166667 0.166667 0.5 -0.166667 -0.166667 0.5 -0.166667 -0.5 0.5 -0.166667 0.5 0.5 0.166667 0.166667 0.5 0.166667 -0.166667 0.5 0.166667 -0.5 0.5 0.166667 0.5 0.5 0.5 0.166667 0.5 0.5 -0.166667 0.5 0.5 -0.5 0.5 0.5</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim3-positions-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim3-normals">
+					<float_array id="prim3-normals-array" count="48">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0.999892 0 0 0.999892 0 0 0.999892 0 0 0.999892 0</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim3-normals-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim3-map0">
+					<float_array id="prim3-map0-array" count="32">-6.22681 0.3 -1.74227 0.3 2.74227 0.3 7.22681 0.3 -6.22681 0.433333 -1.74227 0.433333 2.74227 0.433333 7.22681 0.433333 -6.22681 0.566667 -1.74227 0.566667 2.74227 0.566667 7.22681 0.566667 -6.22681 0.7 -1.74227 0.7 2.74227 0.7 7.22681 0.7</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim3-map0-array" stride="2">
+							<param name="S" type="float"/>
+							<param name="T" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="prim3-vertices">
+					<input semantic="POSITION" source="#prim3-positions"/>
+				</vertices>
+				<polylist count="18" material="Material0-material">
+					<input offset="0" semantic="VERTEX" source="#prim3-vertices" set="0"/>
+					<input offset="0" semantic="NORMAL" source="#prim3-normals" set="0"/>
+					<input offset="0" semantic="TEXCOORD" source="#prim3-map0" set="0"/>
+					<vcount>3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3</vcount>
+					<p>0 5 4 0 1 5 1 6 5 1 2 6 2 7 6 2 3 7 4 9 8 4 5 9 5 10 9 5 6 10 6 11 10 6 7 11 8 13 12 8 9 13 9 14 13 9 10 14 10 15 14 10 11 15</p>
+				</polylist>
+			</mesh>
+		</geometry>
+		<geometry id="prim4-mesh">
+			<mesh>
+				<source id="prim4-positions">
+					<float_array id="prim4-positions-array" count="48">-0.5 -0.5 0.5 -0.5 -0.166667 0.5 -0.5 0.166667 0.5 -0.5 0.5 0.5 -0.166667 -0.5 0.5 -0.166667 -0.166667 0.5 -0.166667 0.166667 0.5 -0.166667 0.5 0.5 0.166667 -0.5 0.5 0.166667 -0.166667 0.5 0.166667 0.166667 0.5 0.166667 0.5 0.5 0.5 -0.5 0.5 0.5 -0.166667 0.5 0.5 0.166667 0.5 0.5 0.5 0.5</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim4-positions-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim4-normals">
+					<float_array id="prim4-normals-array" count="48">0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim4-normals-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim4-map0">
+					<float_array id="prim4-map0-array" count="32">-6.22681 -1.1 -6.22681 -0.0333334 -6.22681 1.03333 -6.22681 2.1 -1.74227 -1.1 -1.74227 -0.0333334 -1.74227 1.03333 -1.74227 2.1 2.74227 -1.1 2.74227 -0.0333334 2.74227 1.03333 2.74227 2.1 7.22681 -1.1 7.22681 -0.0333334 7.22681 1.03333 7.22681 2.1</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim4-map0-array" stride="2">
+							<param name="S" type="float"/>
+							<param name="T" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="prim4-vertices">
+					<input semantic="POSITION" source="#prim4-positions"/>
+				</vertices>
+				<polylist count="18" material="Material0-material">
+					<input offset="0" semantic="VERTEX" source="#prim4-vertices" set="0"/>
+					<input offset="0" semantic="NORMAL" source="#prim4-normals" set="0"/>
+					<input offset="0" semantic="TEXCOORD" source="#prim4-map0" set="0"/>
+					<vcount>3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3</vcount>
+					<p>0 4 5 5 1 0 4 8 9 9 5 4 8 12 13 13 9 8 1 5 6 6 2 1 5 9 10 10 6 5 9 13 14 14 10 9 2 6 7 7 3 2 6 10 11 11 7 6 10 14 15 15 11 10</p>
+				</polylist>
+			</mesh>
+		</geometry>
+		<geometry id="prim5-mesh">
+			<mesh>
+				<source id="prim5-positions">
+					<float_array id="prim5-positions-array" count="48">-0.5 -0.5 -0.5 -0.166667 -0.5 -0.5 0.166667 -0.5 -0.5 0.5 -0.5 -0.5 -0.5 -0.5 -0.166667 -0.166667 -0.5 -0.166667 0.166667 -0.5 -0.166667 0.5 -0.5 -0.166667 -0.5 -0.5 0.166667 -0.166667 -0.5 0.166667 0.166667 -0.5 0.166667 0.5 -0.5 0.166667 -0.5 -0.5 0.5 -0.166667 -0.5 0.5 0.166667 -0.5 0.5 0.5 -0.5 0.5</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim5-positions-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim5-normals">
+					<float_array id="prim5-normals-array" count="48">0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -0.999892 0 0 -0.999892 0 0 -0.999892 0 0 -0.999892 0</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim5-normals-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim5-map0">
+					<float_array id="prim5-map0-array" count="32">-6.22681 0.3 -1.74227 0.3 2.74227 0.3 7.22681 0.3 -6.22681 0.433333 -1.74227 0.433333 2.74227 0.433333 7.22681 0.433333 -6.22681 0.566667 -1.74227 0.566667 2.74227 0.566667 7.22681 0.566667 -6.22681 0.7 -1.74227 0.7 2.74227 0.7 7.22681 0.7</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim5-map0-array" stride="2">
+							<param name="S" type="float"/>
+							<param name="T" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="prim5-vertices">
+					<input semantic="POSITION" source="#prim5-positions"/>
+				</vertices>
+				<polylist count="18" material="Material0-material">
+					<input offset="0" semantic="VERTEX" source="#prim5-vertices" set="0"/>
+					<input offset="0" semantic="NORMAL" source="#prim5-normals" set="0"/>
+					<input offset="0" semantic="TEXCOORD" source="#prim5-map0" set="0"/>
+					<vcount>3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3</vcount>
+					<p>0 5 4 0 1 5 1 6 5 1 2 6 2 7 6 2 3 7 4 9 8 4 5 9 5 10 9 5 6 10 6 11 10 6 7 11 8 13 12 8 9 13 9 14 13 9 10 14 10 15 14 10 11 15</p>
+				</polylist>
+			</mesh>
+		</geometry>
+		<geometry id="prim6-mesh">
+			<mesh>
+				<source id="prim6-positions">
+					<float_array id="prim6-positions-array" count="48">-0.5 -0.5 0.5 -0.5 -0.166667 0.5 -0.5 0.166667 0.5 -0.5 0.5 0.5 -0.166667 -0.5 0.5 -0.166667 -0.166667 0.5 -0.166667 0.166667 0.5 -0.166667 0.5 0.5 0.166667 -0.5 0.5 0.166667 -0.166667 0.5 0.166667 0.166667 0.5 0.166667 0.5 0.5 0.5 -0.5 0.5 0.5 -0.166667 0.5 0.5 0.166667 0.5 0.5 0.5 0.5</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim6-positions-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim6-normals">
+					<float_array id="prim6-normals-array" count="48">0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1 0 -0 1</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim6-normals-array" stride="3">
+							<param name="X" type="float"/>
+							<param name="Y" type="float"/>
+							<param name="Z" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="prim6-map0">
+					<float_array id="prim6-map0-array" count="32">-4.5 -4.5 -4.5 -1.16667 -4.5 2.16667 -4.5 5.5 -1.16667 -4.5 -1.16667 -1.16667 -1.16667 2.16667 -1.16667 5.5 2.16667 -4.5 2.16667 -1.16667 2.16667 2.16667 2.16667 5.5 5.5 -4.5 5.5 -1.16667 5.5 2.16667 5.5 5.5</float_array>
+					<technique_common>
+						<accessor count="16" source="#prim6-map0-array" stride="2">
+							<param name="S" type="float"/>
+							<param name="T" type="float"/>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="prim6-vertices">
+					<input semantic="POSITION" source="#prim6-positions"/>
+				</vertices>
+				<polylist count="18" material="Material0-material">
+					<input offset="0" semantic="VERTEX" source="#prim6-vertices" set="0"/>
+					<input offset="0" semantic="NORMAL" source="#prim6-normals" set="0"/>
+					<input offset="0" semantic="TEXCOORD" source="#prim6-map0" set="0"/>
+					<vcount>3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3</vcount>
+					<p>0 4 5 5 1 0 4 8 9 9 5 4 8 12 13 13 9 8 1 5 6 6 2 1 5 9 10 10 6 5 9 13 14 14 10 9 2 6 7 7 3 2 6 10 11 11 7 6 10 14 15 15 11 10</p>
+				</polylist>
+			</mesh>
+		</geometry>
+	</library_geometries>
+	<library_effects>
+		<effect id="Material0-fx">
+			<profile_COMMON>
+				<technique sid="common">
+					<phong>
+						<diffuse>
+							<color sid="diffuse">1 1 1 1</color>
+						</diffuse>
+						<transparency>
+							<float>1</float>
+						</transparency>
+					</phong>
+				</technique>
+			</profile_COMMON>
+		</effect>
+		<effect id="Material1-fx">
+			<profile_COMMON>
+				<technique sid="common">
+					<phong>
+						<diffuse>
+							<color sid="diffuse">1 1 1 0</color>
+						</diffuse>
+						<transparency>
+							<float>0</float>
+						</transparency>
+					</phong>
+				</technique>
+			</profile_COMMON>
+		</effect>
+	</library_effects>
+	<library_materials>
+		<material id="Material0-material">
+			<instance_effect url="#Material0-fx"/>
+		</material>
+		<material id="Material1-material">
+			<instance_effect url="#Material1-fx"/>
+		</material>
+	</library_materials>
+	<library_visual_scenes>
+		<visual_scene id="Scene" name="Scene">
+			<node id="prim0" name="prim0">
+				<matrix>5 0 0 0 0 3 0 1 0 0 0.1 4.45 0 0 0 1</matrix>
+				<instance_geometry url="#prim0-mesh">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material0-material" target="#Material0-material"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+			<node id="prim1" name="prim1">
+				<matrix>5 0 0 0 0 0.2 0 -0.400002 0 0 1 5 0 0 0 1</matrix>
+				<instance_geometry url="#prim1-mesh">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material0-material" target="#Material0-material"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+			<node id="prim2" name="prim2">
+				<matrix>0.2 0 0 -2.39999 0 2 0 -1.5 0 0 1 5 0 0 0 1</matrix>
+				<instance_geometry url="#prim2-mesh">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material0-material" target="#Material0-material"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+			<node id="prim3" name="prim3">
+				<matrix>4.99899 -0 -0.133826 0 0 0.2 -0 -2.39806 4.50111 0 0.148629 3.6 0 0 0 1</matrix>
+				<instance_geometry url="#prim3-mesh">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material0-material" target="#Material0-material"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+			<node id="prim4" name="prim4">
+				<matrix>4.99899 -0 -0.00669131 0 0 1.6 -0 -1.5 4.50111 0 0.00743145 2.25 0 0 0 1</matrix>
+				<instance_geometry url="#prim4-mesh">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material0-material" target="#Material0-material"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+			<node id="prim5" name="prim5">
+				<matrix>4.99899 -0 -0.133826 0 0 0.2 -0 -0.599998 4.50111 0 0.148629 3.6 0 0 0 1</matrix>
+				<instance_geometry url="#prim5-mesh">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material0-material" target="#Material0-material"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+			<node id="prim6" name="prim6">
+				<matrix>5 0 0 0 0 5 0 0 0 0 0.001 0 0 0 0 1</matrix>
+				<instance_geometry url="#prim6-mesh">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material0-material" target="#Material0-material"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+		</visual_scene>
+	</library_visual_scenes>
+	<scene>
+		<instance_visual_scene url="#Scene"/>
+	</scene>
+</COLLADA>

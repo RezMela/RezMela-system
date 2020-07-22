@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.80.75 commit date:2019-07-29, commit time:14:47, hash:f6cb5f54494e</authoring_tool>
+    </contributor>
+    <created>2019-12-14T14:40:34</created>
+    <modified>2019-12-14T14:40:34</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="Edge_3-effect">
+      <profile_COMMON>
+        <newparam sid="TIMBER_FRAME_WALL_STONE_tga-surface">
+          <surface type="2D">
+            <init_from>TIMBER_FRAME_WALL_STONE_tga</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="TIMBER_FRAME_WALL_STONE_tga-sampler">
+          <sampler2D>
+            <source>TIMBER_FRAME_WALL_STONE_tga-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="TIMBER_FRAME_WALL_STONE_tga-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Edge_1-effect">
+      <profile_COMMON>
+        <newparam sid="TIMBER_FRAME_WALL_STONE_tga-surface">
+          <surface type="2D">
+            <init_from>TIMBER_FRAME_WALL_STONE_tga</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="TIMBER_FRAME_WALL_STONE_tga-sampler">
+          <sampler2D>
+            <source>TIMBER_FRAME_WALL_STONE_tga-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="TIMBER_FRAME_WALL_STONE_tga-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Edge_2-effect">
+      <profile_COMMON>
+        <newparam sid="TIMBER_FRAME_WALL_STONE_tga-surface">
+          <surface type="2D">
+            <init_from>TIMBER_FRAME_WALL_STONE_tga</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="TIMBER_FRAME_WALL_STONE_tga-sampler">
+          <sampler2D>
+            <source>TIMBER_FRAME_WALL_STONE_tga-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="TIMBER_FRAME_WALL_STONE_tga-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Top-effect">
+      <profile_COMMON>
+        <newparam sid="BetterGrid_tga-surface">
+          <surface type="2D">
+            <init_from>BetterGrid_tga</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="BetterGrid_tga-sampler">
+          <sampler2D>
+            <source>BetterGrid_tga-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="BetterGrid_tga-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="Edge_4-effect">
+      <profile_COMMON>
+        <newparam sid="TIMBER_FRAME_WALL_STONE_tga-surface">
+          <surface type="2D">
+            <init_from>TIMBER_FRAME_WALL_STONE_tga</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="TIMBER_FRAME_WALL_STONE_tga-sampler">
+          <sampler2D>
+            <source>TIMBER_FRAME_WALL_STONE_tga-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="TIMBER_FRAME_WALL_STONE_tga-sampler" texcoord="UVMap"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images>
+    <image id="BetterGrid_tga" name="BetterGrid_tga">
+      <init_from>BetterGrid.tga</init_from>
+    </image>
+    <image id="TIMBER_FRAME_WALL_STONE_tga" name="TIMBER_FRAME_WALL_STONE_tga">
+      <init_from>TIMBER%20FRAME%20WALL%20STONE.tga</init_from>
+    </image>
+  </library_images>
+  <library_materials>
+    <material id="Edge_3-material" name="Edge 3">
+      <instance_effect url="#Edge_3-effect"/>
+    </material>
+    <material id="Edge_1-material" name="Edge 1">
+      <instance_effect url="#Edge_1-effect"/>
+    </material>
+    <material id="Edge_2-material" name="Edge 2">
+      <instance_effect url="#Edge_2-effect"/>
+    </material>
+    <material id="Top-material" name="Top">
+      <instance_effect url="#Top-effect"/>
+    </material>
+    <material id="Edge_4-material" name="Edge 4">
+      <instance_effect url="#Edge_4-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Foundation_with_edges-mesh" name="Foundation with edges">
+      <mesh>
+        <source id="Foundation_with_edges-mesh-positions">
+          <float_array id="Foundation_with_edges-mesh-positions-array" count="120">2.500058 -2.500058 0.4 -2.500058 -2.500058 0.4 2.500058 2.500058 0.4 -2.500058 2.500058 0.4 2.898226 -2.5 -0.4 2.7 -2.5 0.3 2.898227 2.5 -0.4 2.7 2.5 0.3 2.86 -2.5 -0.05000001 2.86 2.5 -0.05000001 2.799999 -2.8 -0.4 2.7 -2.7 0.2 2.799999 -2.8 -0.05000001 2.8 2.8 -0.4 2.7 2.7 0.2 2.8 2.8 -0.05000001 -2.898226 2.5 -0.4 -2.7 2.5 0.3 -2.898226 -2.5 -0.4 -2.7 -2.5 0.3 -2.86 2.5 -0.05000001 -2.86 -2.5 -0.05000001 -2.8 2.8 -0.4 -2.7 2.7 0.2 -2.8 2.8 -0.05000001 -2.8 -2.8 -0.4 -2.7 -2.7 0.2 -2.8 -2.8 -0.05000001 2.5 2.898226 -0.4 2.5 2.7 0.3 -2.5 2.898227 -0.4 -2.5 2.7 0.3 2.5 2.86 -0.05000001 -2.5 2.86 -0.05000001 -2.5 -2.898226 -0.4 -2.5 -2.7 0.3 2.5 -2.898227 -0.4 2.5 -2.7 0.3 -2.5 -2.86 -0.05000001 2.5 -2.86 -0.05000001</float_array>
+          <technique_common>
+            <accessor source="#Foundation_with_edges-mesh-positions-array" count="40" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Foundation_with_edges-mesh-normals">
+          <float_array id="Foundation_with_edges-mesh-normals-array" count="126">0 0 1 0.9617499 0.1113948 0.250257 0.5794182 0.5794182 0.5731921 0.6885145 0.1699618 0.7050255 0.9617499 -0.1113948 0.250257 0.2183015 -0.2183015 0.9511514 0.2183015 0.2183015 0.9511514 0.9820798 -0.1549769 0.1072447 0.9820798 0.1549769 0.1072447 0.7056084 0.7056084 0.06506735 0.5794182 -0.5794182 0.5731921 0.6873354 -0.6873354 0.234819 0.7056084 -0.7056084 0.06506735 -0.9617499 -0.1113948 0.250257 -0.5794182 -0.5794182 0.5731921 -0.6885145 -0.1699618 0.7050255 -0.9617499 0.1113948 0.250257 -0.2183015 -0.2183015 0.9511514 -0.6885145 0.1699618 0.7050255 -0.9820798 0.1549769 0.1072447 -0.9820798 -0.1549769 0.1072447 -0.7056084 -0.7056084 0.06506735 -0.5794182 0.5794182 0.5731921 -0.6873354 0.6873354 0.234819 -0.7056084 0.7056084 0.06506735 -0.1113948 0.9617499 0.250257 -0.1699618 0.6885145 0.7050255 0.1113948 0.9617499 0.250257 -0.2183015 0.2183015 0.9511514 0.1549769 0.9820798 0.1072447 -0.1549769 0.9820798 0.1072447 0.1699618 0.6885145 0.7050255 0.6873354 0.6873354 0.234819 0.1113948 -0.9617499 0.250257 0.1699618 -0.6885145 0.7050255 -0.1699618 -0.6885145 0.7050255 -0.1113948 -0.9617499 0.250257 -0.1549769 -0.9820798 0.1072447 0.1549769 -0.9820798 0.1072447 0.6885145 -0.1699618 0.7050255 -0.6873354 -0.6873354 0.234819 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Foundation_with_edges-mesh-normals-array" count="42" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Foundation_with_edges-mesh-map-0">
+          <float_array id="Foundation_with_edges-mesh-map-0-array" count="396">1 0 0 1 0 0 0.09956789 0.0535714 0.1802585 0.01785707 0.2079187 0.0535714 0.2079187 0.0535714 0.099568 0.9464285 0.09956789 0.0535714 0.2500001 0.9464388 0.2079187 0.0535714 0.25 0.05356097 0.09956789 0.0535714 2.38533e-7 0.9464285 0 0.0535714 0.007084727 0 0.09956789 0.0535714 0 0.0535714 0.099568 0.9464285 0.1802586 0.9821428 0.1038955 1 0.007084846 1 0.099568 0.9464285 0.1038955 1 0.9004322 0.9464283 0.8197416 0.9821426 0.7920814 0.9464282 0.7920814 0.9464282 0.9004321 0.0535714 0.9004322 0.9464283 0.7500001 0.9464386 0.7920813 0.0535714 0.7920814 0.9464282 0.9004322 0.9464283 1 0.0535714 1 0.9464283 0.9929154 0.9999997 0.9004322 0.9464283 1 0.9464283 0.9004321 0.0535714 0.8197414 0.01785707 0.8961045 0 0.9929152 0 0.9004321 0.0535714 0.8961045 0 0.3495678 0.0535714 0.4302585 0.01785719 0.4579187 0.05357152 0.4579187 0.05357152 0.349568 0.9464285 0.3495678 0.0535714 0.5000001 0.9464389 0.4579187 0.05357152 0.5 0.05356103 0.3495678 0.0535714 0.2500002 0.9464284 0.2500001 0.0535714 0.4723439 0.01785713 0.4579187 0.05357152 0.4302585 0.01785719 0.2570847 0 0.3495678 0.0535714 0.2500001 0.0535714 0.2079187 0.0535714 0.2223439 0.01785707 0.25 0.05356097 0.349568 0.9464285 0.4302586 0.9821428 0.3538955 1 0.2570849 1 0.349568 0.9464285 0.3538955 1 0.599568 0.05357146 0.6802586 0.01785713 0.7079188 0.05357146 0.599568 0.05357146 0.7079187 0.9464285 0.5995678 0.9464285 0.75 0.9464389 0.7079188 0.05357146 0.7500001 0.05356103 0.599568 0.05357146 0.5000001 0.9464285 0.5000001 0.0535714 0.2079188 0.9464284 0.222344 0.9821428 0.1802586 0.9821428 0.5070848 0 0.599568 0.05357146 0.5000001 0.0535714 0.7223439 0.9821427 0.7079187 0.9464285 0.75 0.9464389 0.5995678 0.9464285 0.6802585 0.9821427 0.6038954 1 0.5070847 1 0.5995678 0.9464285 0.6038954 1 1 0 1 1 0 1 0.09956789 0.0535714 0.1038953 0 0.1802585 0.01785707 0.2079187 0.0535714 0.2079188 0.9464284 0.099568 0.9464285 0.2500001 0.9464388 0.2079188 0.9464284 0.2079187 0.0535714 0.09956789 0.0535714 0.099568 0.9464285 2.38533e-7 0.9464285 0.007084727 0 0.1038953 0 0.09956789 0.0535714 0.099568 0.9464285 0.2079188 0.9464284 0.1802586 0.9821428 0.007084846 1 2.38533e-7 0.9464285 0.099568 0.9464285 0.9004322 0.9464283 0.8961047 0.9999997 0.8197416 0.9821426 0.7920814 0.9464282 0.7920813 0.0535714 0.9004321 0.0535714 0.7500001 0.9464386 0.75 0.05356097 0.7920813 0.0535714 0.9004322 0.9464283 0.9004321 0.0535714 1 0.0535714 0.9929154 0.9999997 0.8961047 0.9999997 0.9004322 0.9464283 0.9004321 0.0535714 0.7920813 0.0535714 0.8197414 0.01785707 0.9929152 0 1 0.0535714 0.9004321 0.0535714 0.3495678 0.0535714 0.3538954 0 0.4302585 0.01785719 0.4579187 0.05357152 0.4579188 0.9464285 0.349568 0.9464285 0.5000001 0.9464389 0.4579188 0.9464285 0.4579187 0.05357152 0.3495678 0.0535714 0.349568 0.9464285 0.2500002 0.9464284 0.4723439 0.01785713 0.5 0.05356103 0.4579187 0.05357152 0.2570847 0 0.3538954 0 0.3495678 0.0535714 0.2079187 0.0535714 0.1802585 0.01785707 0.2223439 0.01785707 0.349568 0.9464285 0.4579188 0.9464285 0.4302586 0.9821428 0.2570849 1 0.2500002 0.9464284 0.349568 0.9464285 0.599568 0.05357146 0.6038954 0 0.6802586 0.01785713 0.599568 0.05357146 0.7079188 0.05357146 0.7079187 0.9464285 0.75 0.9464389 0.7079187 0.9464285 0.7079188 0.05357146 0.599568 0.05357146 0.5995678 0.9464285 0.5000001 0.9464285 0.2079188 0.9464284 0.2500001 0.9464388 0.222344 0.9821428 0.5070848 0 0.6038954 0 0.599568 0.05357146 0.7223439 0.9821427 0.6802585 0.9821427 0.7079187 0.9464285 0.5995678 0.9464285 0.7079187 0.9464285 0.6802585 0.9821427 0.5070847 1 0.5000001 0.9464285 0.5995678 0.9464285</float_array>
+          <technique_common>
+            <accessor source="#Foundation_with_edges-mesh-map-0-array" count="198" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Foundation_with_edges-mesh-vertices">
+          <input semantic="POSITION" source="#Foundation_with_edges-mesh-positions"/>
+        </vertices>
+        <triangles material="Edge_3-material" count="28">
+          <input semantic="VERTEX" source="#Foundation_with_edges-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Foundation_with_edges-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Foundation_with_edges-mesh-map-0" offset="2" set="0"/>
+          <p>8 4 18 11 10 19 12 11 20 10 12 21 8 4 22 12 11 23 20 16 39 23 22 40 24 23 41 22 24 42 20 16 43 24 23 44 33 25 45 23 22 46 31 26 47 31 26 48 32 27 49 33 25 50 2 6 51 31 26 52 3 28 53 33 25 54 28 29 55 30 30 56 22 24 60 33 25 61 30 30 62 7 3 63 29 31 64 2 6 65 32 27 66 14 2 67 15 32 68 13 9 69 32 27 70 15 32 71 39 33 72 11 10 73 37 34 74 10 12 87 39 33 88 36 38 89 8 4 117 5 39 118 11 10 119 10 12 120 4 7 121 8 4 122 20 16 138 17 18 139 23 22 140 22 24 141 16 19 142 20 16 143 33 25 144 24 23 145 23 22 146 31 26 147 29 31 148 32 27 149 2 6 150 29 31 151 31 26 152 33 25 153 32 27 154 28 29 155 22 24 159 24 23 160 33 25 161 7 3 162 14 2 163 29 31 164 32 27 165 29 31 166 14 2 167 13 9 168 28 29 169 32 27 170 39 33 171 12 11 172 11 10 173 10 12 186 12 11 187 39 33 188</p>
+        </triangles>
+        <triangles material="Edge_1-material" count="12">
+          <input semantic="VERTEX" source="#Foundation_with_edges-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Foundation_with_edges-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Foundation_with_edges-mesh-map-0" offset="2" set="0"/>
+          <p>39 33 75 35 35 76 38 36 77 1 17 78 37 34 79 0 5 80 39 33 81 34 37 82 36 38 83 19 15 90 35 35 91 1 17 92 38 36 93 26 14 94 27 40 95 25 21 96 38 36 97 27 40 98 39 33 174 37 34 175 35 35 176 1 17 177 35 35 178 37 34 179 39 33 180 38 36 181 34 37 182 19 15 189 26 14 190 35 35 191 38 36 192 35 35 193 26 14 194 25 21 195 34 37 196 38 36 197</p>
+        </triangles>
+        <triangles material="Edge_2-material" count="12">
+          <input semantic="VERTEX" source="#Foundation_with_edges-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Foundation_with_edges-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Foundation_with_edges-mesh-map-0" offset="2" set="0"/>
+          <p>9 1 3 14 2 4 7 3 5 7 3 6 8 4 7 9 1 8 0 5 9 7 3 10 2 6 11 9 1 12 4 7 13 6 8 14 13 9 15 9 1 16 6 8 17 5 39 84 37 34 85 11 10 86 9 1 102 15 32 103 14 2 104 7 3 105 5 39 106 8 4 107 0 5 108 5 39 109 7 3 110 9 1 111 8 4 112 4 7 113 13 9 114 15 32 115 9 1 116 5 39 183 0 5 184 37 34 185</p>
+        </triangles>
+        <triangles material="Top-material" count="2">
+          <input semantic="VERTEX" source="#Foundation_with_edges-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Foundation_with_edges-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Foundation_with_edges-mesh-map-0" offset="2" set="0"/>
+          <p>1 0 0 2 0 1 3 0 2 1 41 99 0 41 100 2 41 101</p>
+        </triangles>
+        <triangles material="Edge_4-material" count="12">
+          <input semantic="VERTEX" source="#Foundation_with_edges-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Foundation_with_edges-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Foundation_with_edges-mesh-map-0" offset="2" set="0"/>
+          <p>21 13 24 26 14 25 19 15 26 19 15 27 20 16 28 21 13 29 1 17 30 17 18 31 19 15 32 21 13 33 16 19 34 18 20 35 25 21 36 21 13 37 18 20 38 17 18 57 31 26 58 23 22 59 21 13 123 27 40 124 26 14 125 19 15 126 17 18 127 20 16 128 1 17 129 3 28 130 17 18 131 21 13 132 20 16 133 16 19 134 25 21 135 27 40 136 21 13 137 17 18 156 3 28 157 31 26 158</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="Cube" name="Cube" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#Foundation_with_edges-mesh" name="Cube">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Edge_3-material" target="#Edge_3-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Edge_1-material" target="#Edge_1-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Edge_2-material" target="#Edge_2-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Top-material" target="#Top-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+              <instance_material symbol="Edge_4-material" target="#Edge_4-material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

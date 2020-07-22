@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.80.75 commit date:2019-07-29, commit time:14:47, hash:f6cb5f54494e</authoring_tool>
+    </contributor>
+    <created>2019-12-01T17:01:55</created>
+    <modified>2019-12-01T17:01:55</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="Material0-material_003-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">1 1 1 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images/>
+  <library_materials>
+    <material id="Material0-material_003-material" name="Material0-material.003">
+      <instance_effect url="#Material0-material_003-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="prim3-mesh-mesh" name="prim3-mesh">
+      <mesh>
+        <source id="prim3-mesh-mesh-positions">
+          <float_array id="prim3-mesh-mesh-positions-array" count="84">2.566409 -2.29806 5.77624 -2.432583 -2.29806 1.275131 2.432583 -2.29806 5.92487 -2.566409 -2.29806 1.42376 -2.5 -0.3000002 4.5 -2.5 2.5 4.5 2.5 -0.3000002 4.5 2.5 2.5 4.5 2.5 -0.3000021 4.5 -2.5 -0.3000021 4.5 2.5 -0.3000021 7 -2.5 -0.3000021 7 -2.49999 -0.3 4.5 -2.49999 -2.5 4.5 -2.49999 -0.3 7 -2.49999 -2.5 7 -2.50284 -2.3 0.003160476 -2.50284 -0.6999999 0.003160476 2.496149 -2.3 4.504271 2.496149 -0.6999999 4.504271 -2.432582 -0.699998 1.275131 2.566408 -0.699998 5.77624 -2.566408 -0.699998 1.42376 2.432582 -0.699998 5.924869 -2.5 -2.5 2.38419e-7 2.5 -2.5 4.76837e-7 -2.5 2.5 2.38419e-7 2.5 2.5 4.76837e-7</float_array>
+          <technique_common>
+            <accessor source="#prim3-mesh-mesh-positions-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="prim3-mesh-mesh-normals">
+          <float_array id="prim3-mesh-mesh-normals-array" count="27">0 -1 0 0 0 1 0 1 0 1 0 0 -0.6691307 0 0.7431448 0 1 0 0 0 1 0 -1 2.21519e-7 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#prim3-mesh-mesh-normals-array" count="9" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="prim3-mesh-mesh-map-0">
+          <float_array id="prim3-mesh-mesh-map-0-array" count="84">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1 0 1</float_array>
+          <technique_common>
+            <accessor source="#prim3-mesh-mesh-map-0-array" count="42" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="prim3-mesh-mesh-map-1">
+          <float_array id="prim3-mesh-mesh-map-1-array" count="84">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#prim3-mesh-mesh-map-1-array" count="42" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="prim3-mesh-mesh-map-2">
+          <float_array id="prim3-mesh-mesh-map-2-array" count="84">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#prim3-mesh-mesh-map-2-array" count="42" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="prim3-mesh-mesh-map-3">
+          <float_array id="prim3-mesh-mesh-map-3-array" count="84">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#prim3-mesh-mesh-map-3-array" count="42" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="prim3-mesh-mesh-map-4">
+          <float_array id="prim3-mesh-mesh-map-4-array" count="84">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#prim3-mesh-mesh-map-4-array" count="42" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="prim3-mesh-mesh-map-5">
+          <float_array id="prim3-mesh-mesh-map-5-array" count="84">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#prim3-mesh-mesh-map-5-array" count="42" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="prim3-mesh-mesh-map-6">
+          <float_array id="prim3-mesh-mesh-map-6-array" count="84">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#prim3-mesh-mesh-map-6-array" count="42" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="prim3-mesh-mesh-vertices">
+          <input semantic="POSITION" source="#prim3-mesh-mesh-positions"/>
+        </vertices>
+        <triangles material="Material0-material_003-material" count="14">
+          <input semantic="VERTEX" source="#prim3-mesh-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#prim3-mesh-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#prim3-mesh-mesh-map-0" offset="2" set="0"/>
+          <input semantic="TEXCOORD" source="#prim3-mesh-mesh-map-1" offset="2" set="1"/>
+          <input semantic="TEXCOORD" source="#prim3-mesh-mesh-map-2" offset="2" set="2"/>
+          <input semantic="TEXCOORD" source="#prim3-mesh-mesh-map-3" offset="2" set="3"/>
+          <input semantic="TEXCOORD" source="#prim3-mesh-mesh-map-4" offset="2" set="4"/>
+          <input semantic="TEXCOORD" source="#prim3-mesh-mesh-map-5" offset="2" set="5"/>
+          <input semantic="TEXCOORD" source="#prim3-mesh-mesh-map-6" offset="2" set="6"/>
+          <p>1 0 0 2 0 1 3 0 2 4 1 3 7 1 4 5 1 5 11 2 6 8 2 7 9 2 8 12 3 9 15 3 10 13 3 11 16 4 12 19 4 13 17 4 14 20 5 15 23 5 16 21 5 17 25 6 18 26 6 19 24 6 20 1 7 21 0 7 22 2 7 23 4 1 24 6 1 25 7 1 26 11 2 27 10 2 28 8 2 29 12 3 30 14 3 31 15 3 32 16 4 33 18 4 34 19 4 35 20 2 36 22 2 37 23 2 38 25 8 39 27 8 40 26 8 41</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="prim3" name="prim3" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <instance_geometry url="#prim3-mesh-mesh" name="prim3">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material0-material_003-material" target="#Material0-material_003-material">
+                <bind_vertex_input semantic="prim3-map0" input_semantic="TEXCOORD" input_set="0"/>
+                <bind_vertex_input semantic="prim0-map0" input_semantic="TEXCOORD" input_set="1"/>
+                <bind_vertex_input semantic="prim1-map0" input_semantic="TEXCOORD" input_set="2"/>
+                <bind_vertex_input semantic="prim2-map0" input_semantic="TEXCOORD" input_set="3"/>
+                <bind_vertex_input semantic="prim4-map0" input_semantic="TEXCOORD" input_set="4"/>
+                <bind_vertex_input semantic="prim5-map0" input_semantic="TEXCOORD" input_set="5"/>
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="6"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>
