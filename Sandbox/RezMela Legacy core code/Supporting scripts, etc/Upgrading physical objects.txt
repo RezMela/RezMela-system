@@ -1,0 +1,8 @@
+1. Move red root prim of control board out of the way
+
+2. Remove scripts from child prims of control board (may need llPassTouches(TRUE)?):
+
+a. The board itself (?)
+b. The "save scene" button
+
+3. Add "reset" button somewhere discreet

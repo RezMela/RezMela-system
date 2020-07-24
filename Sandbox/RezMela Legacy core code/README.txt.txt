@@ -1,0 +1,2 @@
+This folder contains the Pantograph version of the RezMela system... icons were placed on a map and their counterparts would appear in a 3D world.
+The version names have not been changed because we don't expect this code to lead to derivatives.
