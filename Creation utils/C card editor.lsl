@@ -1,4 +1,4 @@
-// C card editor v1.2
+// C card editor v1.3
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -16,11 +16,12 @@
 // is strictly forbidden unless prior written permission is obtained
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
-// More information about C cards is available here http://wiki.rezmela.org/doku.php/c_cards
 
+// v1.3 - fix rotations for 90° issue, add output menu
 // v1.2 - add more fields
 
 vector VEC_NAN = <-99.0,99.0,-99.0>;    // nonsense value to indicate "not a number" for vectors (must be consistent across scripts)
+integer LIM_GENERATE = -17291001;
 
 // Card data
 string ObjectName;
@@ -44,6 +45,7 @@ float SizeFactor;
 
 integer CardExists;
 
+rotation InitialRot;
 key AvId;
 
 integer MenuChannel;
@@ -57,7 +59,7 @@ integer MENU_PREVIEW = 5;
 integer MENU_TEXTURE_INV = 6;
 integer MENU_ALERT = 7;
 integer MENU_CONTACT_POINT = 8;
-integer MENU_FINISH = 9;
+integer MENU_OUTPUT = 9;
 integer MENU_STICKPOINT = 10;
 integer MENU_CAMERA = 11;
 integer MENU_JUMP = 12;
@@ -67,7 +69,7 @@ integer MENU_ANGLES = 15;
 integer MENU_SIZE_FACTOR = 16;
 
 // Main menu
-string BUT_FINISH = "FINISH";
+string BUT_OUTPUT = "OUTPUT >>";
 string BUT_SHORTDESC = "Short desc";
 string BUT_LONGDESC = "Long desc";
 string BUT_CONTACT_POINT = "Contact pt";
@@ -80,7 +82,10 @@ string BUT_SNAPGRID = "Snap to grid";
 string BUT_REGIONSNAP = "Region snap";
 string BUT_ANGLES = "Angles";
 string BUT_SIZE_FACTOR = "Size factor";
-string BUT_GENERATE = "Generate";
+// Output
+string BUT_GENERATE = "Make card";
+string BUT_PRINT = "Data in chat";
+string BUT_DELETE = "Delete script";
 // Generics
 string BUT_OK = "OK";
 string BUT_CANCEL = "Cancel";
@@ -101,6 +106,70 @@ integer TOUCHMODE_NORMAL = 0;
 integer TOUCHMODE_CONTACT_POINT = 1;
 integer TOUCHMODE_STICKPOINT = 2;
 
+Generate(integer WriteCard) {
+	string sThumbnailId = (string)ThumbnailId;
+	if (ThumbnailId == NULL_KEY) sThumbnailId = "";
+	string sPreviewId = (string)PreviewId;
+	if (PreviewId == NULL_KEY) sPreviewId = "";
+	if (WriteCard) {
+		if (LongDesc == "") LongDesc = ShortDesc;
+		if (PreviewId == NULL_KEY) PreviewId = ThumbnailId;
+		if (OffsetPos == VEC_NAN) OffsetPos = ZERO_VECTOR;
+		if (OffsetRot == VEC_NAN) OffsetRot = ZERO_VECTOR;
+	}
+	list Data = [];
+	if (WriteCard) Data += "// Configuration for " + ObjectName + " by " + llKey2Name(AvId);
+	if (WriteCard || ShortDesc != "") Data += "ShortDesc = \"" + ShortDesc + "\"";
+	if (WriteCard || LongDesc != "") Data += "LongDesc = \"" + LongDesc + "\"";
+	if (WriteCard || sThumbnailId != "") Data += "Thumbnail = " + sThumbnailId;
+	if (WriteCard || sPreviewId != "") Data += "Preview = " + sPreviewId;
+	if (WriteCard || OffsetPos != VEC_NAN) Data += "OffsetPos = " + NiceVector(OffsetPos);
+	if (OffsetRot != VEC_NAN) Data += "OffsetRot = " + NiceVector(OffsetRot);
+	if (StickPoints != []) {
+		integer Len = llGetListLength(StickPoints);
+		integer S;
+		for (S = 0; S < Len; S++) {
+			string StickPoint = llList2String(StickPoints, S);
+			Data += "StickPoint = " + StickPoint;
+		}
+	}
+	if (CameraPos != VEC_NAN) {
+		Data += [
+			"CameraPos = " + NiceVector(CameraPos),
+			"CameraFocus = " + NiceVector(CameraFocus)
+				];
+	}
+	if (JumpPos != VEC_NAN) {
+		Data += [
+			"JumpPos = " + NiceVector(JumpPos),
+			"JumpLookAt = " + NiceVector(JumpLookAt)
+				];
+	}
+	if (SizeFactor > 0.0 && SizeFactor != 1.0) {
+		Data += "SizeFactor = " + NiceFloat(SizeFactor);
+	}
+	if (SnapGrid != "") {
+		Data += "Grid = " + SnapGrid;
+	}
+	if (RegionSnap != "") {
+		Data += "RegionSnap = " + RegionSnap;
+	}
+	if (IgnoreRotation) {
+		Data += "IgnoreRotation = True";
+	}
+	if (IgnoreBinormal) {
+		Data += "IgnoreBinormal = True";
+	}
+	if (WriteCard) {
+		osMakeNotecard(CardName, Data);
+		llGiveInventory(AvId, CardName);
+		llRemoveInventory(CardName);
+	}
+	else {
+		llRegionSayTo(AvId, 0, "Data:\n" + llDumpList2String(Data, "\n"));
+	}
+}
+
 ShowMenu() {
 	EndMenu();
 	integer IsTextBox = FALSE;
@@ -120,7 +189,7 @@ ShowMenu() {
 		Buttons += ButtonText(BUT_ANGLES, FALSE, FALSE);
 		Buttons += ButtonText(BUT_SIZE_FACTOR, (SizeFactor == 0.0), FALSE);
 		//Buttons += ButtonText(BUT_REGIONSNAP, (RegionSnap == ""), FALSE);
-		Buttons += BUT_FINISH;
+		Buttons += BUT_OUTPUT;
 	}
 	else if (CurrentMenu == MENU_ALERT) {
 		Text += AlertText;
@@ -185,10 +254,11 @@ ShowMenu() {
 			"look at the object, and click " + BUT_OK + ".";
 		Buttons = [ BUT_OK, BUT_CANCEL ];
 	}
-	else if (CurrentMenu == MENU_FINISH) {
-		Text += "Click '" + BUT_GENERATE + "' to generate the C card, pass it to you and delete this script, or '" +
+	else if (CurrentMenu == MENU_OUTPUT) {
+		Text += "Click '" + BUT_GENERATE + "' to generate the C card and pass it to you, '" +
+			BUT_PRINT + "' to print the data in chat, '" + BUT_DELETE + "' to delete this script, or '" +
 			BUT_CLOSE + "' to close the menu so you can return later.";
-		Buttons = [ BUT_GENERATE, BUT_CLOSE ];
+		Buttons = [ BUT_GENERATE, BUT_PRINT, BUT_DELETE, BUT_CLOSE ];
 	}
 	else if (CurrentMenu == MENU_JUMP) {
 		Text += "You can set the jump position, which is where the avatar will be teleported when they use " +
@@ -268,8 +338,8 @@ ProcessMenu(string Response) {
 		else if (Response == BUT_SNAPGRID) {
 			CurrentMenu = MENU_SNAPGRID;
 		}
-		else if (Response == BUT_FINISH) {
-			CurrentMenu = MENU_FINISH;
+		else if (Response == BUT_OUTPUT) {
+			CurrentMenu = MENU_OUTPUT;
 		}
 		else if (Response == BUT_ANGLES) {
 			CurrentMenu = MENU_ANGLES;
@@ -381,10 +451,24 @@ ProcessMenu(string Response) {
 	//	else if (CurrentMenu == MENU_REGIONSNAP) {
 	//		 RegionSnap = Response;
 	//	}
-	else if (CurrentMenu == MENU_FINISH) {
+	else if (CurrentMenu == MENU_OUTPUT) {
 		if (Response == BUT_GENERATE) {
 			EndMenu();
-			state Generate;
+			if (CardExists) llRemoveInventory(CardName);
+			// Use link message to work round OpenSim bug: if you delete a notcard and
+			// immediately create a new one, the card can revert to its previous state.
+			// The solution is to have the delete and write in separate events.
+			llMessageLinked(LINK_THIS, LIM_GENERATE, "", NULL_KEY);
+		}
+		else if (Response == BUT_PRINT) {
+			Generate(FALSE);
+		}
+		else if (Response == BUT_DELETE) {
+			string Text = "Script removed from contents.";
+			llRegionSayTo(AvId, 0, Text);
+			llPassTouches(TRUE);
+			llRemoveInventory(llGetScriptName());
+			return;
 		}
 		else if (Response == BUT_CLOSE) {
 			EndMenu();
@@ -411,14 +495,23 @@ EndMenu() {
 	}
 }
 SetContactData(vector Normal, vector TouchPos) {
-	if (Normal == TOUCH_INVALID_VECTOR) return;
-	Normal /= llGetRot();
-	TouchPos -= llGetPos();
-	rotation Rot = llRotBetween(Normal, <0,0,-1>);
-	float Distance  = Normal * llGetRot() * TouchPos;
-	OffsetPos = Normal * Distance * Rot;
-	OffsetPos = <llFabs(OffsetPos.x), llFabs(OffsetPos.y), llFabs(OffsetPos.z)>;
-	OffsetRot = llRot2Euler(Rot) * RAD_TO_DEG;
+	//////////////if (Normal == TOUCH_INVALID_VECTOR) return;
+	InitialRot = llEuler2Rot(<0.0, 0.0, 270.0> * DEG_TO_RAD);
+	rotation VerticalNormal = llEuler2Rot(<0.0, 0.0, -90.0> * DEG_TO_RAD);
+	rotation ObjectRot = llGetRot();
+	llOwnerSay("final: " + (string)(llRot2Euler(ObjectRot) * RAD_TO_DEG));
+	ObjectRot /= VerticalNormal;
+	llOwnerSay("o1: " + (string)(llRot2Euler(ObjectRot) * RAD_TO_DEG));
+	ObjectRot /= InitialRot;
+	llOwnerSay("S: " + (string)(llRot2Euler(ObjectRot) * RAD_TO_DEG));
+
+	//	Normal /= ObjectRot;
+	//	TouchPos -= llGetPos();
+	//	float Distance  = Normal * llGetRot() * TouchPos;
+	//	//rotation Rot = llRotBetween(Normal, <0, 0, -1>);
+	//	OffsetPos = Normal * Distance * ObjectRot;
+	//	OffsetPos = <llFabs(OffsetPos.x), llFabs(OffsetPos.y), llFabs(OffsetPos.z)>;
+	OffsetRot = llRot2Euler(ObjectRot) * RAD_TO_DEG;
 }
 integer ReadCard() {
 	integer IsOK = TRUE;
@@ -535,6 +628,8 @@ default {
 		if (llGetSubString(ObjectName, -1, -1) == "W") ObjectName = llGetSubString(ObjectName, 0, -2);
 		CardName = ObjectName + "C";
 
+		llSetObjectDesc("*");
+
 		// Initialise card data
 		ThumbnailId = NULL_KEY;
 		PreviewId = NULL_KEY;
@@ -562,8 +657,15 @@ default {
 		AvId = llGetOwner();
 		MenuChannel = -1000 - (integer)llFrand(999999999);
 		llOwnerSay("Click for 'C' card editor menu");
+		///%%%
+			vector xNormal = llDetectedTouchNormal(0);
+			vector xTouchPos = llDetectedTouchPos(0);
+			SetContactData(xNormal, xTouchPos);
+			llOwnerSay("Rot: " + NiceVector(OffsetRot)  + " should be <0.0, 90.0, 0.0> or <180.0, 0.0, 90.0>");
+			return;
 	}
 	touch_start(integer total_number) {
+			
 		key TouchAvId = llDetectedKey(0);
 		if (TouchMode == TOUCHMODE_NORMAL) {
 			AvId = TouchAvId;
@@ -619,82 +721,10 @@ default {
 			ShowMenu();
 		}
 	}
-}
-state Generate {
-	state_entry() {
-		if (CardExists) llRemoveInventory(CardName);
-		// Use timer to work round OpenSim bug (if you delete a notcard and
-		// immediately create a new one, the write can fail).
-		llSetTimerEvent(0.5);
-	}
-	timer() {
-		llSetTimerEvent(0.0);
-		if (LongDesc == "") LongDesc = ShortDesc;
-		if (PreviewId == NULL_KEY) PreviewId = ThumbnailId;
-		if (OffsetPos == VEC_NAN) OffsetPos = ZERO_VECTOR;
-		if (OffsetRot == VEC_NAN) OffsetRot = ZERO_VECTOR;
-		string sThumbnailId = (string)ThumbnailId;
-		if (ThumbnailId == NULL_KEY) sThumbnailId = "";
-		string sPreviewId = (string)PreviewId;
-		if (PreviewId == NULL_KEY) sPreviewId = "";
-		list CardContents = [
-			"// Configuration for " + ObjectName + " by " + llKey2Name(AvId),
-			"ShortDesc = \"" + ShortDesc + "\"",
-			"LongDesc = \"" + LongDesc + "\"",
-			"Thumbnail = " + sThumbnailId,
-			"Preview = " + sPreviewId,
-			"OffsetPos = " + NiceVector(OffsetPos),
-			"OffsetRot = " + NiceVector(OffsetRot)
-				];
-		if (StickPoints != []) {
-			integer Len = llGetListLength(StickPoints);
-			integer S;
-			for (S = 0; S < Len; S++) {
-				string StickPoint = llList2String(StickPoints, S);
-				CardContents += "StickPoint = " + StickPoint;
-			}
+	link_message(integer Sender, integer Number, string Message, key Id)	{
+		if (Number == LIM_GENERATE) {
+			Generate(TRUE);
 		}
-		if (CameraPos != VEC_NAN) {
-			CardContents += [
-				"CameraPos = " + NiceVector(CameraPos),
-				"CameraFocus = " + NiceVector(CameraFocus)
-					];
-		}
-		if (JumpPos != VEC_NAN) {
-			CardContents += [
-				"JumpPos = " + NiceVector(JumpPos),
-				"JumpLookAt = " + NiceVector(JumpLookAt)
-					];
-		}
-		if (SizeFactor > 0.0 && SizeFactor != 1.0) {
-			CardContents += "SizeFactor = " + NiceFloat(SizeFactor);
-		}
-		if (SnapGrid != "") {
-			CardContents += "Grid = " + SnapGrid;
-		}
-		if (RegionSnap != "") {
-			CardContents += "RegionSnap = " + RegionSnap;
-		}
-		if (IgnoreRotation) {
-			CardContents += "IgnoreRotation = True";
-		}
-		if (IgnoreBinormal) {
-			CardContents += "IgnoreBinormal = True";
-		}
-		osMakeNotecard(CardName, CardContents);
-		llSetObjectDesc("*");
-		llGiveInventory(AvId, CardName);
-		state Remove;
 	}
 }
-state Remove {
-	state_entry() {
-		llRemoveInventory(CardName);
-		string Text = "Script removed from contents.";
-		if (CardExists) Text = "Script and C card removed from contents.";
-		llRegionSayTo(AvId, 0, Text);
-		llPassTouches(TRUE);
-		llRemoveInventory(llGetScriptName());
-	}
-}
-// C card editor v1.2
+// C card editor v1.3
