@@ -1,7 +1,8 @@
-// Blank prim-drawing textures in App v1.0.2
+// Blank prim-drawing textures in App v1.0.3
 
 // Drop this into an App to blank out prim-drawing textures on the App itself
 
+// v1.0.3 - add face 5 of Activator
 // v1.0.2 - fixed error message
 // v1.0.1 - changed name of Activator prim
 
@@ -22,8 +23,8 @@ default {
 			llOwnerSay("ERROR! Can't find prim named '" + ACTIVATOR_NAME + "'");
 		}
 		else {
-			// Activator prim has prim-drawing faces 1-4
-			for (F = 1; F <= 4; F++) {
+			// Activator prim has prim-drawing faces 1-5
+			for (F = 1; F <= 5; F++) {
 				llSetLinkTexture(Activator, TEXTURE_BLANK, F);
 			}
 		}
