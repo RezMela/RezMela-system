@@ -1,4 +1,4 @@
-// Local texture v1.0.0
+// Local texture v1.0.1
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,13 +17,22 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.0.1 - add repeats data to image face
+
 // Was: Melacraft texturable block v1.0.1
 
 
 string CONFIG_NOTECARD = "Local texture config";
 
 list ClickFaces;    // faces to be clicked to prompt for image URL
+
 list ImageFaces;    // faces to display URL
+integer IMG_FACE_NUMBER = 0;
+integer IMG_ROTATION = 1;
+integer IMG_REPEAT_X = 2;
+integer IMG_REPEAT_Y = 3;
+integer IMG_STRIDE = 4;
+
 integer ImageFacesCount;
 
 integer HamburgerHide;            // If TRUE, hamburger face hides on logout
@@ -70,10 +79,12 @@ Display() {
 	list Params = [];
 	integer F;
 	// Format of each face is [ Face#, Rotation ]
-	for (F = 0; F < ImageFacesCount; F += 2) {
-		integer Face = (integer)llList2String(ImageFaces, F);
-		float Rotation = (float)llList2String(ImageFaces, F + 1);
-		Params += [ PRIM_TEXTURE, Face, UseTexture, <1.0, 1.0, 0.0>, ZERO_VECTOR, Rotation ];
+	for (F = 0; F < ImageFacesCount; F += IMG_STRIDE) {
+		integer Face = (integer)llList2String(ImageFaces, F + IMG_FACE_NUMBER);
+		float Rotation = llList2Float(ImageFaces, F + IMG_ROTATION);
+		float RepeatX = llList2Float(ImageFaces, F + IMG_REPEAT_X);
+		float RepeatY = llList2Float(ImageFaces, F + IMG_REPEAT_Y);
+		Params += [ PRIM_TEXTURE, Face, UseTexture, <RepeatX, RepeatY, 0.0>, ZERO_VECTOR, Rotation ];
 	}
 	llSetLinkPrimitiveParamsFast(LINK_THIS, Params);
 	if (Projector) {
@@ -159,11 +170,14 @@ list CSV2IntegerList(string String) {
 // Turn string <Face #>,<Rot Deg> into list [ <Face #>, <Rot Rad> ]
 list GetImageFaceData(string Value) {
 	list L = llCSV2List(Value);
-	if (llGetListLength(L) != 2) return []; // Invalid
 	integer Face = (integer)llList2String(L, 0);
-	float RotDeg = (float)llList2String(L, 1);
+	float RotDeg = (float)llList2String(L, 1); // default to 0
+	float TextureX = (float)llList2String(L, 2);
+	float TextureY = (float)llList2String(L, 3);
 	float RotRad = RotDeg * DEG_TO_RAD;
-	return [ Face, RotRad ];
+	if (TextureX == 0.0) TextureX = 1.0;
+	if (TextureY == 0.0) TextureY = 1.0;
+	return [ Face, RotRad, TextureX, TextureY ];
 }
 // Deal with LM_LOADING_COMPLETE messages, either by linked message or dataserver
 ProcessLoadingComplete() {
@@ -279,4 +293,4 @@ default {
 		}
 	}
 }
-// Local texture v1.0.0
+// Local texture v1.0.1
