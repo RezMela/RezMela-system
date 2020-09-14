@@ -1,4 +1,4 @@
-// ML text display v1.3.7
+// ML text display v1.3.8
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.3.8 - add repeat values to config file
 // v1.3.7 - minor performance fix
 // v1.3.6 - use new comms type (osMessageObject) for ML
 // v1.3.5 - performance improvements
@@ -46,7 +47,12 @@ string CONFIG_NOTECARD = "Text display config";
 
 list ClickFaces;
 string ClickFacesCSV;
-list ImageFaces;
+list ImageFaces;    // faces to display URL
+integer IMG_FACE_NUMBER = 0;
+integer IMG_ROTATION = 1;
+integer IMG_REPEAT_X = 2;
+integer IMG_REPEAT_Y = 3;
+integer IMG_STRIDE = 4;
 integer ImageFacesCount;
 
 key LoggedId = NULL_KEY;
@@ -290,8 +296,12 @@ Display() {
 		TextureId = llGetTexture(FirstImageFace);
 		list Params = [];
 		integer F;
-		for (F = 1; F < ImageFacesCount; F++) {
-			Params += [ PRIM_TEXTURE, llList2Integer(ImageFaces, F), TextureId, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0 ];
+		for (F = 0; F < ImageFacesCount; F += IMG_STRIDE) {
+			integer Face = llList2Integer(ImageFaces, F + IMG_FACE_NUMBER);
+			float Rotation = llList2Float(ImageFaces, F + IMG_ROTATION);
+			float RepeatX = llList2Float(ImageFaces, F + IMG_REPEAT_X);
+			float RepeatY = llList2Float(ImageFaces, F + IMG_REPEAT_Y);
+			Params += [ PRIM_TEXTURE, Face, TextureId, <RepeatX, RepeatY, 0.0>, ZERO_VECTOR, Rotation ];
 		}
 		llSetLinkPrimitiveParamsFast(LINK_THIS, Params);
 	}
@@ -310,8 +320,9 @@ BlankDisplay() {
 	else {
 		list Params = [];
 		integer F;
-		for (F = 0; F < ImageFacesCount; F++) {
-			Params += [ PRIM_TEXTURE, llList2Integer(ImageFaces, F), TEXTURE_BLANK, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0 ];
+		for (F = 0; F < ImageFacesCount; F += IMG_STRIDE) {
+			integer Face = llList2Integer(ImageFaces, F + IMG_FACE_NUMBER);
+			Params += [ PRIM_TEXTURE, Face, TEXTURE_BLANK, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0 ];
 		}
 		llSetLinkPrimitiveParamsFast(LINK_THIS, Params);
 	}
@@ -531,11 +542,11 @@ integer ReadConfig() {
 	ForeColor = "Black";
 	BackColor = "White";
 	Debug = FALSE;
-	ClickFaces = [ 1 ];
-	ImageFaces = [ 3 ];    // face to display text
+	ClickFaces = [];
+	ImageFaces = [];    // face to display text
 	HamburgerTexture = TEXTURE_BLANK;
-	HamburgerFaces = [ 2 ];
-	HamburgerHide = TRUE;
+	HamburgerFaces = [];
+	HamburgerHide = FALSE;
 	AllSidesTexture = FALSE;
 	Projector = FALSE;
 	LightIntensity = 1.0;
@@ -584,7 +595,7 @@ integer ReadConfig() {
 					else if (Name == "backcolorlist") BackColors += Value;
 					else if (Name == "debug" && llToUpper(Value) == "TRUE") Debug = TRUE;
 					else if (Name == "clickfaces") ClickFaces = CSV2IntegerList(Value);
-					else if (Name == "imagefaces") ImageFaces = CSV2IntegerList(Value);
+					else if (Name == "imageface") ImageFaces += GetImageFaceData(Value);
 					else if (Name == "hamburgertexture") HamburgerTexture = Value;
 					else if (Name == "hamburgerfaces") HamburgerFaces = CSV2IntegerList(Value);
 					else if (Name == "hidehamburger") HamburgerHide = String2Bool(Value);
@@ -612,6 +623,18 @@ integer ReadConfig() {
 	LineSpacing = 1.0 + LineSpacingPercent / 100.0;
 	llSetLinkPrimitiveParamsFast(LINK_THIS, [ PRIM_POINT_LIGHT, Projector, <1.0, 1.0, 1.0>, LightIntensity, LightRadius, LightFalloff ]);
 	return TRUE;
+}
+// Parse face data (<face#>, <rot>, <repeatx>, <repeaty>
+list GetImageFaceData(string Value) {
+	list L = llCSV2List(Value);
+	integer Face = (integer)llList2String(L, 0);
+	float RotDeg = (float)llList2String(L, 1); // default to 0
+	float TextureX = (float)llList2String(L, 2);
+	float TextureY = (float)llList2String(L, 3);
+	float RotRad = RotDeg * DEG_TO_RAD;
+	if (TextureX == 0.0) TextureX = 1.0;
+	if (TextureY == 0.0) TextureY = 1.0;
+	return [ Face, RotRad, TextureX, TextureY ];
 }
 // Deal with LM_LOADING_COMPLETE messages, either by linked message or dataserver
 ProcessLoadingComplete() {
@@ -774,7 +797,7 @@ default {
 		}
 		else {
 			llSetTimerEvent(0.0);
-		}		
+		}
 	}
 	changed(integer Change) {
 		if (Change & CHANGED_REGION_START) Display();
@@ -800,4 +823,4 @@ state Hang {
 	on_rez(integer Param) { llResetScript(); }
 	changed(integer Change) { llResetScript(); }
 }
-// ML text display v1.3.7
+// ML text display v1.3.8
