@@ -1,4 +1,4 @@
-// Malleable linkset v1.21.13
+// Malleable linkset v1.21.14
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,7 @@
 // or modification, contact support@rezmela.com
 // Additional documentation about ML, ML Linkset limits http://wiki.rezmela.org/doku.php/ml-limits?s[]=primsource
 
+// v1.21.14 bypass object limit check for Rearrange load
 // v1.21.13 refactor to use object's UUID instead of link number for internal tables
 // v1.21.12 add HideOptions to ML config
 // v1.21.11 get region size on every initialisation
@@ -2917,10 +2918,12 @@ integer LoadData(key AvId, list Data, list MetaData) {
 		}
 	}
 	// Check objects limit 
-	if (ObjectsLimit > 0 && (ObjectsCount + ObjectsInFile) > ObjectsLimit) {
-		Debug("Too many objects!");
-		llMessageLinked(LINK_SET, LM_FAILURE, "Too many objects (" + (string)ObjectsInFile + ")", UserId);
-		return FALSE;		
+	if (CreateGroup) { // If it's "Load", not "Rearrange" (which doesn't need checking)
+		if (ObjectsLimit > 0 && (ObjectsCount + ObjectsInFile) > ObjectsLimit) {
+			Debug("Too many objects!");
+			llMessageLinked(LINK_SET, LM_FAILURE, "Too many objects (" + (string)ObjectsInFile + ")", UserId);
+			return FALSE;		
+		}
 	}
 	// Now we've built up the lists of objects, time to process it all
 	if (ThisVersion != SAVE_FILE_VERSION && Filename != "") {	// Blank filename denotes load from saved App data (from parent Map), so no version
@@ -4588,4 +4591,4 @@ state Hang {
 		if (Change & CHANGED_INVENTORY) llResetScript();
 	}
 }
-// Malleable linkset v1.21.13
+// Malleable linkset v1.21.14
