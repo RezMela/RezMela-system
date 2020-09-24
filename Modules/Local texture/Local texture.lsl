@@ -1,4 +1,4 @@
-// Local texture v1.0.1
+// Local texture v1.0.2
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.0.2 - fix: wrong sides data sent if retrying "get data"
 // v1.0.1 - add repeats data to image face
 
 // Was: Melacraft texturable block v1.0.1
@@ -280,7 +281,7 @@ default {
 	}
 	timer() {
 		if (!DataReceived) {
-			MessageStandard(RootUuid, LM_EXTRA_DATA_GET, [ TextureId ]);
+			MessageStandard(RootUuid, LM_EXTRA_DATA_GET, [ llList2CSV(ClickFaces) ]);
 		}
 		else {
 			llSetTimerEvent(0.0);
@@ -293,4 +294,4 @@ default {
 		}
 	}
 }
-// Local texture v1.0.1
+// Local texture v1.0.2
