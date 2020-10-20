@@ -1,9 +1,12 @@
 
+integer MENU_RANGE_S	= -291044300;
 integer MENU_RESET 		= -291044301;
 integer MENU_ADD 	 	= -291044302;
 integer MENU_SETVALUE 	= -291044303;
 integer MENU_START 		= -291044304;
-integer MENU_SELECTED	= -291044305;
+integer MENU_RESPONSE	= -291044305;
+integer MENU_TEXTBOX	= -291044306;
+integer MENU_RANGE_E	= -291044399;
 
 SendMenuCommand(integer Command, list Values) {
 	string SendString = llDumpList2String(Values, "|");
@@ -36,7 +39,7 @@ default {
 		SendMenuCommand(MENU_START, [ llDetectedKey(0) ]);
 	}
 	link_message(integer Sender, integer Num, string Text, key Id) {
-		if (Num == MENU_SELECTED) {
+		if (Num == MENU_RESPONSE) {
 			list Selected = llCSV2List(Text);
 			string SelectedMenu = llList2String(Selected, 0);
 			string SelectedOption = llList2String(Selected, 1);
