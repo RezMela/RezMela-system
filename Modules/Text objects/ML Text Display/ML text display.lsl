@@ -1,4 +1,4 @@
-// ML text display v1.3.8
+// ML text display v1.3.9
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.3.9 - implement LM_REGION_START
 // v1.3.8 - add repeat values to config file
 // v1.3.7 - minor performance fix
 // v1.3.6 - use new comms type (osMessageObject) for ML
@@ -149,6 +150,7 @@ integer TextboxListener;
 integer LM_EXTRA_DATA_SET = -405516;
 integer LM_EXTRA_DATA_GET = -405517;
 integer LM_LOADING_COMPLETE = -405530;
+integer LM_REGION_START = -405533; // region restart
 integer LM_RESERVED_TOUCH_FACE = -44088510;
 
 integer HUD_API_LOGIN = -47206000;
@@ -717,7 +719,6 @@ default {
 	//		llMessageLinked(LINK_THIS, LM_RESERVED_TOUCH_FACE, (string)llList2Integer(ClickFaces, 0), llDetectedKey(0));
 	//	}
 	link_message(integer Sender, integer Number, string String, key Id)    {
-
 		if (Number == LM_LOADING_COMPLETE) {
 			ProcessLoadingComplete();
 		}
@@ -781,6 +782,9 @@ default {
 					Display();
 				}
 			}
+			else if (Command == LM_REGION_START) {
+				Display();
+			}
 		}
 	}
 	listen(integer Channel, string Name, key Id, string Message) {
@@ -800,7 +804,6 @@ default {
 		}
 	}
 	changed(integer Change) {
-		if (Change & CHANGED_REGION_START) Display();
 		if (Change & CHANGED_INVENTORY) {
 			string OldConfig = ConfigContents;
 			ReadConfig();
@@ -823,4 +826,4 @@ state Hang {
 	on_rez(integer Param) { llResetScript(); }
 	changed(integer Change) { llResetScript(); }
 }
-// ML text display v1.3.8
+// ML text display v1.3.9

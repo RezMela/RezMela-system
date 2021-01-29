@@ -1,4 +1,4 @@
-// ML label v1.1.1
+// ML label v1.1.2
 //
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,12 +17,12 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 //
+// v1.1.2 - use defined textures instead of prim drawing when no text (eg first load); implement LM_REGION_START
 // v1.1.1 - blank prim-drawing textures when rezzed unlinked
 // v1.1.0 - fix alpha in 0.9
 // v1.0 - version and name change
 // v0.11 - add hamburger hiding
-// v0.10 - change aspect ratio to square (for clarity of text)
-// v0.9 - use new method of touch reserving
+// v0.10 - change aspect ratio to square (for clarity of text) v0.9 - use new method of touch reserving
 // v0.8 - added support for transparent background colour
 // v0.7 - fixed occasional timing issue
 // v0.6 - added experimental fast load feature
@@ -56,6 +56,10 @@ integer HamburgerLineHeight;
 integer HamburgerMargin;
 integer HamburgerWidth;
 integer HamburgerVerticalDistance;
+key BlankWithHamburgerTexture;
+
+vector TextureSizeBlank;
+vector TextureSizeNonBlank;
 
 list LabelFaces;	// [ integer FaceNum, string Flip ]
 
@@ -106,12 +110,14 @@ integer LM_SET_LABEL = -405503;
 integer LM_EXTRA_DATA_SET = -405516;
 integer LM_EXTRA_DATA_GET = -405517;
 integer LM_LOADING_COMPLETE = -405530;
+integer LM_REGION_START = -405533; // region restart
 integer LM_RESERVED_TOUCH_FACE = -44088510;
 
 integer HUD_API_LOGIN = -47206000;
 integer HUD_API_LOGOUT = -47206001;
 
 SetTextures(string Text) {
+	Text = llStringTrim(Text, STRING_TRIM);
 	// Calculate size of rendered text, in pixels
 	vector TextSize  = osGetDrawStringSize("vector", Text, FontName, FontSize);
 	// Width of text + margins
@@ -141,10 +147,16 @@ SetTextures(string Text) {
 	string TextCommandList = TextCommands(Text, CanvasSize, PosX, PosY);
 	string HamburgerCommandList = HamburgerCommands(CanvasSize, CenterX, CenterY, TextSizeFactor);
 	string ExtraParams = MakeExtraParams(CanvasSize);
-	// Render the textures.
-	TextureHamburgerOff = RenderTexture(TextCommandList, ExtraParams);
-	TextureHamburgerOn = RenderTexture(TextCommandList + HamburgerCommandList, ExtraParams);
-	DisplayTextures();
+	// Render the textures
+	if (Text != "") {
+		TextureHamburgerOff = RenderTexture(TextCommandList, ExtraParams);
+		TextureHamburgerOn = RenderTexture(TextCommandList + HamburgerCommandList, ExtraParams);
+	}
+	else {
+		TextureHamburgerOff = TEXTURE_BLANK; // If there's no text and no hamburger, just use a blank texture
+		TextureHamburgerOn = BlankWithHamburgerTexture;
+	}
+	DisplayTextures(Text);
 	// Finally, slice the prim
 	float SliceAmount = (1.0 - TextSizeFactor) * 0.5;
 	if (SliceAmount > 0.47) SliceAmount = 0.47;		// Stop the slicing being too severe (making a very narrow prim)
@@ -200,8 +212,13 @@ key RenderTexture(string CommandList, string ExtraParams) {
 	key TextureId = llGetTexture(Face);
 	return TextureId;
 }
-DisplayTextures() {
+DisplayTextures(string Text) {
 	key TextureId = TextureHamburgerOff;
+	vector TextureSize;
+	if (Text == "")
+		TextureSize = TextureSizeBlank;
+	else
+		TextureSize = TextureSizeNonBlank;
 	if (HamburgerVisible) TextureId = TextureHamburgerOn;
 	if (llGetNumberOfPrims() == 1) TextureId = TEXTURE_BLANK; // blank texture when unlinked
 	list Params = [];
@@ -212,14 +229,14 @@ DisplayTextures() {
 		string Flip = llList2String(LabelFaces, I + 1);
 		float Angle = PI_BY_TWO;
 		if (Flip == "n") Angle = -Angle;
-		Params += [ PRIM_TEXTURE, Face, TextureId, <1.0, 0.0625, 0.0>, ZERO_VECTOR, Angle ];
+		Params += [ PRIM_TEXTURE, Face, TextureId, TextureSize, ZERO_VECTOR, Angle ];
 	}
 	llSetLinkPrimitiveParamsFast(LINK_THIS, Params);
 }
 // Set hamburger visibility
 SetHamburgerVisibility(integer IsVisible) {
 	HamburgerVisible = IsVisible;
-	DisplayTextures();
+	DisplayTextures(LabelText);
 }
 ShowMenu(integer WhichMenu) {
 	CurrentMenu = WhichMenu;
@@ -339,6 +356,9 @@ integer ReadConfig() {
 	HamburgerMargin = 4;
 	HamburgerWidth = 18;
 	HamburgerVerticalDistance = 4;
+	BlankWithHamburgerTexture = TEXTURE_BLANK;
+	TextureSizeBlank = <16.0, 1.0, 0.0>;
+	TextureSizeNonBlank = <1.0, 0.0625, 0.0>;
 	LabelFaces = [];
 	ForeColors = [];
 	BackColors = [];
@@ -368,6 +388,9 @@ integer ReadConfig() {
 					else if (Name == "hamburgermargin") HamburgerMargin = (integer)Value;
 					else if (Name == "hamburgerwidth") HamburgerWidth = (integer)Value;
 					else if (Name == "hamburgerverticaldistance") HamburgerVerticalDistance = (integer)Value;
+					else if (Name == "blankwithhamburgertexture") BlankWithHamburgerTexture = (key)Value;
+					else if (Name == "texturesizeblank") TextureSizeBlank = (vector)Value;
+					else if (Name == "texturesizenonblank") TextureSizeNonBlank = (vector)Value;
 					else if (Name == "labelface") LabelFaces += ParseLabelFaceLine(Value);
 					else if (Name == "forecolorlist") ForeColors += Value;
 					else if (Name == "backcolorlist") BackColors += Value;
@@ -474,19 +497,14 @@ default {
 			SetHamburgerVisibility(FALSE);
 		}
 	}
-	// Leaving this here for now (commented out) in case we need to use it later for debugging - this is code so we can test
-	// hamburger detection as a standalone object. -- JFH
-	//	touch_start(integer total_number)
-	//	{
-	//		vector TouchST = llDetectedTouchST(0);
-	//		integer TouchFace = llDetectedTouchFace(0);
-	//		llOwnerSay("Click : " + (string)TouchST.x + ", " + (string)TouchST.y);
-	//		llOwnerSay("Corner: " + (string)HamburgerCornerX + ", " + (string)HamburgerCornerY);
-	//		if (HamburgerTouch(TouchFace, TouchST))
-	//			llOwnerSay("Yes"); else llOwnerSay("No");
-	//		llOwnerSay("X:" + (string)(TouchST.x > HamburgerCornerX));
-	//		llOwnerSay("Y:" + (string)(TouchST.y < HamburgerCornerY));
-	//	}
+	dataserver(key Id, string Data) {
+		list Parts = llParseStringKeepNulls(Data, [ "|" ], []);
+		string sCommand = llList2String(Parts, 0);
+		integer Command = (integer)sCommand;
+		if (Command == LM_REGION_START) {
+			SetTextures(LabelText);
+		}
+	}
 	listen(integer Channel, string Name, key Id, string Message) {
 		if (Channel == MenuChannel && Id == AvId) {
 			ProcessMenu(Message);
@@ -500,11 +518,8 @@ default {
 			llMessageLinked(LINK_ROOT, LM_EXTRA_DATA_GET, RtfFaces, NULL_KEY);
 		}
 	}
-	changed(integer Change) {
-		if (Change & CHANGED_REGION_START) SetTextures(LabelText);
-	}
 }
 state Hang {
 	on_rez(integer Param) { llResetScript(); }
 }
-// ML label v1.1.1
+// ML label v1.1.2

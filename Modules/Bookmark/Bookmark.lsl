@@ -1,4 +1,4 @@
-// Bookmark v1.0.1
+// Bookmark v1.0.2
 
 //
 // Used to store and recall URLs to be sent to web browsers.
@@ -21,6 +21,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.0.2 - implement LM_REGION_START
 // v1.0.1 - fix bug with cover color not being initialised correctly
 // v1.0 - name change (from "Hotlink", bug fixes, major version change
 // v0.13 - improved LMs on loading
@@ -119,6 +120,7 @@ string BTN_BACK = "<< Back";
 integer LM_EXTRA_DATA_SET = -405516;
 integer LM_EXTRA_DATA_GET = -405517;
 integer LM_LOADING_COMPLETE = -405530;
+integer LM_REGION_START = -405533; // region restart
 integer LM_RESERVED_TOUCH_FACE = -44088510;
 integer LM_TOUCH_NORMAL	= -66168300;
 
@@ -558,6 +560,14 @@ default {
 			}
 		}
 	}
+	dataserver(key Id, string Data) {
+		list Parts = llParseStringKeepNulls(Data, [ "|" ], []);
+		string sCommand = llList2String(Parts, 0);
+		integer Command = (integer)sCommand;
+		if (Command == LM_REGION_START) {
+			DisplayTitle();
+		}
+	}	
 	timer() {
 		// In case the data message(s) didn't get through (in either direction), we keep asking until they do
 		if (!DataReceived) {
@@ -576,9 +586,6 @@ default {
 		if (Change & CHANGED_INVENTORY) {
 			ReadConfig();
 		}
-		if (Change & CHANGED_REGION_START) {
-			DisplayTitle();
-		}
 	}
 }
-// Bookmark v1.0.1
+// Bookmark v1.0.2
