@@ -1,4 +1,4 @@
-// Malleable linkset v1.21.15
+// Malleable linkset v1.21.16
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,7 @@
 // or modification, contact support@rezmela.com
 // Additional documentation about ML, ML Linkset limits http://wiki.rezmela.org/doku.php/ml-limits?s[]=primsource
 
+// v1.21.16 Further batch controls for activation queue; add LM_REGION_START; implement RotationButtons
 // v1.21.15 Fixed bug causing nudge to not work as expected when App is rotated; Reserved Touch Faces can now be set dynamically ( e.g. during login and logout)
 // v1.21.14 bypass object limit check for Rearrange load
 // v1.21.13 refactor to use object's UUID instead of link number for internal tables
@@ -103,6 +104,7 @@ integer LM_EXTERNAL_LOGOUT = -405522;
 integer LM_EXTERNAL_DESELECT = -405523;    // if we receive this, we deselect the object
 integer LM_LOADING_COMPLETE = -405530;
 integer LM_AUTOHIDE_SET  = -405532; // from communicator: hide/unhide commands
+integer LM_REGION_START = -405533; // sent out on region restart
 integer LM_RESET = -405535;
 integer LM_TASK_COMPLETE = -405536;
 integer LM_APP_BACKUP_REQUEST = -405538;
@@ -349,13 +351,23 @@ integer STO_STRIDE = 4;
 // The Activation Queue is a list of objects that have been created (eg through loading a scene
 // via notecard) and which need to be sent messages to tell them that their scripts can start communicating with
 // us. We could send a single message to LINK_SET, but that runs the risk of our being swamped by link message events,
-// so we process the queue in chunks defined by ACTIVATION_BATCH_SIZE.
+// so we process the queue in chunks defined by ActivationBatchSize. The batch is processed every <ActivationTicks> timer
+// events.
 // There are similarities here with the Awakeners queue, but that is not for loading from notecard.
 // The format of this table is [ UUID, CommsType ]
-integer ACTIVATION_BATCH_SIZE = 10;
+integer ActivationBatchSize;
+integer ActivationTicks;
+integer ActivationTickCount;	// how many timer cycles remain before next activation batch is processed
 list ActivationQueue = [];
 integer ActivationQueueSize = 0;
 integer ACT_STRIDE = 2; // stride length of table
+
+// The Restart Queue is a list of objects (UUIDs) that need to be told when the region restarts.
+// This has similar queuing to the Activation Queue - comments in that processing are not repeated here.
+integer RestartBatchSize;
+integer RestartTicks;
+integer RestartTickCount;
+list RestartQueue = [];
 
 // Number of objects waiting to be unlinked during "clear" process
 integer UnlinksToDo = 0;
@@ -415,6 +427,7 @@ string MailboxChannel;
 integer CommandChatChannel;
 integer AdvancedMenu;
 string HideOptions;
+string RotationButtons;
 string ErrorEmail;
 integer ViewOnly;
 float DefaultNudgeDistance;
@@ -538,7 +551,7 @@ PositionObjectOnFace(
             //
             // SnapGrid processing
             //
-            if (StickPoint == VEC_NAN) {    // No StickPoint, so maybe there's a grid?
+            else {    // No StickPoint, so maybe there's a grid?
                 vector SnapGrid = llList2Vector(ObjectsDynamic, TargetLibPtr + OBD_SNAP_GRID);
                 if (SnapGrid != ZERO_VECTOR) {
                     // The target object has a snap grid
@@ -1330,7 +1343,7 @@ CreateContLinked(
             if (NewObjects == []) {
                 FinishLoad = TRUE;
             }
-            if (CType == NOB_TYPE_CLONE || CType == NOB_TYPE_AOC) {    // groups get a single awaken for the whole linSetPrimId(kset
+            if (CType == NOB_TYPE_CLONE || CType == NOB_TYPE_AOC) {    // groups get a single awaken for the whole linkset
                 Awakeners += ObjectId;    // add this prim into awakeners list
                 AwakenTicks = 2;
                 SetTimer();
@@ -1395,6 +1408,7 @@ CreateContLinked(
             integer CommsType = llList2Integer(ObjectsDynamic, DynamicLibPtr + OBD_COMMS_TYPE);
             ActivationQueue += [ ObjectId, CommsType ];
             ActivationQueueSize++;
+			ActivationTickCount = 0; // first time, we don't delay
             SetTimer();
         }
         if (CType == NOB_TYPE_CLONE) {
@@ -1714,6 +1728,17 @@ MovePrim(key ObjectId, vector Pos, rotation Rot, integer MakeSound) {
     llSetLinkPrimitiveParamsFast(LinkNum, PrimParams);
     llMessageLinked(LinkNum, LM_MOVED_ROTATED, "", UserId);
     if (MakeSound) Sound(SOUND_PLACE);
+}
+// On region restart, create the queue of objects to be told about the restart
+CreateRestartQueue() {
+    integer Len = llGetListLength(LinkedObjects);
+    integer LoPtr;
+    for (LoPtr = 0; LoPtr < Len; LoPtr += LO_STRIDE) {
+        key LoUuid = llList2Key(LinkedObjects, LoPtr + LO_OBJECT_ID);
+		RestartQueue += LoUuid;
+	}
+	RestartTickCount = 0; // no delay to start with
+	SetTimer();
 }
 // CheckBoundaries tests to see if the object is outside the region boundary, and positions it inside if it is
 vector CheckBoundariesRegion(vector RegionPos) {
@@ -3184,6 +3209,7 @@ ReadConfig() {
     CommandChatChannel = 51;
     AdvancedMenu = FALSE;
     HideOptions = "";
+	RotationButtons = "";
     ErrorEmail = "";
     ViewOnly = FALSE;
     DefaultNudgeDistance = 1.0;
@@ -3222,6 +3248,10 @@ ReadConfig() {
     LinkBatchSize = 20;
     UnlinkBatchSize = 20;
     RezBatchSize = 100;
+	ActivationBatchSize = 5;
+	ActivationTicks = 8;
+	RestartBatchSize = 5;
+	RestartTicks = 8;
     //
     if (llGetInventoryType(CONFIG_NOTECARD) != INVENTORY_NOTECARD) {
         //LogError("Can't find notecard '" + CONFIG_NOTECARD + "'");
@@ -3249,6 +3279,7 @@ ReadConfig() {
                     else if (Name == "commandchatchannel") CommandChatChannel = (integer)Value;
                     else if (Name == "advancedmenu")    AdvancedMenu = String2Bool(Value);
                     else if (Name == "hideoptions") HideOptions = Value;
+					else if (Name == "rotationbuttons") RotationButtons = Value;
                     else if (Name == "erroremail") ErrorEmail = Value;
                     else if (Name == "viewonly")    ViewOnly = String2Bool(Value);
                     else if (Name == "nudgedistance") DefaultNudgeDistance = (float)Value;
@@ -3286,6 +3317,10 @@ ReadConfig() {
                     else if (Name == "linkbatchsize") LinkBatchSize = (integer)Value;
                     else if (Name == "unlinkbatchsize") UnlinkBatchSize = (integer)Value;
                     else if (Name == "rezbatchsize") RezBatchSize = (integer)Value;
+					else if (Name == "activationbatchsize") ActivationBatchSize = (integer)Value;
+					else if (Name == "activationticks") ActivationTicks = (integer)Value;
+					else if (Name == "restartbatchsize") RestartBatchSize = (integer)Value;
+					else if (Name == "restartticks") RestartTicks = (integer)Value;
                     else {
                         LogError("Invalid entry in " + CONFIG_NOTECARD + ":\n" + Line);
                     }
@@ -3832,13 +3867,16 @@ SetTimer() {
     // - There are awakeners waiting
     // - We need to send "loading complete" messages after being rezzed
     // - There are outstanding activations in the queue
+	// - There are restarts in the queue
     // - We need to identify ourselves to a parent Map object
     // - A scene is being saved but there are still activations (loading complete) waiting
     // - We're an app that's been sent App data to restore, but we're waiting for the catalogue data
-    if (UuidLinksInvalid || AwakenTicks || LoadingCompleteTicks || ActivationQueueSize || LinksToDo != [] || AppBackupsWaiting || AppRestoreData != "" || LogoutTicks || WaitingForCataloguer)
+	// etc etc
+    if (UuidLinksInvalid || AwakenTicks || LoadingCompleteTicks || ActivationQueueSize || RestartQueue != [] || LinksToDo != [] || AppBackupsWaiting || AppRestoreData != "" || LogoutTicks || WaitingForCataloguer) {
         llSetTimerEvent(TIMER_FREQUENCY);
-    else
+	} else {
         llSetTimerEvent(0.0);
+	}
 }
 // Parses a prim name, extracting a menu prim name if it's a menu prim with the
 // correct flag. If it's not a menu prim, or if the flags don't match, return null
@@ -3936,7 +3974,8 @@ SendPublicData() {
         MaxAvatars,            // 11
         ParentId,            // 12
         RezBatchSize,            // 13
-        HideOptions            // 14
+        HideOptions,            // 14
+		RotationButtons			// 15
             ], "|"), UserId);
 }
 Sound(string Name) {
@@ -3995,31 +4034,54 @@ default {
         }
         // Process LOADING_COMPLETE for Activation Queue (when scene is loaded from notecard)
         if (ActivationQueueSize) {
-            integer Batch = ActivationQueueSize;
-            if (Batch >= ACTIVATION_BATCH_SIZE) Batch = ACTIVATION_BATCH_SIZE;
-            integer I;
-            for (I = 0; I < Batch; I++) {
-                integer P = I * ACT_STRIDE;
-                key Uuid = llList2Key(ActivationQueue, P);
-                integer CommsType = llList2Integer(ActivationQueue, P + 1);
-                if (CommsType == 0) { // Type 0 (deprecated) uses link messages
-                    integer LinkNum = Uuid2LinkNum(Uuid);
-                    if (LinkNum == -1) return;                
-                    llMessageLinked(LinkNum, LM_LOADING_COMPLETE, "", UserId);
-                } else {
-                    MessageStandard(Uuid, LM_LOADING_COMPLETE, [ UserId ]);
-                }
-            }
-            ActivationQueueSize -= Batch;
-            ObjectsToLoad -= Batch;
-            if (ActivationQueueSize) { // if some are still remaining in queue
-                ActivationQueue = llDeleteSubList(ActivationQueue, 0, (Batch * ACT_STRIDE) - 1);
-            }
-            else {
-                ActivationQueue = [];
-                if (!ObjectsToLoad && ParentId == NULL_KEY) Message(UserId, "Loaded.");    // Otherwise there are still prims queued to link up
-            }
+			if (ActivationTickCount > 0) {	// we're not yet ready to process the next activation batch
+				ActivationTickCount--;
+			} else {
+				integer Batch = ActivationQueueSize;
+				if (Batch >= ActivationBatchSize) Batch = ActivationBatchSize;
+				integer I;
+				for (I = 0; I < Batch; I++) {
+					integer P = I * ACT_STRIDE;
+					key Uuid = llList2Key(ActivationQueue, P);
+					integer CommsType = llList2Integer(ActivationQueue, P + 1);
+					if (CommsType == 0) { // Type 0 (deprecated) uses link messages
+						integer LinkNum = Uuid2LinkNum(Uuid);
+						if (LinkNum == -1) return;                
+						llMessageLinked(LinkNum, LM_LOADING_COMPLETE, "", UserId);
+					} else {
+						MessageStandard(Uuid, LM_LOADING_COMPLETE, [ UserId ]);
+					}
+				}
+				ActivationQueueSize -= Batch;
+				ObjectsToLoad -= Batch;
+				if (ActivationQueueSize) { // if some are still remaining in queue
+					ActivationTickCount = ActivationTicks;
+					ActivationQueue = llDeleteSubList(ActivationQueue, 0, (Batch * ACT_STRIDE) - 1);
+				}
+				else {
+					ActivationQueue = [];
+					if (!ObjectsToLoad && ParentId == NULL_KEY) Message(UserId, "Loaded.");    // Otherwise there are still prims queued to link up
+				}
+			}
         }
+		// Process Restart Queue
+		if (RestartQueue != []) {
+			if (RestartTickCount > 0) {
+				RestartTickCount--;
+			} else {
+				string Message = (string)LM_REGION_START;
+				integer RestartQueueSize = llGetListLength(RestartQueue);
+				integer Batch = RestartQueueSize;
+				if (Batch > RestartBatchSize) Batch = RestartBatchSize;
+				integer I;
+				for (I = 0; I < Batch; I++) {
+					key Uuid = llList2Key(RestartQueue, I);
+					MessageObject(Uuid, Message); // wrapper for osMessageObject() which checks for existence
+				}	
+				RestartQueue = llDeleteSubList(RestartQueue, 0, Batch - 1);
+				RestartTickCount = RestartTicks;
+			}
+		}
         // Process LOADING_COMPLETE for newly-created ML objects
         if (AwakenTicks) {
             if (--AwakenTicks == 0) AwakenScripts();
@@ -4511,6 +4573,7 @@ default {
     changed(integer Change)    {
         if (Change & CHANGED_INVENTORY) ReadConfig();
         if (Change & CHANGED_REGION_START) {
+			CreateRestartQueue();
             if (DummyMoveSet) MoveLinkset();
             RegionSize = osGetRegionSize(); // Region may have changed size
             SetAllPhantom();
@@ -4597,4 +4660,4 @@ state Hang {
         if (Change & CHANGED_INVENTORY) llResetScript();
     }
 }
-// Malleable linkset v1.21.15
+// Malleable linkset v1.21.16
