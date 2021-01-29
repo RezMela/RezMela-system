@@ -1,4 +1,4 @@
-// ML librarian v1.2.4
+// ML librarian v1.2.5
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.2.5 - allow random element in new objects' rez position
 // v1.2.4 - pick up batch size from "public data"
 // v1.2.3 - improved comms for rezzing objects
 // v1.2.2 - improve debugging, add script PIN, add LIB_DELETE_SCRIPT
@@ -116,6 +117,8 @@ integer PrimCount;
 integer MoveDisabled;	// should this module be prevented from moving to rez?
 integer AtHome;
 vector RezPosition;
+integer IsRezPositionRandom;
+float RezPositionRandom;
 
 // "Public" datra
 vector ModulePosHidden;
@@ -196,13 +199,20 @@ RezObjectsFromQueue() {
 		ReturnHomeTicks = 4;
 		SetTimer();
 	}
-	vector Pos = llGetPos() +  <0.0, 0.0, 10.0>;
+	vector RezPos = llGetPos() +  <0.0, 0.0, 6.0>;
 	integer RezCount = llGetListLength(ObjectsToRez);
 	if (RezCount > RezBatchSize) RezCount = RezBatchSize;
 	integer C;
 	for (C = 0; C < RezCount; C++) {
 		string Name = llList2String(ObjectsToRez, C);
-		llRezObject(Name, Pos, ZERO_VECTOR, ZERO_ROTATION, ON_REZ_PARAMETER);
+		vector ActualPos = RezPos;
+		if (IsRezPositionRandom) {
+			// If we're using random rez position, offset each axis by random amount in range specified
+			ActualPos.x += llFrand(RezPositionRandom);
+			ActualPos.y += llFrand(RezPositionRandom);
+			ActualPos.z += llFrand(RezPositionRandom);
+		}
+		llRezObject(Name, ActualPos, ZERO_VECTOR, ZERO_ROTATION, ON_REZ_PARAMETER);
 	}
 	ObjectsStillRezzing += RezCount;
 	ObjectsToRez = llDeleteSubList(ObjectsToRez, 0, RezCount - 1);
@@ -272,6 +282,7 @@ ReadConfig() {
 	// Set config defaults
 	IsMap = FALSE;
 	Enabled = TRUE;
+	RezPositionRandom = 1.0;
 	//
 	if (llGetInventoryType(CONFIG_NOTECARD) != INVENTORY_NOTECARD) {
 		WriteConfig();
@@ -294,6 +305,7 @@ ReadConfig() {
 					// Interpret name/value pairs
 					if (Name == "map")	IsMap = String2Bool(Value);
 					else if (Name == "enabled")	Enabled= String2Bool(Value);
+					else if (Name == "rezpositionrandom")	RezPositionRandom = (float)Value;
 					else {
 						LogError("Invalid entry in " + CONFIG_NOTECARD + ":\n" + Line);
 					}
@@ -301,6 +313,8 @@ ReadConfig() {
 			}
 		}
 	}
+	if (RezPositionRandom > 2.5) RezPositionRandom = 2.5; // Throttle at 2.5 so it does't go out of 10m range when added to rez position
+	IsRezPositionRandom = (RezPositionRandom != 0.0); // Store as int (bool) for efficiency
 }
 // Uses a delayed write to work round the OpenSim bug where a notecard delete immediately
 // followed by a write leaves the original version there
@@ -518,4 +532,4 @@ state Hang {
 		if (Change & CHANGED_LINK) llResetScript();
 	}
 }
-// ML librarian v1.2.4
+// ML librarian v1.2.5
