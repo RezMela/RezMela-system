@@ -1,4 +1,4 @@
-// Module Deployment Post-check v1.0
+// Module Deployment Post-check v1.0.1
 
 // Drop into module as RezMela Apps
 
@@ -18,6 +18,8 @@
 // is strictly forbidden unless prior written permission is obtained
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
+
+// v1.0.1 - wasn't checking perms of librarian script
 
 integer SCRIPT_PIN = -19318100; // PIN for modules
 integer MLO_PIN = 8000; // PIN for MLOs (objects in modules)
@@ -207,6 +209,23 @@ integer CheckInvPerms() {
 	}
 	else {
 		Say("Object perms: \n" + llDumpList2String(ObjectsList, "\n"));
+	}
+	Len = llGetInventoryNumber(INVENTORY_SCRIPT);
+	for (P = 0; P < Len; P++) {
+		string ScriptName = llGetInventoryName(INVENTORY_SCRIPT, P);
+		if (ScriptName != ThisScriptName) {
+			if (BadInvPerms(ScriptName)) {
+				Errors = TRUE;
+			}
+			if (CheckInvPerm(MASK_NEXT, ScriptName, PERM_MODIFY)) {
+				Say("Script " + ScriptName + " has modify perms");
+				Errors = TRUE;
+			}
+			if (CheckInvPerm(MASK_NEXT, ScriptName, PERM_TRANSFER)) {
+				Say("Script " + ScriptName + " has transfer perms");
+				Errors = TRUE;
+			}
+		}
 	}
 	return (!Errors);
 }
@@ -399,4 +418,4 @@ state Hang {
 	changed(integer Change) { llResetScript(); }
 	touch_start(integer Count) { llResetScript(); }
 }
-// Module Deployment Post-check v1.0
+// Module Deployment Post-check v1.0.1
