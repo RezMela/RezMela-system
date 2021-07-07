@@ -1,4 +1,4 @@
-// Malleable linkset v1.21.16
+// Malleable linkset v1.21.18
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,8 @@
 // or modification, contact support@rezmela.com
 // Additional documentation about ML, ML Linkset limits http://wiki.rezmela.org/doku.php/ml-limits?s[]=primsource
 
+// v1.12.18 Reset on rez
+// v1.21.17 Broadcast LM_ANNOUNCE_OBJECT when object added
 // v1.21.16 Further batch controls for activation queue; add LM_REGION_START; implement RotationButtons
 // v1.21.15 Fixed bug causing nudge to not work as expected when App is rotated; Reserved Touch Faces can now be set dynamically ( e.g. during login and logout)
 // v1.21.14 bypass object limit check for Rearrange load
@@ -122,6 +124,7 @@ integer LM_CHANGE_CONFIG = -405551;
 integer LM_MOVED_ROTATED = -405560;
 integer LM_CHILD_READY = -405561;    // sent by child app to parent when ready
 integer LM_UNLINK_QUEUE = -405562;
+integer LM_ANNOUNCE_OBJECT = -405570;
 
 integer LM_TOUCH_NORMAL    = -66168300;
 integer LM_TOUCH_ALTERNATE = -66168301;
@@ -383,10 +386,12 @@ string MemorySizeObject;
 float MemorySizeFactor;
 
 vector RegionSize;
+float BoundaryMargin = 1.0; // Margin around region edges - objects are not placed beyond that margin
 integer DebugMode = FALSE;
 string DebugId = "????";
 integer CameraJumpMode;
 
+integer AnnounceObjects = FALSE;
 integer RandomCreate;    // Is randomize switched on?
 float RandomResize;
 integer RandomRotate;
@@ -1140,6 +1145,7 @@ CreateContinue(key ObjectId) {
         }
     }
     UpdateObjectsCountStatus();
+	if (AnnounceObjects && !LoadingScene) llMessageLinked(LINK_SET, LM_ANNOUNCE_OBJECT, ObjectName, ObjectId);
 }
 CreateContMap(
     integer NobPtr,
@@ -1529,13 +1535,12 @@ RemoveUuid2Link(key ObjectId) {
 }
 // Behaviour when rezzed
 OnRez(integer Param) {
-    SetDebug();
-    if (UserId != NULL_KEY) Logout();
     string DebugText = "OnRez";
-    if (Param == ON_REZ_PARAMETER) {    // if we've been rezzed by      App or Map module
+    if (Param == ON_REZ_PARAMETER) {    // if we've been rezzed by App or Map module
         ParentId = llList2Key(llGetObjectDetails(osGetRezzingObject(), [ OBJECT_ROOT ]), 0);
         if (ParentId != NULL_KEY) {
             if (DebugMode) DebugText += "; parent is " + llGetSubString((string)ParentId, 0, 3);
+			osMakeNotecard("Parent", (string)ParentId);
         }
         else {
             DebugText += "; no parent";
@@ -1546,10 +1551,7 @@ OnRez(integer Param) {
         DebugText += "; manually rezzed";
     }
     Debug(DebugText);
-    OwnerId = llGetOwner();    
-    WaitingForCataloguer = TRUE;
-    llMessageLinked(LINK_THIS, CT_START, "", NULL_KEY); // Tell cataloguer to start processing
-    OurUuid = llGetKey();    
+	llResetScript();
 }
 // Get internal object reference from object name. Returns "" if object doesn't exist
 string GetObjectReference(string ObjectName) {
@@ -1568,17 +1570,19 @@ integer GetDynamicPointer(string ObjectReference) {
     }
     return Ptr;
 }
-// Initial code, executed when script first starts, either from on_rez or state_entry.
-// This is only for code that's needed in both events.
-Initialize(integer OnRez) {
+// Initial code, executed when script first starts
+Initialize() {
     SetDebug();
+	if (llGetInventoryType("Parent") == INVENTORY_NOTECARD) { // if the "Parent" notecard exists
+		ParentId = (key)osGetNotecard("Parent");
+		llRemoveInventory("Parent");
+	}
     // Values that need to be set each time it's rezzed/copied/etc
     RegionSize = osGetRegionSize();
     // Values that only need to be set once during the script's lifetime go below
     if (Initialized) {
         if (DebugMode) {
-            string DebugText = "Re-execution of Initialize(), called from ";
-            if (OnRez) DebugText += "on_rez"; else DebugText += "state_entry";
+            string DebugText = "Re-execution of Initialize(), called from state_entry";
             if (ParentId != NULL_KEY) {
                 DebugText += "; parent is " + llGetSubString((string)ParentId, 0, 3);
             }
@@ -1587,8 +1591,7 @@ Initialize(integer OnRez) {
     }
     else {
         if (DebugMode) {
-            string DebugText = "Initialize() called from ";
-            if (OnRez) DebugText += "on_rez"; else DebugText += "state_entry";
+            string DebugText = "Initialize() called from state_entry";
             if (ParentId != NULL_KEY) {
                 DebugText += "; parent is " + llGetSubString((string)ParentId, 0, 3);
             }
@@ -1742,10 +1745,10 @@ CreateRestartQueue() {
 }
 // CheckBoundaries tests to see if the object is outside the region boundary, and positions it inside if it is
 vector CheckBoundariesRegion(vector RegionPos) {
-    if (RegionPos.x < 0.0) RegionPos.x = 0.0;
-    if (RegionPos.x > RegionSize.x) RegionPos.x = RegionSize.x;
-    if (RegionPos.y < 0.0) RegionPos.y = 0.0;
-    if (RegionPos.y > RegionSize.y) RegionPos.y = RegionSize.y;
+    if (RegionPos.x < BoundaryMargin) RegionPos.x = BoundaryMargin;
+    if (RegionPos.x > RegionSize.x - BoundaryMargin) RegionPos.x = RegionSize.x - BoundaryMargin;
+    if (RegionPos.y < BoundaryMargin) RegionPos.y = BoundaryMargin;
+    if (RegionPos.y > RegionSize.y - BoundaryMargin) RegionPos.y = RegionSize.y - BoundaryMargin;
     return RegionPos;
 }
 vector CheckBoundariesLocal(vector LocalPos) {
@@ -3224,6 +3227,7 @@ ReadConfig() {
     WorldSize = RegionSize;
     WorldSize.z = 0.0;    // WorldSize has no Z dimension
     WorldOrigin = <0.0, 0.0, 21.0>;
+	BoundaryMargin = 1.0;
     BoardOffset = ZERO_VECTOR;
     RezPosition = ZERO_VECTOR;
     ScalingFactor = 0.0;
@@ -3294,6 +3298,7 @@ ReadConfig() {
                     else if (Name == "cursoralpha") CursorAlpha = (float)Value;
                     else if (Name == "worldsize")    WorldSize = (vector)Value;
                     else if (Name == "worldorigin")    WorldOrigin = (vector)Value;
+					else if (Name == "boundarymargin")    BoundaryMargin = (float)Value;
                     else if (Name == "rezposition")    RezPosition = (vector)Value;
                     else if (Name == "scalingfactor") ScalingFactor = (float)Value;
                     else if (Name == "iconselectglow") IconSelectGlow = (float)Value;
@@ -4003,10 +4008,9 @@ LogError(string Text) {
 default {
     on_rez(integer Param) {
         OnRez(Param);
-        Initialize(TRUE);
     }
     state_entry() {
-        Initialize(FALSE);
+        Initialize();
     }
     timer() {
         llSetTimerEvent(0.0);
@@ -4014,8 +4018,9 @@ default {
         // Process LOADING_COMPLETE for when ML is rezzed/reset
         if (UuidLinksInvalid) CreateUuidLinks();
         if (LoadingCompleteTicks) {
-            if (--LoadingCompleteTicks == 0)
+            if (--LoadingCompleteTicks == 0) {
                 llMessageLinked(LINK_SET, LM_LOADING_COMPLETE, "", UserId);
+			}
         }
         if (WaitingForCataloguer) {
             llMessageLinked(LINK_THIS, CT_START, "", NULL_KEY); // Tell cataloguer to start processing
@@ -4491,6 +4496,9 @@ default {
             Logout();
             llResetScript();
         }
+		else if (Number == LM_ANNOUNCE_OBJECT) {
+			AnnounceObjects = TRUE;
+		}
     }
     dataserver(key From, string Data) {
         // All other incoming data
@@ -4660,4 +4668,4 @@ state Hang {
         if (Change & CHANGED_INVENTORY) llResetScript();
     }
 }
-// Malleable linkset v1.21.16
+// Malleable linkset v1.21.18

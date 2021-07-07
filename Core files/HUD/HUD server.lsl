@@ -1,4 +1,4 @@
-// RezMela HUD server v1.9.0
+// RezMela HUD server v1.9.1
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.9.1 - handle beacons
 // v1.9.0 - render prim-drawing textures here rather than in HUD attachment
 // v1.8.1 - allow for null buttons
 // v1.8.0 - add script PIN
@@ -61,6 +62,7 @@
 integer DebugMode = FALSE;
 string FORMAT_NEWLINE = "|";
 integer SCRIPT_PIN = -19318100;
+float SECONDS_IN_A_WEEK = 604800.0;
 
 integer HUD_CHANNEL = -84401050;
 
@@ -89,6 +91,8 @@ integer HUD_API_STATUS_LINE = -47206050;
 integer HUD_API_CAMERA_JUMP_MODE = -47206051;
 integer HUD_API_BESPOKE = -47206060;
 integer HUD_API_RESET = -47206061;
+integer HUD_API_BEACON_SHOW = -47206062;
+integer HUD_API_BEACON_CLICK = -47206063;
 integer HUD_API_MIN = -47206099;	// Maximum value in this set (but negative)
 
 string HUD_API_SEPARATOR_1 = "|";
@@ -194,6 +198,12 @@ integer ST_RUNNING = 3;
 integer IsClientReady;
 integer IsHudReady;
 integer IsGivingHud;
+
+integer IsBeaconOn = FALSE;
+integer BeaconListener = 0;
+key BeaconUserId = NULL_KEY;
+vector BeaconColor = <1.0, 0.0, 0.0>;
+integer BEACON_CHANNEL = -8200198261;
 
 integer UpTime;
 
@@ -512,6 +522,16 @@ HandleApiMessage(integer Command, string Data, key Id, integer Activated) {
 	list Parts = llParseStringKeepNulls(Data, [ HUD_API_SEPARATOR_1 ], []);
 	if (Command == HUD_API_SET_METADATA) {
 		// No longer used
+	}
+	else if (Command == HUD_API_BEACON_SHOW) {
+		BeaconUserId = (key)Data;
+		SetBeacon(TRUE);
+	}
+	else if (Command == HUD_API_BEACON_CLICK) {
+		key ClickUserId = (key)Data;
+		if (ClickUserId == BeaconUserId) {
+			CheckActivateHud(ClickUserId);
+		}
 	}
 	else if (Command == HUD_API_READY) {
 		if (IsHudReady) {
@@ -1144,7 +1164,6 @@ list MakeCommonElements(integer WindowNumber, integer PageIndex) {
 			// Record parent heading and window number (add to beginning of each list)
 			BreadcrumbHeadings = ParentHeading + BreadcrumbHeadings;
 			BreadcrumbWindows = NextParent + BreadcrumbWindows ;
-			//llOwnerSay("Window: " + NextParent + ", heading: " + ParentHeading);///%%%
 			// Move onto grandparent
 			ChildWindowName = NextParent;
 			NextParent = DecodeParent(llList2String(Windows, ParentPtr + WIN_PARENT));
@@ -1454,6 +1473,50 @@ ClearData() {
 	CurrentWindowNumber = -1;
 	CurrentBackButton = FALSE;
 	CurrentPageIndex = -1;
+}
+// Get the link number of the beacon prim
+integer GetBeaconLinkNum() {
+	integer BeaconLinkNum = osGetLinkNumber("!Beacon!");
+	if (BeaconLinkNum == -1) { LogError("Beacon prim missing"); state Hang; }
+	return BeaconLinkNum;
+}
+// Make beacon visible or invisible
+SetBeacon(integer Visible) {
+	integer BeaconLinkNum = GetBeaconLinkNum();
+	if (Visible) {
+		llSetLinkColor(BeaconLinkNum, BeaconColor, ALL_SIDES);
+		llSetLinkPrimitiveParams(BeaconLinkNum, [ PRIM_SIZE, <0.4, 0.4, 256.0> ]);
+		BeaconListener = llListen(BEACON_CHANNEL, "", NULL_KEY, "");
+		llSetTimerEvent(30.0);
+	}
+	else {
+		llSetLinkPrimitiveParams(BeaconLinkNum, [ PRIM_SIZE, <0.1, 0.1, 0.1> ]);
+		if (BeaconListener > 0) {
+			llListenRemove(BeaconListener);
+			BeaconListener = 0;
+		}
+	}
+	IsBeaconOn = Visible;
+}
+// Hide all beacons in parcel
+HideAllBeacons() {
+	SetBeacon(FALSE);
+	llRegionSay(BEACON_CHANNEL, GetParcelId());
+}
+// If all is well, change state to ActivateHud
+CheckActivateHud(key Id) {
+	if (llGetLinkNumber() < 2) {
+		llDialog(Id, "\nIncorrectly linked!", [ "OK" ], -999);
+		return;
+	}
+	if (IsRestricted(Id)) {	// they don't satisfy the restriction test
+		llDialog(Id, "\n\nSorry, you don't have the correct permissions to use this object.", [ "OK" ], -999999);
+		return;
+	}
+	AvId = Id;
+	StatusType = ST_ACTIVATE;
+	ShowStatus();
+	state ActivateHud;
 }
 DisconnectUser() {
 	SendApiMessage(HUD_API_LOGOUT, [], AvId);
@@ -1911,6 +1974,52 @@ SetPrimTitleSides() {
 		llSetTexture(TextureId, Side);
 	}
 }
+// Returns UUID of parcel at current position (string, not key)
+string GetParcelId() {
+	return llList2String(llGetParcelDetails(llGetPos(), [ PARCEL_DETAILS_ID ]), 0);
+}
+// Quick and dirty method of generating saturated, light colours at random
+vector GenerateBrightColor() {
+	float Base = 0.5;
+	float R = 0.0;
+	float G = 0.0;
+	float B = 0.0;
+	integer Rand = (integer)llFrand(6.0);
+	if (Rand == 0) { // reddish
+		R = ColorChannelValue(0.4, 1.0);
+		G = ColorChannelValue(0.0, 0.6);
+		B = ColorChannelValue(0.0, 0.6);
+	}
+	else if (Rand == 1) { // greenish
+		R = ColorChannelValue(0.0, 0.6);
+		G = ColorChannelValue(0.4, 1.0);
+		B = ColorChannelValue(0.0, 0.6);
+	}
+	else if (Rand == 2) { // blueish
+		R = ColorChannelValue(0.0, 0.6);
+		G = ColorChannelValue(0.0, 0.6);
+		B = ColorChannelValue(0.4, 1.0);
+	}
+	else if (Rand == 3) { // yellowish
+		R = ColorChannelValue(0.4, 1.0);
+		G = ColorChannelValue(0.4, 1.0);
+		B = ColorChannelValue(0.0, 0.4);
+	}
+	else if (Rand == 4) { // cyanish
+		R = ColorChannelValue(0.0, 0.4);
+		G = ColorChannelValue(0.4, 1.0);
+		B = ColorChannelValue(0.4, 1.0);
+	}
+	else if (Rand == 5) { // magentaish (that's a word now)
+		R = ColorChannelValue(0.4, 1.0);
+		G = ColorChannelValue(0.0, 0.4);
+		B = ColorChannelValue(0.4, 1.0);
+	}
+	return <R, G, B>;
+}
+float ColorChannelValue(float Min, float Max) {
+	return Min + llFrand(Max - Min);
+}
 integer IsRestricted(key Id) {
 	if (Restrict == RESTRICT_NONE) {
 		return FALSE;
@@ -2110,11 +2219,14 @@ default {
 			state Hang;
 		}
 		llSetRemoteScriptAccessPin(SCRIPT_PIN);
+		ApplicationName = "";
+		HudName = "";
 		if (!ReadConfig()) {
 			state Hang;
 		}
-		ApplicationName = "";
-		HudName = "";
+		BeaconListener = 0;
+		BeaconColor = GenerateBrightColor();
+		SetBeacon(FALSE);
 		ShowStatus();
 		HashTable = [];
 		state Idle;
@@ -2135,26 +2247,22 @@ state Idle {
 		AvId = HudId = NULL_KEY;
 		StatusType = ST_IDLE;
 		ShowStatus();
-		llSetTimerEvent(604800.0); // sleep for a week
+		llSetTimerEvent(SECONDS_IN_A_WEEK); // sleep for a week
 	}
 	touch_start(integer Count) {
 		if (llGetUnixTime() < (UpTime + 5)) return;	// Ignore clicks for 1st 5 secs
 		key TouchId = llDetectedKey(0);
-		if (llGetLinkNumber() < 2) {
-			llDialog(TouchId, "\nIncorrectly linked!", [ "OK" ], -999);
-			return;
-		}
-		if (IsRestricted(TouchId)) {	// they don't satisfy the restriction test
-			llDialog(TouchId, "\n\nSorry, you don't have the correct permissions to use this object.", [ "OK" ], -999999);
-			return;
-		}
-		AvId = TouchId;
-		StatusType = ST_ACTIVATE;
-		ShowStatus();
-		state ActivateHud;
+		CheckActivateHud(TouchId);
 	}
 	link_message(integer Sender, integer Number, string Text, key Id) {
 		HandleLinkMessage(Sender, Number, Text, Id, FALSE);
+	}
+	listen(integer Channel, string Name, key Id, string Text) {
+		if (Channel == BEACON_CHANNEL) {
+			if (Text == GetParcelId()) { // if it's on the same parcel
+				SetBeacon(FALSE);		// hide the beacon
+			}
+		}
 	}
 	changed(integer Change) {
 		if (Change & CHANGED_INVENTORY) {
@@ -2168,6 +2276,10 @@ state Idle {
 	}
 	timer() {
 		llSetTimerEvent(0.0);
+		if (IsBeaconOn) {
+			SetBeacon(FALSE);
+			llSetTimerEvent(SECONDS_IN_A_WEEK);
+		}
 		// After a week of inactivity, clear out the hash table to free up memory
 		HashTable = [];
 	}
@@ -2177,6 +2289,7 @@ state ActivateHud {
 	state_entry() {
 		llSetTimerEvent(0.0);
 		Debug("Activating");
+		HideAllBeacons();
 		if (!ReadConfig()) {
 			llOwnerSay("Invalid config");
 			state Hang;
@@ -2282,6 +2395,7 @@ state Normal {
 		SendApiMessage(HUD_API_LOGIN, [], AvId);
 		StatusType = ST_LOGGING_IN;
 		ShowStatus();
+		SetBeacon(FALSE);
 		llSetTimerEvent(5.0);
 	}
 	dataserver(key Id, string Data) {
@@ -2359,4 +2473,4 @@ state Hang {
 	}
 	changed(integer Change) { llResetScript(); }
 }
-// RezMela HUD server v1.9.0
+// RezMela HUD server v1.9.1

@@ -1,4 +1,4 @@
-// Panocube v1.0.3
+// Panocube v1.1.0
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.1.0 - change to use dynamic textures (instead of MOAP)
 // v1.0.3 - add script PIN
 // v1.0.2 - improve debugging
 // v1.0.1 - temporarily remove unsupported options, rename to 'Panocube', save bookmarks to start of list
@@ -32,7 +33,7 @@
 // v0.4 - added search feature
 // v0.3 - added interactivity
 //
-//	Note that if part of a ML, this script and associated files should be in the street view button itself
+//    Note that if part of a ML, this script and associated files should be in the street view button itself
 //
 // Google API documentation:
 // https://developers.google.com/maps/documentation/streetview/intro
@@ -54,49 +55,48 @@ integer LM_RESET = -405535;
 string CONFIG_NOTECARD = "Panocube config";
 string BOOKMARKS_NOTECARD = "Places";
 
-vector CurrentPos;
 rotation CurrentRot;
 
 integer Fov;
 string ApiKey;
 string SearchApi;
+float DisplayDelay = 5.0;
+key LoadingTexture = TEXTURE_BLANK;
 
 integer LinkSetChanged = FALSE;
+integer NeedDisplay = FALSE;
 
 // Details of prim to be used to display pano
 string PrimName = "";
-integer LinkNum = LINK_THIS;	// LINK_THIS (-4) for same prim
+integer PanoObjectLinkNum = LINK_THIS;    // LINK_THIS (-4) for same prim
 // Faces data
 list Faces = [];
 list Angles = [];
 list Pitches = [];
 integer DisplaysCount = 0;
 
-integer PrimMenu;	// -1 if prim doesn't exist (including if we're part of a ML)
+integer PrimMenu;    // -1 if prim doesn't exist (including if we're part of a ML)
 integer PrimCount;
 
-integer StandAlone = TRUE;		// TRUE if it's a standalone, so no integration with control board, etc
-string LastExtraData;				// The last extra data sent, so don't resend if it's the same
-
-integer UseGroundMap;
-key GroundMapId;
+integer StandAlone = TRUE;        // TRUE if it's a standalone, so no integration with control board, etc
+string LastExtraData;                // The last extra data sent, so don't resend if it's the same
 
 // Malleable linkset stuff
 integer IsMl;
 // External Touch Handling messages
-integer ETH_LOCK = -44912700;		// Send to central script to bypass touch handling
-integer ETH_UNLOCK = -44912701;		// Send to central script to return to normal touch handling
-integer ETH_TOUCHED = -44912702;	// Sent to external script to notify of touch
-integer ETH_PROCESS = -44912703;	// Sent to central script to mimic touch
+integer ETH_LOCK = -44912700;        // Send to central script to bypass touch handling
+integer ETH_UNLOCK = -44912701;        // Send to central script to return to normal touch handling
+integer ETH_TOUCHED = -44912702;    // Sent to external script to notify of touch
+integer ETH_PROCESS = -44912703;    // Sent to central script to mimic touch
 
 // Search integration
 integer GMC_SEARCH = -90152000;
 integer GMC_MOVE_TO = -90152001;
 
 // RezMela world object, request for icon ID, etc
-integer RWO_ICON_UUID = 808399100;	// +ve for request, -ve for reply
-integer RWO_EXTRA_DATA_SET = 808399102;	// +ve for incoming, -ve for outgoing
-integer RWO_INITIALISE = 808399110;	// +ve for data (received repeateadly at startup), we send -ve to disable. Icon ID is sent as key portion, ExtraData as string
+integer RWO_ICON_UUID = 808399100;    // +ve for request, -ve for reply
+integer RWO_EXTRA_DATA_SET = 808399102;    // +ve for incoming, -ve for outgoing
+integer RWO_INITIALISE = 808399110;    // +ve for data (received repeateadly at startup), we send -ve to disable. Icon ID is sent as key portion, ExtraData as string
 
 integer WO_COMMAND = 3007;
 
@@ -115,11 +115,6 @@ string PanoId;
 float CurrentLat;
 float CurrentLon;
 integer Heading;
-
-integer DoubleDisplay = FALSE;
-integer AutoRedisplay;		// should the images redisplay when an avatar enters the region?
-integer RegionAgentCount;	// number of avatars in the region
-integer NeedRedisplay;	// Countdown in seconds to redisplay if >0
 
 list Bookmarks;
 integer BOOK_NAME = 0;
@@ -170,13 +165,18 @@ Debug(string Text) {
 		llRegionSay(DEBUGGER, "Pano: " + Text);
 	}
 }
-Display() {
+// Display is in two stages. DisplayStart() renders the dynamic textures on the invisible
+// cube (which is hollow and cut in order to provide sufficient faces). osSetDynamicTextureURLBlendFace() is
+// asynchronous for some reason (despite what the OpenSim wiki says), so we need a delay between doing that
+// and picking up the dynamic texture IDs from those faces. DisplayEnd() does that second part, after a
+// timer delay defined by DisplayDelay.
+DisplayStart() {
 	Debug("Displaying " + (string)DisplaysCount + " views");
-	if (LinkSetChanged) {	// if we've had unlinking/linking, we need to get the prim data again
+	if (LinkSetChanged) {    // if we've had unlinking/linking, we need to get the prim data again
 		GetPrimData();
 		LinkSetChanged = FALSE;
 	}
-	llClearLinkMedia(LinkNum, ALL_SIDES);
+	list Params = [];
 	integer P = DisplaysCount;
 	while(P--) {
 		integer Face = llList2Integer(Faces, P);
@@ -186,18 +186,35 @@ Display() {
 		while (FaceHeading > 360) FaceHeading -= 360;
 		while (FaceHeading < 0) FaceHeading += 360;
 		string Url = BuildUrl(FaceHeading, Pitch);
-		list MediaParams = [
-			PRIM_MEDIA_AUTO_PLAY, TRUE,
-			PRIM_MEDIA_CURRENT_URL, Url,
-			PRIM_MEDIA_HEIGHT_PIXELS, 640,
-			PRIM_MEDIA_WIDTH_PIXELS, 640
-				];
-		//		llClearLinkMedia(LinkNum, Face);
-		llSetLinkMedia(LinkNum, Face, MediaParams);
-		if (DoubleDisplay) llSetLinkMedia(LinkNum, Face, MediaParams); // may (or may not) improve display robustness
+		osSetDynamicTextureURLBlendFace("", "image", Url, "", FALSE, 2, 600, 255, Face);
+		Params += [ PRIM_TEXTURE, Face, LoadingTexture, <-1.0, 1.0, 0.0>, <0.0, 0.0, 0.0>, FaceRot(Face) ];
 		Debug("Face " + (string)Face + " (" + (string)Angle + "°/" + (string)Pitch + "°):\n" + Url);
 	}
+	llSetLinkPrimitiveParamsFast(PanoObjectLinkNum, Params);
 	SetExtraData();
+	NeedDisplay = TRUE;
+	llSetTimerEvent(DisplayDelay);
+}
+DisplayEnd() {
+	if (!NeedDisplay) return;
+	list Params = [];
+	integer P = DisplaysCount;
+	while(P--) {
+		integer Face = llList2Integer(Faces, P);
+		string TextureUuid = llGetTexture(Face);
+		Params += [ PRIM_TEXTURE, Face, TextureUuid, <-1.0, 1.0, 0.0>, <0.0, 0.0, 0.0>, FaceRot(Face) ];
+	}
+	llSetLinkPrimitiveParamsFast(PanoObjectLinkNum, Params);
+	NeedDisplay = FALSE;
+}
+float FaceRot(integer Face) {
+	float Rot = 0.0;
+	// Due to UV mapping issue, these faces need a non-zero rotation
+	if (Face == 3) Rot = -90.0;
+	else if (Face == 4) Rot = 180.0;
+	else if (Face == 7) Rot = 180.0;
+	Rot *= DEG_TO_RAD;
+	return Rot;
 }
 string BuildUrl(integer Head, integer Pitch) {
 	string Place;
@@ -217,9 +234,9 @@ SetDebug() {
 ShowMenu(integer WhichMenu, key pAvId) {
 	CurrentMenu = WhichMenu;
 	if (AvId != NULL_KEY && pAvId != AvId) {
-		if (llGetAgentSize(AvId) != ZERO_VECTOR) {	// if they're still logged in and in the region
+		if (llGetAgentSize(AvId) != ZERO_VECTOR) {    // if they're still logged in and in the region
 			llDialog(AvId, llKey2Name(pAvId) + " now has control of the menu", [ "OK" ], -12839378984);
-			MenuOptionPtr = 0;	// So the new user isn't left with the remembered bookmarks page from the previous user
+			MenuOptionPtr = 0;    // So the new user isn't left with the remembered bookmarks page from the previous user
 		}
 	}
 	AvId = pAvId;
@@ -233,9 +250,9 @@ ShowMenu(integer WhichMenu, key pAvId) {
 			MenuText += "Panorama ID: " + PanoId + "\n";
 		}
 		MenuText +=
-			//			DescribeButton(BTN_EXTENSION, "Check for queued panoramas") +
-			//			DescribeButton(BTN_MODE_PANOID, "Best for Google images") +
-			//			DescribeButton(BTN_MODE_LATLON, "Best for user images") +
+			//            DescribeButton(BTN_EXTENSION, "Check for queued panoramas") +
+			//            DescribeButton(BTN_MODE_PANOID, "Best for Google images") +
+			//            DescribeButton(BTN_MODE_LATLON, "Best for user images") +
 			DescribeButton(BTN_COORDINATES, "Go to specified Lat/Long") +
 			DescribeButton(BTN_BOOKMARKS, "Load a place") +
 			DescribeButton(BTN_ADD_BOOKMARK, "Save current place") +
@@ -245,12 +262,12 @@ ShowMenu(integer WhichMenu, key pAvId) {
 		Buttons = [
 			BTN_FINISH, BTN_REFRESH, BTN_SEARCH,
 			BTN_COORDINATES, BTN_BOOKMARKS, BTN_ADD_BOOKMARK
-				//			BTN_EXTENSION, BTN_MODE_PANOID, BTN_MODE_LATLON
+				//            BTN_EXTENSION, BTN_MODE_PANOID, BTN_MODE_LATLON
 				];
 	}
 	else if (CurrentMenu == MENU_BOOKMARKS) {
 		integer P = MenuOptionPtr;
-		integer Q = MenuOptionPtr + BOOKMARKS_PAGE_SIZE;	// Q is 1-counting, not 0-counting
+		integer Q = MenuOptionPtr + BOOKMARKS_PAGE_SIZE;    // Q is 1-counting, not 0-counting
 		if (Q > BookmarksCount) Q = BookmarksCount;
 		MenuText += "Select place to display:\n";
 		list Options = [];
@@ -262,7 +279,7 @@ ShowMenu(integer WhichMenu, key pAvId) {
 			Options += OptionStr;
 			OptionsCount++;
 		}
-		while (OptionsCount < 9) { Options += BTN_BLANK; OptionsCount++; }	// fill buttons up to 9 with blanks
+		while (OptionsCount < 9) { Options += BTN_BLANK; OptionsCount++; }    // fill buttons up to 9 with blanks
 		Buttons = [ BTN_QUIT_BOOKMARKS ];
 		if (MenuOptionPtr) Buttons += BTN_PREV; else Buttons += BTN_BLANK;
 		if (Q < BookmarksCount) Buttons += BTN_NEXT; else Buttons += BTN_BLANK;
@@ -287,7 +304,7 @@ ShowTextBox(integer Mode, string Text) {
 }
 ProcessMenu(string Input) {
 	Debug("Processing menu: " + Input);
-	if (Input == BTN_BLANK) {		// if they've selected a blank button, just redisplay the same menu
+	if (Input == BTN_BLANK) {        // if they've selected a blank button, just redisplay the same menu
 		ShowMenu(CurrentMenu, AvId);
 		return;
 	}
@@ -314,7 +331,7 @@ ProcessMenu(string Input) {
 			return;
 		}
 		else if (Input == BTN_REFRESH) {
-			Display();
+			DisplayStart();
 			return;
 		}
 		else if (Input == BTN_EXTENSION) {
@@ -324,13 +341,13 @@ ProcessMenu(string Input) {
 		else if (Input == BTN_MODE_LATLON) {
 			if (DisplayType == DISP_PANO_ID) {
 				DisplayType = DISP_LAT_LON;
-				Display();
+				DisplayStart();
 			}
 		}
 		else if (Input == BTN_MODE_PANOID) {
 			if (DisplayType == DISP_LAT_LON && PanoId != "") {
 				DisplayType = DISP_PANO_ID;
-				Display();
+				DisplayStart();
 			}
 		}
 	}
@@ -359,7 +376,7 @@ ProcessMenu(string Input) {
 		}
 	}
 	else if (CurrentMenu == MENU_MESSAGE) {
-		ShowMenu(MENU_MAIN, AvId);	// they've OK'd the message dialog, so return them to the main menu
+		ShowMenu(MENU_MAIN, AvId);    // they've OK'd the message dialog, so return them to the main menu
 		return;
 	}
 	ShowMenu(MENU_MAIN, AvId);
@@ -373,7 +390,7 @@ ProcessTextBox(string Input) {
 		}
 		list Parts = llParseStringKeepNulls(Input, [ ",", "|" ], []);
 		integer PartsCount = llGetListLength(Parts);
-		if (PartsCount == 2) {	// Probably lat/lon?
+		if (PartsCount == 2) {    // Probably lat/lon?
 			float Lat = (float)llList2String(Parts, 0);
 			float Lon = (float)llList2String(Parts, 1);
 			if (Lat == 0.0 || Lon == 0.0) {
@@ -384,11 +401,11 @@ ProcessTextBox(string Input) {
 			CurrentLat = Lat;
 			CurrentLon = Lon;
 		}
-		else if (PartsCount == 1) {	// Let's guess it's a pano id
+		else if (PartsCount == 1) {    // Let's guess it's a pano id
 			DisplayType = DISP_PANO_ID;
 			PanoId = llList2String(Parts, 0);
 		}
-		Display();
+		DisplayStart();
 	}
 	else if (TextboxMode == TM_SAVE_NAME) {
 		if (Input == "") {
@@ -401,7 +418,7 @@ ProcessTextBox(string Input) {
 			ShowMenuMessage("Place already exists with name '" + Input + "'");
 			return;
 		}
-		if (llSubStringIndex(Input, "|") > -1) {	// We can't allow this because it's a separator in the notecard
+		if (llSubStringIndex(Input, "|") > -1) {    // We can't allow this because it's a separator in the notecard
 			ShowMenuMessage("Invalid character in name: '|'");
 			return;
 		}
@@ -430,7 +447,7 @@ LoadBookmark(integer Which) {
 	PanoId = llList2String(Bookmarks, Ptr + BOOK_PANOID);
 	string M = llList2String(Bookmarks, Ptr + BOOK_MODE);
 	if (M == "L") DisplayType = DISP_LAT_LON; else DisplayType = DISP_PANO_ID;
-	Display();
+	DisplayStart();
 }
 integer ReadBookmarks() {
 	Debug("Reading bookmarks");
@@ -460,7 +477,7 @@ integer ReadBookmarks() {
 			if (Mode == "") Mode = "L";
 			Bookmarks += [ bName, Lat, Lon, PanoId, Mode ];
 			BookmarksCount++;
-			if (First && DisplayType == DISP_UNDEFINED) {	// Load first entry as current if we have nothing set
+			if (First && DisplayType == DISP_UNDEFINED) {    // Load first entry as current if we have nothing set
 				Debug("Displaying first bookmark");
 				LoadBookmark(0);
 			}
@@ -476,10 +493,10 @@ integer Rot2Heading(rotation Rot) {
 	return -(integer)(Euler.z * RAD_TO_DEG);
 }
 //ClearAllMedia() {
-//	integer P = 0;
-//	while(++P <= PrimCount) {
-//		llClearLinkMedia(P, ALL_SIDES);
-//	}
+//    integer P = 0;
+//    while(++P <= PrimCount) {
+//        llClearLinkMedia(P, ALL_SIDES);
+//    }
 //}
 // We read our config information from a notecard whose name is defined by CONFIG_NOTECARD.
 integer ReadConfig() {
@@ -498,30 +515,31 @@ integer ReadConfig() {
 	Angles = [];
 	Pitches = [];
 	DisplaysCount = 0;
+	DisplayDelay = 5.0;
+	LoadingTexture = TEXTURE_BLANK;
 	IsMl = FALSE;
 	StandAlone = FALSE;
-	UseGroundMap = TRUE;
-	AutoRedisplay = FALSE;
-	DoubleDisplay = FALSE;
 	integer Lines = osGetNumberOfNotecardLines(CONFIG_NOTECARD);
 	integer I;
 	for(I = 0; I < Lines; I++) {
 		string Line = osGetNotecardLine(CONFIG_NOTECARD, I);
 		integer Comment = llSubStringIndex(Line, "//");
-		if (Comment != 0) {	// Not a complete comment line
-			if (Comment > -1) Line = llGetSubString(Line, 0, Comment - 1);	// strip from comments characters onwards
-			if (llStringTrim(Line, STRING_TRIM) != "") {	// if there's something left after comments are removed
+		if (Comment != 0) {    // Not a complete comment line
+			if (Comment > -1) Line = llGetSubString(Line, 0, Comment - 1);    // strip from comments characters onwards
+			if (llStringTrim(Line, STRING_TRIM) != "") {    // if there's something left after comments are removed
 				// Extract name and value from: <name>=<value>, stripping spaces and folding name to lower case
-				list L = llParseStringKeepNulls(Line, [ "=" ], [ ]);	// Separate LHS and RHS of assignment
-				if (llGetListLength(L) == 2) {	// so there is a "X = Y" kind of syntax
-					string OName = llStringTrim(llList2String(L, 0), STRING_TRIM);		// original parameter name
-					string Name = llToLower(OName);		// lower-case version for case-independent parsing
+				list L = llParseStringKeepNulls(Line, [ "=" ], [ ]);    // Separate LHS and RHS of assignment
+				if (llGetListLength(L) == 2) {    // so there is a "X = Y" kind of syntax
+					string OName = llStringTrim(llList2String(L, 0), STRING_TRIM);        // original parameter name
+					string Name = llToLower(OName);        // lower-case version for case-independent parsing
 					string Value = llStringTrim(llList2String(L, 1), STRING_TRIM);
 					// Interpret name/value pairs
-					if (Name == "apikey")	ApiKey = StripQuotes(Value, Line);
-					else if (Name == "searchapikey")	SearchApi = StripQuotes(Value, Line);
-					else if (Name == "fov")	Fov = (integer)Value;
+					if (Name == "apikey")    ApiKey = StripQuotes(Value, Line);
+					else if (Name == "searchapikey")    SearchApi = StripQuotes(Value, Line);
+					else if (Name == "fov")    Fov = (integer)Value;
 					else if (Name == "primname") PrimName = StripQuotes(Value, Line);
+					else if (Name == "displaydelay") DisplayDelay = (float)Value;
+					else if (Name == "loadingtexture") LoadingTexture = (key)Value;
 					else if (Name == "display") {
 						list FaceData = llCSV2List(Value);
 						if (llGetListLength(FaceData) != 3) {
@@ -538,20 +556,11 @@ integer ReadConfig() {
 							DisplaysCount++;
 						}
 					}
-					else if (Name == "groundmap") {
-						UseGroundMap = String2Bool(Value);
-					}
 					else if (Name == "isml") {
 						IsMl = String2Bool(Value);
 					}
 					else if (Name == "standalone") {
 						StandAlone = String2Bool(Value);
-					}
-					else if (Name == "autoredisplay") {
-						AutoRedisplay = String2Bool(Value);
-					}
-					else if (Name = "doubledisplay") {
-						DoubleDisplay = String2Bool(Value);
 					}
 					else {
 						llOwnerSay("Invalid keyword in config file: '" + OName + "'");
@@ -565,18 +574,18 @@ integer ReadConfig() {
 			}
 		}
 		if (IsMl)
-			llMessageLinked(LINK_ROOT, ETH_LOCK, "", NULL_KEY);	// prevent ML from acting on clicks on menu
+			llMessageLinked(LINK_ROOT, ETH_LOCK, "", NULL_KEY);    // prevent ML from acting on clicks on menu
 	}
 	return IsOK;
 }
 // Takes a string in double quotes, and strips out the quotes. Validates the format.
 // <Text> is the string with quotes; <Line> is the entire line for error reporting
 string StripQuotes(string Text, string Line) {
-	if (Text == "") {	// allow empty string for null value
+	if (Text == "") {    // allow empty string for null value
 		return("");
 	}
-	if (llGetSubString(Text, 0, 0) == "\"" && llGetSubString(Text, -1, -1) == "\"") { 	// if surrounded by quotes
-		return(llGetSubString(Text, 1, -2));	// strip quotes
+	if (llGetSubString(Text, 0, 0) == "\"" && llGetSubString(Text, -1, -1) == "\"") {     // if surrounded by quotes
+		return(llGetSubString(Text, 1, -2));    // strip quotes
 	}
 	else {
 		llOwnerSay("Invalid string literal (missing \"\"?): " + Line);
@@ -593,7 +602,7 @@ GetExtraData(string ExtraData) {
 		CurrentLat = (float)llList2String(L, 0);
 		CurrentLon = (float)llList2String(L, 1);
 	}
-	Display();
+	DisplayStart();
 }
 SetExtraData() {
 	string ExtraData = llDumpList2String([
@@ -609,24 +618,15 @@ SetExtraData() {
 GetPrimData() {
 	PrimCount = llGetNumberOfPrims();
 	PrimMenu = -1;
-	LinkNum = LINK_THIS;
+	PanoObjectLinkNum = LINK_THIS;
 	integer P;
 	// Process linkset
 	for (P = 1; P <= PrimCount; P++) {
 		string Name = llGetLinkName(P);
 		if (!IsMl && (Name == "menu")) PrimMenu = P;
-		if (Name == PrimName) LinkNum = P;
+		if (Name == PrimName) PanoObjectLinkNum = P;
 	}
 	LinkSetChanged = FALSE;
-}
-// Wrapper for osMessageObject() that checks to see if target exists
-MessageGroundMap(string Text) {
-	if (ObjectExists(GroundMapId)) {
-		osMessageObject(GroundMapId, Text);
-	}
-	else {
-		GroundMapId = NULL_KEY;
-	}
 }
 // Return true if specified prim/object exists in same region (not so reliable for avatars)
 integer ObjectExists(key Uuid) {
@@ -644,19 +644,15 @@ state Boot {
 	on_rez(integer Param) { llResetScript(); }
 	state_entry() {
 		Debug("Initialising (script: " +llGetScriptName() + ")");
-		//ApiKey = "AIzaSyAyF_cAJKP9fS6ETVfcbPJ931AtlPI6U1w";	// John H
 		CurrentLat = CurrentLon = 0.0;
 		if (ReadConfig()) {
 			GetPrimData();
 			if (!ReadBookmarks()) return;
-			if (UseGroundMap) {
-				state FindGroundMap;
-			}
-			else if (!StandAlone) {	// if it's part of a rezmela setup
+			if (!StandAlone) {    // if it's part of a rezmela setup
 				state RezMelaListen;
 			}
 			else {
-				//				GetDefaultBookmark();
+				//                GetDefaultBookmark();
 				state Normal;
 			}
 		}
@@ -671,13 +667,13 @@ state RezMelaListen {
 	on_rez(integer Param) { llResetScript(); }
 	state_entry() {
 		Debug("Listening for RezMela data");
-		llSetTimerEvent(2.0);	// Longer than worldobject script's timer, enough to receive data if there is any
+		llSetTimerEvent(2.0);    // Longer than worldobject script's timer, enough to receive data if there is any
 	}
 	link_message(integer Sender, integer Number, string String, key Id) {
-		if (Number == RWO_INITIALISE) {	// message from worldobject script, giving extra data
+		if (Number == RWO_INITIALISE) {    // message from worldobject script, giving extra data
 			llSetTimerEvent(0.0);
 			GetExtraData(String);
-			llMessageLinked(LINK_SET, -RWO_INITIALISE, "", NULL_KEY);	// send message to worldobject script to tell it to stop sending us data
+			llMessageLinked(LINK_SET, -RWO_INITIALISE, "", NULL_KEY);    // send message to worldobject script to tell it to stop sending us data
 			state Normal;
 		}
 	}
@@ -688,94 +684,31 @@ state RezMelaListen {
 		state Normal;
 	}
 }
-state FindGroundMap {
-	on_rez(integer Param) { llResetScript(); }
-	state_entry() {
-		Debug("Finding ground map");
-		llListen(MAP_CHAT_CHANNEL, "", NULL_KEY, "");
-	}
-	listen(integer Channel, string Name, key Id, string Message) {
-		GroundMapId = Id;
-		Debug("Ground map found");
-		//Debug("Clearing media");
-		//ClearAllMedia();	// this actually takes a long time, and isn't necessary normally
-		state Normal;	// change of state closes listener
-	}
-	changed(integer Change) {
-		if (Change & CHANGED_INVENTORY) {
-			llResetScript();
-		}
-		if (Change & CHANGED_LINK) {
-			state Boot;
-		}
-	}
-}
 state Normal {
 	on_rez(integer Param) { llResetScript(); }
 	state_entry() {
-		RegionAgentCount = llGetRegionAgentCount();
-		llSetTimerEvent(1.0);
-		CurrentPos = <-1, -1, -1>; // Force display
+		llSetTimerEvent(DisplayDelay); // we may have a default pano to show
 		MenuOptionPtr = 0;
 		Debug("Ready");
-	}
-	timer() {
-		// If the AutoRedisplay option is TRUE in the config file, we automatically redisplay the images when
-		// an avatar enters the region (otherwise they won't see it).
-		if (AutoRedisplay) {
-			integer Rac = llGetRegionAgentCount();
-			if (Rac > RegionAgentCount) {	// if someone has entered the region
-				NeedRedisplay = 5;			// flag for redisplay
-				Debug("Avatar has entered region - redisplaying soon");
-			}
-			RegionAgentCount = Rac;
-			if (NeedRedisplay) {
-				if (!--NeedRedisplay) Display();	// If NeedRedisplay reaches 0, redisplay
-			}
-		}
-		// If we're using the ground map, check to see if our position or rotation has changed
-		if (UseGroundMap) {
-			vector Pos = llGetRootPosition();
-			rotation Rot = llGetRootRotation();
-			if (Pos != CurrentPos) {	// moved (and possibly rotated)
-				Debug("Change of position detected");
-				// Request our lat/lon from the ground map, based on our in-world position
-				Debug("Requesting lat/lon for: " + llList2CSV([ Pos.x, Pos.y ]));
-
-				MessageGroundMap(llDumpList2String([
-					GMW_LOCATION, Pos.x, Pos.y
-						], "|"));
-				Heading = Rot2Heading(Rot);
-				CurrentPos = Pos;
-				CurrentRot = Rot;
-			}
-			else if (Rot != CurrentRot) { 	// not moved, just rotated
-				Debug("Change of rotation detected");
-				Heading = Rot2Heading(Rot);
-				Display();
-				CurrentRot = Rot;
-			}
-			if (GroundMapId == NULL_KEY) state FindGroundMap;	// If ground map has disappeared, reacquire it
-		}
 	}
 	link_message(integer Sender, integer Number, string String, key Id) {
 		if (Number == GMC_MOVE_TO) {
 			list L = llParseStringKeepNulls(String, [ "," ], []);
 			CurrentLat = (float)llList2String(L, 0);
 			CurrentLon = (float)llList2String(L, 1);
-			Display();
+			DisplayStart();
 		}
 		else if (Number == LM_STREETVIEW_COORDS) {
 			list L = llParseStringKeepNulls(String, [ "," ], []);
 			CurrentLat = (float)llList2String(L, 0);
 			CurrentLon = (float)llList2String(L, 1);
-			Display();
+			DisplayStart();
 		}
-		else if (Number == RWO_INITIALISE) {	// message from worldobject script, giving extra data (which we already have)
-			llMessageLinked(LINK_SET, -RWO_INITIALISE, "", NULL_KEY);	// send message to worldobject script to tell it to stop sending us data
+		else if (Number == RWO_INITIALISE) {    // message from worldobject script, giving extra data (which we already have)
+			llMessageLinked(LINK_SET, -RWO_INITIALISE, "", NULL_KEY);    // send message to worldobject script to tell it to stop sending us data
 		}
 		else if (Number == LM_EXTENSION_MENU) {
-			if (String == "main") {		// extension script is returning control to us from its menu
+			if (String == "main") {        // extension script is returning control to us from its menu
 				AvId = Id;
 				ShowMenu(MENU_MAIN, AvId);
 			}
@@ -786,20 +719,10 @@ state Normal {
 			CurrentLat = (float)llList2String(Parts, 1);
 			CurrentLon = (float)llList2String(Parts, 2);
 			DisplayType = DISP_LAT_LON;
-			Display();
+			DisplayStart();
 		}
-		else if (Number == LM_RESET) {	// global reset
+		else if (Number == LM_RESET) {    // global reset
 			llResetScript();
-		}
-	}
-	dataserver(key From, string Data) {
-		if (UseGroundMap && From == GroundMapId) {
-			list Parts = llParseString2List(Data, [ "|" ], []);
-			CurrentLat = (float)llList2String(Parts, 1);
-			CurrentLon = (float)llList2String(Parts, 2);
-			Debug("Received lat/lon: " + llList2CSV([ CurrentLat, CurrentLon ]));
-			Heading = Rot2Heading(llGetRot());
-			Display();
 		}
 	}
 	touch_start(integer Number) {
@@ -817,13 +740,17 @@ state Normal {
 			ProcessTextBox(Message);
 		}
 	}
+	timer() {
+		llSetTimerEvent(0.0);
+		DisplayEnd();
+	}
 	changed(integer Change) {
 		if (Change & CHANGED_INVENTORY) {
 			state Boot;
 		}
 		if (Change & CHANGED_REGION_START) {
-			BTN_BLANK = " ";	// Shouldn't be necessary - OpenSim sets this variable to "" (null) on region restart
-			Display();
+			BTN_BLANK = " ";    // Shouldn't be necessary - OpenSim sets this variable to "" (null) on region restart
+			DisplayStart();
 		}
 		if (Change & CHANGED_LINK) {
 			LinkSetChanged = TRUE;
@@ -852,8 +779,8 @@ state SaveBookmark {
 		}
 		osMakeNotecard(BOOKMARKS_NOTECARD, NotecardLines);
 		ShowMenuMessage("Place '" + BookmarkName + "' saved OK");
-		ReadBookmarks(); 	// Not strictly necessary, but will make problems apparent earlier
+		ReadBookmarks();     // Not strictly necessary, but will make problems apparent earlier
 		state Normal;
 	}
 }
-// Panocube v1.0.3
+// Panocube v1.0.4

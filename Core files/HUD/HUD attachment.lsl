@@ -1,4 +1,4 @@
-// RezMela HUD attachment v1.4.0
+// RezMela HUD attachment v1.4.3
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,9 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.4.3 - fix: logo on sign-in prim disappearing
+// v1.4.2 - more prim blanking to keep Ilan and Oren happy (Market upload requirements)
+// v1.4.1 - add sign-in button
 // v1.4.0 - HUD server now renders prim-drawing textures
 // v1.3 - update for OpenSim 0.9.1
 // v1.2 - don't use alt camera pos if none specified
@@ -56,6 +59,7 @@ string CONFIG_NOTECARD = "HUD settings";
 vector VEC_NAN = <-99.0,99.0,-99.0>;    // nonsense value to indicate "not a number" for vectors
 integer CAMERA_JUMP_FACE = 4;
 integer CAMERA_JUMP_BACK = 1;
+string BEACON_CALL = "_8^D+"; // magic number for calling beacons
 
 integer HUD_CHANNEL = -84401050;
 
@@ -96,6 +100,7 @@ integer PagePrimsCount;
 // Special prim link numbers
 integer SplashPrim;	// Link number of splash prim
 integer BackerPrim;	// Link number of backer prim
+integer SignInPrim; // Link number of sign-in prim
 integer FloatBackPrim;
 integer FloatTextPrim;
 integer CameraJumpModePrim;
@@ -126,6 +131,7 @@ integer CurrentPagePrim;	// pointer to PagePrims
 integer CurrentPageLinkNum;
 
 float TimerFrequency;
+key MyCreator;
 string UuidLogo;		// UUIDs of textures on HUD root
 string UuidMinMax;
 
@@ -163,6 +169,7 @@ string HUD_MESSAGE_GET_VERSION = "V";
 
 vector POS_STASH = <0.04, 0.0, 0.0>;	// local position of "stashed" prims, tucked out of the way
 vector SIZE_TINY = <0.001, 0.001, 0.001>;
+vector SIZE_SIGNIN = <0.0325, 0.0325, 0.0325>;
 vector TITLE_PAGE_REPEATS = <-4.0, 0.125, 0.0>;
 vector TITLE_PAGE_OFFSETS = <0.0, 0.45, 0.0>;
 integer FACE_RENDER = 2;
@@ -174,6 +181,8 @@ float ALPHA_TRANSPARENT = 0.0;
 vector COLOR_WHITE = <1.0, 1.0, 1.0>;
 rotation IMAGE_ROTATION = <-0.5, 0.5, -0.5, 0.5>;
 
+vector SignInButtonPos;
+string SignInButtonTexture;
 vector CameraJumpModeButtonPosActive;
 vector CameraJumpModeButtonPosIdle;
 vector CameraJumpModeButtonSize;
@@ -217,6 +226,8 @@ integer SplashOn = FALSE;
 integer VersionNumberSeen;
 integer Controls;
 
+list HackImagePrims; // Another attempt to get prims to display properly
+
 float CameraZoomFactor;
 integer CameraTracking;
 integer CameraJumpMode;
@@ -232,7 +243,10 @@ string AlertSound;
 string FloatingText;
 
 HandleTouch(integer LinkNum, float TouchX, float TouchY) {
-	if (LinkNum == CameraJumpModePrim) {
+	if (LinkNum == SignInPrim) {
+		SearchForApps();
+	}
+	else if (LinkNum == CameraJumpModePrim) {
 		integer OldCameraJumpMode = CameraJumpMode;
 		CameraJumpMode = !CameraJumpMode;
 		CameraJumpShow();
@@ -415,7 +429,7 @@ DisplayPage(integer PageIndex, string ImagesString) {
 	if (ApplyTexture) {
 		PrimParams += PrimTexture(FACE_PAGE, TextureId, PageRepeats, PageOffsets, 0.0);
 	}
-
+	HackImagePrims = [];
 	if (ImagesString != "") {
 		list TL = llParseStringKeepNulls(ImagesString, [ MESSAGE_SEPARATOR_2 ], []);
 		integer Tlc = llGetListLength(TL);
@@ -429,8 +443,34 @@ DisplayPage(integer PageIndex, string ImagesString) {
 		}
 	}
 	llSetLinkPrimitiveParamsFast(LINK_THIS, PrimParams);
+	// More hacking to try to get image prims to show properly.
+	// Let's try changing things in a separate call to llSetLinkPrimitiveParamsFast()
+	DoImagePrimsHack();
 	PagePrims = llListReplaceList(PagePrims, [ llGetTime() ], PrimPtr + PP_LAST_USED, PrimPtr + PP_LAST_USED); 	// Update "last used" time to make this page recently used
 	Debug("Displayed page: " + (string)PageIndex + " linknum: " + (string)LinkNum);
+}
+// More hacking - see calling code for more info
+// This is clumsy and inelegant, and maybe some time we can spend hours figuring what works and what doesn't, and
+// then remove the bits that make no difference. Until then, let's just live with it.
+DoImagePrimsHack() {
+	vector HackPos = <12.0, 12.0, 12.0>;
+	rotation HackRot = llEuler2Rot(<1.0, 2.0, 3.0>);
+	vector HackSize = <0.001, 0.001, 0.001>;
+	list Hacks1 = [];
+	list Hacks2 = [];
+	integer Len = llGetListLength(HackImagePrims);
+	integer P;
+	for (P = 0; P < Len; P++) {
+		integer LinkNum = llList2Integer(HackImagePrims, P);
+		list L = llGetLinkPrimitiveParams(LinkNum, [ PRIM_POS_LOCAL, PRIM_ROT_LOCAL, PRIM_SIZE ]);
+		vector Pos = llList2Vector(L, 0);
+		rotation Rot = llList2Rot(L, 1);
+		vector Size = llList2Vector(L, 2);
+		Hacks1 += [ PRIM_LINK_TARGET, LinkNum, PRIM_POS_LOCAL, HackPos, PRIM_ROT_LOCAL, HackRot, PRIM_TEXT, "!", <1.0, 1.0, 1.0>, 0.0, PRIM_SIZE, HackSize ];
+		Hacks2 += [ PRIM_LINK_TARGET, LinkNum, PRIM_POS_LOCAL, Pos, PRIM_ROT_LOCAL, Rot, PRIM_TEXT, "", ZERO_VECTOR, 0.0, PRIM_SIZE, Size  ];
+	}
+	llSetLinkPrimitiveParamsFast(LINK_THIS, Hacks1);
+	llSetLinkPrimitiveParamsFast(LINK_THIS, Hacks2);
 }
 // Hide a page and its elements (returns Prim Params list segment)
 list HidePage(integer LinkNum) {
@@ -468,6 +508,7 @@ list SetImagePrim(string Uuid, vector Pos, vector Size, string Tag) {
 	ImagePrims = llDeleteSubList(ImagePrims, Ptr, Ptr + IM_STRIDE - 1);
 	ImagePrims += [ LinkNum, Uuid, Tag ];
 	CurrentImages += [ LinkNum, Pos, Size ];
+	HackImagePrims += LinkNum;
 	// Position prim
 	return PrimLinkTarget("SetImagePrim", LinkNum) +
 		PrimTexture(FACE_IMAGE, Uuid, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0) +
@@ -491,7 +532,7 @@ integer GetOldestPrim() {
 	if (OldestPrim == -1) PrimPtr = 0;	// Just in case nothing matched for some reason,
 	return OldestPrim;
 }
-// Totally hide the HUD by making it invisible and small, or reverse this by displaying it normal sized
+// Mostly hide the HUD by making it small, or reverse this by displaying it normal sized
 VisibleStatus(integer pVisible, integer pMaximised) {
 	Visible = pVisible;
 	Maximised = pMaximised;
@@ -515,6 +556,17 @@ VisibleStatus(integer pVisible, integer pMaximised) {
 		float Rot = 0.0;
 		if (!Maximised) Rot = PI;	// Set min/max arrow direction
 		PrimParams += PrimTexture(6, UuidMinMax, <1.0, 1.0, 0.0>, ZERO_VECTOR, Rot);
+	}
+	// Sign-in prim
+	if (!Visible) { // HUD is in small mode
+		PrimParams +=
+			PrimLinkTarget("VisibleStatus 1.5", SignInPrim) +
+			PrimPosRot(SignInButtonPos, PagePrimRot) +
+			PrimSize(SIZE_SIGNIN) + PrimColor(ALL_SIDES, COLOR_WHITE, ALPHA_NORMAL) + 
+			PrimTexture(ALL_SIDES, SignInButtonTexture, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0);
+	}
+	else { // Sign-in not visible because we're activated
+		PrimParams += PrimLinkTarget("VisibleStatus 1.5", SignInPrim) + PrimPosRot(SignInButtonPos, PagePrimRot) + PrimSize(SIZE_TINY) + PrimColor(ALL_SIDES, COLOR_WHITE, ALPHA_TRANSPARENT);
 	}
 	// Camera mode prim
 	CameraJumpShow();
@@ -609,12 +661,16 @@ list PrimLinkTarget(string DebugInfo, integer LinkNum) {
 	return [ PRIM_LINK_TARGET, LinkNum ];
 }
 list PrimPosRot(vector LocalPos, rotation LocalRot) {
+	// These position/rotation hacks are in an effort to work round an old viewer bug whereby attachment prims that are moved
+	// don't have the movement reflected in what's seen.
 	vector HackPos1 = LocalPos;
 	vector HackPos2 = LocalPos;
 	rotation HackRot = LocalRot * <0.01, 0.01, 0.01, 0.01>;	// a little wiggle helps thumbnails to become visible
 	HackPos1.x += 9.0;	// pushing the prim away from the viewer and back again seems to help too
 	HackPos2.x += 18.0;
-	return [ PRIM_ROT_LOCAL, HackRot, PRIM_ROT_LOCAL, LocalRot, PRIM_POS_LOCAL, HackPos1, PRIM_POS_LOCAL, HackPos2, PRIM_POS_LOCAL, HackPos1, PRIM_POS_LOCAL, LocalPos ];
+	// Also, I'm trying a hack by my old friend Innula Zenovka over on SL, who said in 2013 that setting invisible prim text helps
+	// with this issue. https://community.secondlife.com/forums/topic/139000-moving-and-rotating-an-object-using-llsetlinkprimitiveparamsfast-for-a-worn-object/?tab=comments#comment-890414
+	return [ PRIM_ROT_LOCAL, HackRot, PRIM_ROT_LOCAL, LocalRot, PRIM_POS_LOCAL, HackPos1, PRIM_POS_LOCAL, HackPos2, PRIM_POS_LOCAL, HackPos1, PRIM_POS_LOCAL, LocalPos, PRIM_TEXT, "?", <1.0, 1.0, 1.0>, 0.0 ];
 }
 list PrimSize(vector Size) {
 	vector HackSize = Size * 200.0;	// not sure if this makes any difference
@@ -634,6 +690,7 @@ integer GetLinkNumbers() {
 	PagePrims = [];
 	ImagePrims = [];
 	BackerPrim = -1;
+	SignInPrim = -1;
 	SplashPrim = -1;
 	FloatBackPrim = -1;
 	FloatTextPrim = -1;
@@ -658,6 +715,9 @@ integer GetLinkNumbers() {
 		}
 		else if (PrimName == "backer") {
 			BackerPrim = LinkNum;
+		}
+		else if (PrimName == "sign-in") {
+			SignInPrim = LinkNum;
 		}
 		else if (PrimName == "floatback") {
 			FloatBackPrim = LinkNum;
@@ -767,7 +827,7 @@ SetCamera(vector CameraPos, vector CameraFocus) {
 		CAMERA_POSITION_LOCKED, TRUE,
 		CAMERA_FOCUS, CameraFocus,
 		CAMERA_FOCUS_LOCKED, TRUE
-		]);
+			]);
 }
 ReleaseCamera() {
 	if (CameraPositioned) {
@@ -799,7 +859,7 @@ Jump(vector Pos, vector LookAt, integer SavePosition) {
 		OwnerId,
 		Pos,
 		LookAt
-		], "|");
+			], "|");
 	MessageObject(JumpAppId, Params);
 }
 CameraJumpSetup() {
@@ -961,6 +1021,17 @@ vector HexColor2RGB(string AARRGGBB) {
 integer Hex2Int(string Hex) {
 	return (integer)( "0x" + llGetSubString(Hex, 0, 7)  );
 }
+// Search the region for apps
+SearchForApps() {
+	llSensor("", NULL_KEY, SCRIPTED, 96.0, PI);
+}
+// Check result of search
+SearchResult(key Uuid) {
+	key CreatorId = GetCreatorId(Uuid);
+	if (CreatorId == MyCreator) {
+		MessageObject(Uuid, BEACON_CALL);
+	}
+}
 SetFloatingText() {
 	if (!Maximised) {
 		llSetLinkPrimitiveParamsFast(FloatTextPrim, [ PRIM_TEXT, "", ZERO_VECTOR, 0.0 ]);
@@ -1019,21 +1090,24 @@ ClearData() {
 	CurrentPagePrim = -1;
 	CurrentPageLinkNum = -1;
 }
-ReadConfig() {
+integer ReadConfig() {
 	// Set config defaults
+	SignInButtonPos = <0.3, 0.11, 0.0>;
+	SignInButtonTexture = TEXTURE_DEFAULT;
+	
 	CameraJumpModeButtonPosActive = <0.2, -0.154, 0.0>;
-	CameraJumpModeButtonPosIdle = <0.2, 0.11, 0.0>;
+	CameraJumpModeButtonPosIdle = <0.2, 0.07, 0.0>;
 	CameraJumpModeButtonSize = <0.0325, 0.0325, 0.0325>;
 	CameraJumpModeOnTexture = TEXTURE_DEFAULT;
 	CameraJumpModeOffTexture = TEXTURE_BLANK;
 
 	CameraResetButtonPosActive = <0.2, -0.154, -0.038>;
-	CameraResetButtonPosIdle = <0.2, 0.11, -0.038>;
+	CameraResetButtonPosIdle = <0.2, 0.07, -0.038>;
 	CameraResetButtonSize = <0.0325, 0.0325, 0.0325>;
 	CameraResetButtonTexture = TEXTURE_BLANK;
 
 	JumpBackButtonPosActive = <0.2, -0.154, -0.076>;
-	JumpBackButtonPosIdle = <0.2, 0.11, -0.076>;
+	JumpBackButtonPosIdle = <0.2, 0.07, -0.076>;
 	JumpBackButtonSize = <0.0325, 0.0325, 0.0325>;
 	JumpBackButtonTexture = TEXTURE_BLANK;
 
@@ -1042,7 +1116,7 @@ ReadConfig() {
 	if (llGetInventoryType(CONFIG_NOTECARD) != INVENTORY_NOTECARD) {
 		//LogError("Can't find notecard '" + CONFIG_NOTECARD + "'");
 		llOwnerSay("Can't find notecard '" + CONFIG_NOTECARD + "' - execution suspended");
-		state Hang;
+		return FALSE;
 	}
 	integer Lines = osGetNumberOfNotecardLines(CONFIG_NOTECARD);
 	integer I;
@@ -1059,7 +1133,9 @@ ReadConfig() {
 					string Name = llToLower(OName);        // lower-case version for case-independent parsing
 					string Value = llStringTrim(llList2String(L, 1), STRING_TRIM);
 					// Interpret name/value pairs
-					if (Name == "camerajumpmodebuttonposactive")	CameraJumpModeButtonPosActive = (vector)Value;
+					if (Name == "signinbuttonpos") SignInButtonPos = (vector)Value;
+					else if (Name == "signinbuttontexture") SignInButtonTexture = Value;
+					else if (Name == "camerajumpmodebuttonposactive")	CameraJumpModeButtonPosActive = (vector)Value;
 					else if (Name == "camerajumpmodebuttonposidle")	CameraJumpModeButtonPosIdle = (vector)Value;
 					else if (Name == "camerajumpmodebuttonsize")	CameraJumpModeButtonSize = (vector)Value;
 					else if (Name == "camerajumpmodeontexture")		CameraJumpModeOnTexture = Value;
@@ -1080,6 +1156,7 @@ ReadConfig() {
 			}
 		}
 	}
+	return TRUE;
 }
 Splash(integer On) {
 	if (On == SplashOn) return;	// no change
@@ -1130,11 +1207,11 @@ string GetVersion() {
 	integer P = llStringLength(S);
 	//	while (--P && llGetSubString(S, P, P) != " ") {}
 	integer Loop = TRUE;
-    while (Loop) {
-        Loop = FALSE;
-        P--; 
-        if (P > 0 && llGetSubString(S, P, P) != " ") Loop = TRUE;
-    }	
+	while (Loop) {
+		Loop = FALSE;
+		P--;
+		if (P > 0 && llGetSubString(S, P, P) != " ") Loop = TRUE;
+	}
 	P++;
 	if (llGetSubString(S, P, P) == "v") P++;
 	S = llGetSubString(S, P, -1);
@@ -1145,7 +1222,10 @@ SendVersion(key Id) {
 	MessageObject(Id, llDumpList2String( [
 		"HUDV",
 		GetVersion()
-		], "/"));
+			], "/"));
+}
+key GetCreatorId(key Uuid) {
+	return llList2Key(llGetObjectDetails(Uuid, [ OBJECT_CREATOR ]), 0);
 }
 ShowError(string Text) {
 	llDialog(OwnerId, "\nERROR!\n\n" + Text, [ "OK" ], -9999999);
@@ -1184,6 +1264,7 @@ default {
 		Debug("Script starting");
 		LoggedIn = FALSE;
 		OwnerId = llGetOwner();
+		MyCreator = GetCreatorId(llGetKey());
 		MyVersion = GetVersion();
 		ServerID = NULL_KEY;
 		TextureStore = NULL_KEY;
@@ -1222,7 +1303,7 @@ state Standby {
 	state_entry() {
 		SetDebug();
 		Debug("Standby state");
-		ReadConfig();
+		if (!ReadConfig()) state Hang;
 		llRegionSay(HUD_CHANNEL, "R");	// "ready" signal for HUD server
 		LoggedIn = FALSE;
 		SplashOn = FALSE;
@@ -1259,6 +1340,11 @@ state Standby {
 			SendVersion(Id);
 		}
 	}
+	sensor(integer Count) {
+		while(Count--) {
+			SearchResult(llDetectedKey(Count));
+		}
+	}
 	attach(key Attached) {
 		llResetScript();
 	}
@@ -1269,7 +1355,7 @@ state Standby {
 			RegionChange();
 			state ReStandby;
 		}
-		if (Change & CHANGED_INVENTORY) ReadConfig();
+		if (Change & CHANGED_INVENTORY) { if (!ReadConfig()) state Hang; }
 	}
 }
 state ReStandby { state_entry() { state Standby; } }
@@ -1301,7 +1387,7 @@ state Normal {
 	touch_start(integer Count) {
 		integer LinkNum = llDetectedLinkNumber(0);
 		vector TouchST = llDetectedTouchST(0);
-		//		if (LinkNum == 1 && llDetectedTouchFace(0) == 7 && llGetOwner() == (key)"7abfded3-4df7-420e-bed6-37f8eb2c9fd0") {	// John clicked on logo %%%
+		//		if (LinkNum == 1 && llDetectedTouchFace(0) == 7 && llGetOwner() == (key)"7abfded3-4df7-420e-bed6-37f8eb2c9fd0") {	// John clicked on logo
 		//			DebugDump();
 		//			return;
 		//		}
@@ -1376,7 +1462,7 @@ state Normal {
 			RegionChange();
 			state ReStandby;
 		}
-		if (Change & CHANGED_INVENTORY) ReadConfig();
+		if (Change & CHANGED_INVENTORY) { if (!ReadConfig()) state Hang; }
 	}
 }
 state ReloadNormal {
@@ -1446,22 +1532,43 @@ state Maintenance {
 			PRIM_COLOR, ALL_SIDES, <1.0, 1.0, 1.0>, 1.0,
 			PRIM_TEXTURE, ALL_SIDES, TEXTURE_BLANK, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0
 				];
-		PrimParams += PrimLinkTarget("Maintenance 6", CameraJumpModePrim) + [
+		PrimParams += PrimLinkTarget("Maintenance 5.2", FloatBackPrim) + [
+			PRIM_POS_LOCAL, <0.044, -0.04, 0.0>,
+			PRIM_SIZE, <0.02, 0.02, 0.01>,
+			PRIM_ROT_LOCAL, LocalRot,
+			PRIM_COLOR, ALL_SIDES, <1.0, 1.0, 1.0>, 1.0,
+			PRIM_TEXTURE, ALL_SIDES, TEXTURE_BLANK, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0
+				];
+		PrimParams += PrimLinkTarget("Maintenance 5.3", FloatTextPrim) + [
+			PRIM_POS_LOCAL, <0.056, -0.04, 0.0>,
+			PRIM_SIZE, <0.02, 0.02, 0.01>,
+			PRIM_ROT_LOCAL, LocalRot,
+			PRIM_COLOR, ALL_SIDES, <1.0, 1.0, 1.0>, 1.0,
+			PRIM_TEXTURE, ALL_SIDES, TEXTURE_BLANK, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0
+				];
+		PrimParams += PrimLinkTarget("Maintenance 5.5", SignInPrim) + [
 			PRIM_POS_LOCAL, <0.02, -0.08, 0.0>,
 			PRIM_SIZE, <0.02, 0.02, 0.01>,
 			PRIM_ROT_LOCAL, LocalRot,
 			PRIM_COLOR, ALL_SIDES, <1.0, 1.0, 1.0>, 1.0,
 			PRIM_TEXTURE, ALL_SIDES, TEXTURE_BLANK, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0
 				];
-		PrimParams += PrimLinkTarget("Maintenance 8", CameraResetPrim) + [
+		PrimParams += PrimLinkTarget("Maintenance 6", CameraJumpModePrim) + [
 			PRIM_POS_LOCAL, <0.032, -0.08, 0.0>,
 			PRIM_SIZE, <0.02, 0.02, 0.01>,
 			PRIM_ROT_LOCAL, LocalRot,
 			PRIM_COLOR, ALL_SIDES, <1.0, 1.0, 1.0>, 1.0,
 			PRIM_TEXTURE, ALL_SIDES, TEXTURE_BLANK, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0
 				];
-		PrimParams += PrimLinkTarget("Maintenance 9", JumpBackPrim) + [
+		PrimParams += PrimLinkTarget("Maintenance 8", CameraResetPrim) + [
 			PRIM_POS_LOCAL, <0.044, -0.08, 0.0>,
+			PRIM_SIZE, <0.02, 0.02, 0.01>,
+			PRIM_ROT_LOCAL, LocalRot,
+			PRIM_COLOR, ALL_SIDES, <1.0, 1.0, 1.0>, 1.0,
+			PRIM_TEXTURE, ALL_SIDES, TEXTURE_BLANK, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0
+				];
+		PrimParams += PrimLinkTarget("Maintenance 9", JumpBackPrim) + [
+			PRIM_POS_LOCAL, <0.056, -0.08, 0.0>,
 			PRIM_SIZE, <0.02, 0.02, 0.01>,
 			PRIM_ROT_LOCAL, LocalRot,
 			PRIM_COLOR, ALL_SIDES, <1.0, 1.0, 1.0>, 1.0,
@@ -1478,4 +1585,4 @@ state Maintenance {
 	}
 }
 state Hang { on_rez(integer S) { llResetScript(); } state_entry() { }}
-// RezMela HUD attachment v1.4.0
+// RezMela HUD attachment v1.4.3

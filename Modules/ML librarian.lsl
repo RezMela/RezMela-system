@@ -265,6 +265,7 @@ SendData() {
 			// If/when we have object config cards, we can pick up their contents here
 		}
 	}
+llOwnerSay("Librarian Sending data for " + (string)(llGetListLength(Objects) / 2) + " objects");	///%%%
 	if (DebugMode) Debug("Sending data for " + (string)(llGetListLength(Objects) / 2) + " objects");
 	llMessageLinked(LINK_ROOT, LIB_METADATA, llDumpList2String(Objects, "|"), NULL_KEY);
 }

@@ -1,4 +1,4 @@
-// ML cataloguer v1.7.6
+// ML cataloguer v1.7.7
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.7.7 - initialisation of objects data before request; some refactoring
 // v1.7.6 - use UUIDs instead of link numbers; add "CommsType" to C card
 // v1.7.5 - improved comms for rezzing objects
 // v1.7.4 - split objects data into static and dynamic
@@ -98,7 +99,7 @@ integer LB_CATALOG = 3;
 integer LB_STRIDE = 4;
 integer LibrariesCount = 0;
 
-list Objects;
+list ObjectsData;
 integer OBJ_NAME = 0;
 // Static data is from 0 to 5
 integer OBJ_LIBINDEX 		= 7;	// sort key value for library
@@ -143,18 +144,22 @@ SendData() {
 	llMessageLinked(LINK_ROOT, CT_MODULES, llDumpList2String(SendModules, "|"), NULL_KEY);
 	// Next, send all objects data
 	// Each object is on a separate line, and the elements are |-separated, in the order they're stored
-	string ObjectsData = "";
+	string ObjectsDataString = "";
 	for (P = 0; P < ObjectsCount; P++) {
 		integer Q = P * OBJ_STRIDE;
-		list DataList = llList2List(Objects, Q, Q + OBJ_STRIDE - 1);
-		ObjectsData += llDumpList2String(DataList, "|") + "\n";
+		list DataList = llList2List(ObjectsData, Q, Q + OBJ_STRIDE - 1);
+		ObjectsDataString += llDumpList2String(DataList, "|") + "\n";
 	}
-	string CatalogData = llStringToBase64(CategoryData) + "|" + llStringToBase64(ObjectsData);
+	string CatalogData = llStringToBase64(CategoryData) + "|" + llStringToBase64(ObjectsDataString);
 	llMessageLinked(LINK_ROOT, CT_CATALOG, CatalogData, NULL_KEY);
 	// Free up memory
+	ClearData();
+}
+// Initialise library data
+ClearData() {
 	Libraries = [];
 	LibrariesCount = 0;
-	Objects = [];
+	ObjectsData = [];
 	ObjectsCount = 0;
 }
 ProcessObjects(key ModuleId, string sData) {
@@ -271,7 +276,7 @@ ProcessObjectData(string ObjectName, integer LibIndex, string ObjectData) {
 	string StickPoints64 = llStringToBase64(llGetSubString(StickPointsRaw, 0, -2)); // Ignore last character, which is |
 	if (PreviewId == TEXTURE_TRANSPARENT) PreviewId = ThumbnailId;
 	// Static data is kept loaded at all times by the ML. Dynamic data is only loaded when the user is signed in.
-	Objects += [
+	ObjectsData += [
 		// Static data
 		ObjectName, // 0
 		CameraPos, // 1
@@ -308,7 +313,7 @@ ProcessObjectData(string ObjectName, integer LibIndex, string ObjectData) {
 		RegionSnap,
 		CopyRotation, // 32
 		CommsType // 33
-		// If you change this list, don't forget to ensure OBJ_STRIDE is correct (1 more than last column)!
+			// If you change this list, don't forget to ensure OBJ_STRIDE is correct (1 more than last column)!
 			];
 	ObjectsCount++;
 }
@@ -416,16 +421,17 @@ DeleteLibrary(integer LibPtr) {
 	integer O;
 	for (O = 0; O < ObjectsCount; O++) {
 		integer OP = O * OBJ_STRIDE;
-		integer ObjectLibIndex = llList2Integer(Objects, OP + OBJ_LIBINDEX);
+		integer ObjectLibIndex = llList2Integer(ObjectsData, OP + OBJ_LIBINDEX);
 		if (ObjectLibIndex != LibIndex) {
-			NewObjects += llList2List(Objects, OP, OP + OBJ_STRIDE - 1);
+			NewObjects += llList2List(ObjectsData, OP, OP + OBJ_STRIDE - 1);
 		}
 	}
-	Objects = NewObjects;
-	ObjectsCount = llGetListLength(Objects) / OBJ_STRIDE;
+	ObjectsData = NewObjects;
+	ObjectsCount = llGetListLength(ObjectsData	) / OBJ_STRIDE;
 }
 // Request data from all libraries
 GetLibraryData() {
+	ClearData();	
 	// Populate list of UUIDs we need to hear from. We store each UUID twice, because we expect two responses
 	// from each librarian (category data and objects data).
 	WaitModules = ModuleIds + ModuleIds;
@@ -574,11 +580,11 @@ DebugDump() {
 	Output = "Objects [" + (string)ObjectsCount + "]:\n";
 	for (P = 0; P < ObjectsCount; P++) {
 		integer Q = P * OBJ_STRIDE;
-		string ObjectName = llList2String(Objects, OBJ_NAME);
-		integer LibIndex = llList2Integer(Objects, Q + OBJ_LIBINDEX);
+		string ObjectName = llList2String(ObjectsData, OBJ_NAME);
+		integer LibIndex = llList2Integer(ObjectsData, Q + OBJ_LIBINDEX);
 		Output += llDumpList2String([ ObjectName, LibIndex ], " ") + "\n";
 	}
-	if (ObjectsCount != (llGetListLength(Objects) / OBJ_STRIDE)) {
+	if (ObjectsCount != (llGetListLength(ObjectsData) / OBJ_STRIDE)) {
 		Output += "Objects count is wrong!";
 	}
 	llOwnerSay(Output);
@@ -723,4 +729,4 @@ state Hang {
 		if (Change & CHANGED_LINK) llResetScript();
 	}
 }
-// ML cataloguer v1.7.6
+// ML cataloguer v1.7.7

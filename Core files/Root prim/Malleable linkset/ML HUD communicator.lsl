@@ -1,4 +1,4 @@
-// HUD communicator v1.11.8
+// HUD communicator v1.11.9
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,7 @@
 // or modification, contact support@rezmela.com
 // More detailed information about the HUD communicator script is available here http://wiki.rezmela.org/doku.php/hud-communicator-script
 
+// v1.11.9 - add beacon processing; remove debug feature (not useful)
 // v1.11.8 - configurable rotation increments
 // v1.11.7 - replaced UUID by NULL_KEY to fix deleted scene not updating HUD
 // v1.11.6 - send HUD server messages direct to prim
@@ -77,8 +78,8 @@ integer HUD_CHAT_GENERAL = -192801290;
 string HUD_STRINGS = "HUD strings";
 string MODULE_EDIT_LOCK = "Module lock";
 string EN_DASH = "-";
-integer DEBUGGER = -391867620;
 string HUD_PRIM_NAME = "!Activator!";
+string BEACON_CALL = "_8^D+"; // magic number for calling beacons
 
 integer COM_RESET = -8172620;    // for external reset (eg a "reset" button)
 
@@ -103,6 +104,8 @@ integer LM_OBJECTS_COUNT = -405548;
 integer LM_FAILURE = -405549;
 integer LM_CHANGE_CONFIG = -405551;
 
+integer LM_TOUCH_NORMAL	= -66168300;
+
 // Scene file manager
 integer SFM_EXPORT = -3310426;
 
@@ -116,7 +119,6 @@ integer ENV_DONE = -79301904;
 key AvId;
 key MyUuid;
 integer HudActive = FALSE;
-integer DebugMode = FALSE;
 
 // HUD API linked messages
 integer HUD_API_MAX = -4720600;    // Minimum value in this set (but negative)
@@ -143,6 +145,8 @@ integer HUD_API_STATUS_LINE = -47206050;
 integer HUD_API_CAMERA_JUMP_MODE = -47206051;
 integer HUD_API_BESPOKE = -47206060;
 integer HUD_API_RESET = -47206061;
+integer HUD_API_BEACON_SHOW = -47206062;
+integer HUD_API_BEACON_CLICK = -47206063;
 integer HUD_API_MIN = -47206099;    // Maximum value in this set (but negative)
 
 string HUD_API_SEPARATOR_1 = "|";
@@ -330,7 +334,6 @@ MakeCreateWindows() {
 		integer ParentNum = GetCategoryParentNum(Cat);
 		string ParentTag = "home";
 		if (Cat > -1) ParentTag = "cat:" + (string)ParentNum;
-		//llOwnerSay("Doing cat: " + Tag + " (" + CategoryName + ") - parent: " + ParentTag);///%%%
 		list ListEntries = [];
 		if (llListFindList(Categories, [ Cat ]) > -1) { // if sub-categories exist
 			integer Sub;
@@ -339,7 +342,7 @@ MakeCreateWindows() {
 				if (llList2Integer(Categories, SP + CAT_PARENT) == Cat) {
 					string SubCatFullName = GetCategoryFullName(Sub);
 					string SubCatEntry = TEXTURE_TRANSPARENT + HUD_API_SEPARATOR_2 + SubCatFullName + HUD_API_SEPARATOR_2 + "cat:" + (string)Sub;
-					///%%%% using transparent texture until HUD allows duplicate textures (if we ever do that?)
+					///using transparent texture until HUD allows duplicate textures (if we ever do that?)
 					//string SubCatEntry = FOLDER_ICON + HUD_API_SEPARATOR_2 + SubCatName + HUD_API_SEPARATOR_2 + "cat:" + (string)Sub;
 					ListEntries += SubCatEntry;
 				}
@@ -1042,16 +1045,16 @@ integer CheckPrims() {
 	}
 	return TRUE;
 }
+// Get the link number of the beacon prim
+integer GetBeaconLinkNum() {
+	integer BeaconLinkNum = osGetLinkNumber("!Beacon!");
+	if (BeaconLinkNum == -1) { LogError("Beacon prim missing"); state Hang; }
+	return BeaconLinkNum;
+}
 // Get link number of Scene File Manager prim
 // Note there is a duplicate in the ML main script
 integer SfmLinkNum() {
-	// TODO: use osGetLinkNumber when it's available (OS 0.9)
-	integer Num = llGetNumberOfPrims();
-	integer P;
-	for (P = 2; P <= Num; P++) {
-		if (llGetLinkName(P) == "&SceneFileManager&") return P;
-	}
-	return LINK_ALL_CHILDREN;
+	return osGetLinkNumber("&SceneFileManager&");
 }
 // Wrapper for osMessageObject() that checks to see if destination exists
 MessageObject(key Uuid, string Text) {
@@ -1065,50 +1068,39 @@ integer ObjectExists(key Uuid) {
 }
 // HUD API functions
 CreateWindowButtons(string Name, string Parent, string Heading, integer Back, list Buttons) {
-	Debug("Creating buttons window: " + Name);
 	SendHud(HUD_API_CREATE_WINDOW_BUTTONS, [ Name, Parent, Heading, Back ] + llDumpList2String(Buttons, HUD_API_SEPARATOR_2));
 }
 CreateWindowListPlain(string Name, string Parent, string Heading, integer Back, list Elements) {
-	Debug("Creating plain list window: " + Name);
 	SendHud(HUD_API_CREATE_WINDOW_LIST, [ Name, Parent, Heading, Back, FALSE ] + llDumpList2String(Elements, HUD_API_SEPARATOR_2));
 }
 CreateWindowListThumbs(string Name, string Parent, string Heading, integer Back, list Elements) {
-	Debug("Creating list thumbs window: " + Name);
 	SendHud(HUD_API_CREATE_WINDOW_LIST, [ Name, Parent, Heading, Back, TRUE ] + llDumpList2String(Elements, HUD_API_SEPARATOR_2));
 }
 CreateWindowCustom(string Name, string Parent, string Heading, integer Back, list Blocks) {
-	Debug("Creating custom window: " + Name);
 	SendHud(HUD_API_CREATE_WINDOW_CUSTOM, [ Name, Parent, Heading, Back ] + llDumpList2String(Blocks, HUD_API_SEPARATOR_2));
 }
 CreateWindowStatus(string Name, string Heading, list Message) {
-	Debug("Creating status window: " + Name);
 	SendHud(HUD_API_CREATE_WINDOW_STATUS, [ Name, Heading ] + llDumpList2String(Message, HUD_API_SEPARATOR_2));
 }
 CreateWindowAlert(string Name, string Heading, list Message, list Buttons) {
-	Debug("Creating alert window: " + Name);
 	SendHud(HUD_API_CREATE_WINDOW_ALERT, [ Name, Heading ] + llDumpList2String(Message, HUD_API_SEPARATOR_2) + llDumpList2String(Buttons, HUD_API_SEPARATOR_2));
 }
 CreateWindowImageText(string Name, string Parent, string Heading, integer Back, key TextureId, string Text) {
-	Debug("Creating imagetext window: " + Name);
 	SendHud(HUD_API_CREATE_WINDOW_IMAGETEXT, [ Name, Parent, Heading, Back ] + llDumpList2String([ TextureId, llStringToBase64(Text) ], HUD_API_SEPARATOR_2));
 }
 DisplayWindow(string Name) {
 	if (Name == "nudge") {
-		Debug("Setting nudge distance status");
 		llMessageLinked(LINK_ROOT, LM_NUDGE_STATUS, "", NULL_KEY);    // Tell the ML to send us the nudge distance status command so it appears when the menu is opened
 		SendHud(HUD_API_TRACK_CAMERA, [ TRUE ]);
 		CameraTracking = TRUE;
 	}
 	else if (CameraTracking){    // note that this won't take effect until they actually open a window (in-HUD navigation doesn't touch this)
-		Debug("Ending camera tracking");
 		SendHud(HUD_API_TRACK_CAMERA, [ FALSE ]);
 		CameraTracking = FALSE;
 	}
-	Debug("Displaying window: " + Name);
 	SendHud(HUD_API_DISPLAY_WINDOW, [ Name ]);
 }
 DestroyWindow(string Name) {
-	Debug("Destroying window: " + Name);
 	SendHud(HUD_API_DESTROY_WINDOW, [ Name ]);
 }
 // Handle click on logout button ("Finish")
@@ -1170,36 +1162,9 @@ MessageUser(string Text) {
 LogError(string Text) {
 	llMessageLinked(LINK_ROOT, -7563234, Text, AvId);
 }
-Debug(string Text) {
-	if (DebugMode) llOwnerSay("HCom: " + Text);
-	llRegionSay(DEBUGGER, "HCom: " + Text);
-}
-// Set debug mode according to root prim description
-SetDebug() {
-	if (llGetObjectDesc() == "debug") {
-		DebugMode = TRUE;
-	}
-}
-DebugDump() {
-	llOwnerSay("Categories:");
-	integer Count = llGetListLength(Categories) / CAT_STRIDE;
-	integer C;
-	for (C = 0; C < Count; C++) {
-		integer P = C * CAT_STRIDE;
-		llOwnerSay((string)C + ": " + llList2CSV(llList2List(Categories, P, P + CAT_STRIDE - 1)));
-	}
-	llOwnerSay("Objects:");
-	Count = llGetListLength(LibraryObjects) / OBJ_STRIDE;
-	for (C = 0; C < Count; C++) {
-		integer P = C * OBJ_STRIDE;
-		llOwnerSay((string)C + ": " + llList2CSV(llList2List(LibraryObjects, P, P + OBJ_STRIDE - 1)));
-	}
-}
 default {
 	on_rez(integer S) { llResetScript(); }
 	state_entry() {
-		SetDebug();
-		Debug("State entry");
 		if (llGetNumberOfPrims() == 1) state Hang; // we're in a box or something
 		MyUuid = llGetKey();
 		AvId = NULL_KEY;
@@ -1233,7 +1198,6 @@ default {
 state Idle {
 	on_rez(integer S) { llResetScript(); }
 	state_entry() {
-		Debug("Idle");
 		llSetTimerEvent(0.0);
 		// Free up memory while idle by clearing catalogue data
 		Categories = [];
@@ -1247,12 +1211,19 @@ state Idle {
 		Importing = 0;
 	}
 	link_message(integer Sender, integer Number, string Text, key Id) {
-		if (Number == HUD_API_LOGIN) {
-			Debug("Login message rec'd from HUD server");
+		if (Number == LM_TOUCH_NORMAL) {
+			list Parts = llCSV2List(Text);
+			integer LinkNum = (integer)llList2String(Parts, 0);
+			if (LinkNum == GetBeaconLinkNum()) {
+				// They've clicked on the beacon - tell the HUD server about this
+				SendHud(HUD_API_BEACON_CLICK, [ Id ]); // Id is user who clicked
+			}
+		}
+		else if (Number == HUD_API_LOGIN) {
 			SendBespokeData();
 			AvId = Id;
 			LogIn(AvId);
-			state GetCatalogue;
+			llSetTimerEvent(0.5); // will trigger state change to GetCatalogue
 		}
 		else if (Number == HUD_API_GET_METADATA) {    // HUD server requesting our data
 			SendMetaData();
@@ -1268,11 +1239,21 @@ state Idle {
 			llResetScript();
 		}
 	}
+	dataserver(key Id, string Data) {
+		if (Data == BEACON_CALL) {
+			key HudOwnerId = llList2Key(llGetObjectDetails(Id, [ OBJECT_OWNER ]), 0);
+			SendHud(HUD_API_BEACON_SHOW, [ HudOwnerId ]);
+		}
+	}
+	timer() {
+		// See timer event in GetCatalogue state for explanation of use of timer
+		llSetTimerEvent(0.0);
+		state GetCatalogue;
+	}
 }
 state GetCatalogue {
 	on_rez(integer S) { llResetScript(); }
 	state_entry() {
-		Debug("Requesting data from cataloguer");
 		llMessageLinked(LINK_THIS, CT_REQUEST_DATA, "", AvId); // Request object library data from Cataloguer
 		DisableCreateMenu = FALSE;
 		ArrangeModules();
@@ -1284,13 +1265,12 @@ state GetCatalogue {
 				list Parts = llParseStringKeepNulls(Text, [ "|" ], []);
 				string CatalogData = llBase64ToString(llList2String(Parts, 0));
 				string ObjectsData = llBase64ToString(llList2String(Parts, 1));
-				if (DebugMode) Debug("Catalog rec'd (" + (string)llStringLength(CatalogData) + "+" + (string)llStringLength(ObjectsData) + " bytes)");
 				if (!ReadObjectsList(CatalogData)) {    // If objects list fails to load, prevent use of Create
 					DisableCreateMenu = TRUE;
 					return;
 				}
 				ProcessObjectData(ObjectsData);
-				state Active;
+				llSetTimerEvent(0.5); // this triggers a state change to Active
 			}
 			else if (Number == CT_ERRORS) {
 				LibraryErrorsText = Text;
@@ -1308,18 +1288,23 @@ state GetCatalogue {
 			llResetScript();
 		}
 	}
+	timer() {
+		// The state change is deferred so that incoming messages received while the CT_CATALOG message is
+		// being processed aren't lost due to the state change. Previously, the state change was at the end
+		// of the CT_CATALOG code block, and LM_PUBLIC_DATA was being ignored because of this issue.
+		llSetTimerEvent(0.0);
+		state Active;
+	}
 }
 state Active {
 	on_rez(integer S) { llResetScript(); }
 	state_entry() {
-		Debug("Active");
 		SendHud(HUD_API_READY, []);        // Tell HUD we're ready
 		llListen(HUD_CHAT_GENERAL, "", NULL_KEY, "");
 		CameraTracking = FALSE;
 		llSetTimerEvent(0.0);
 	}
 	link_message(integer Sender, integer Number, string Text, key Id) {
-		//Debug("Received link message " + (string)Number + " from " + (string)Sender);
 		llAllowInventoryDrop(FALSE); // Do this for every command to ensure it stays false however they quit the import
 		if (Sender == 1) {    // Message from script in root prim
 			// Prim selection/deselection. We handle messages from the main ML script telling us when the user selects/deselects prims.
@@ -1329,7 +1314,6 @@ state Active {
 					Deselect();
 					return;
 				}
-				Debug("Object selected");
 				IsObjectSelected = TRUE;
 				integer LinkNum = (integer)Text;
 				string ObjectName = llGetLinkName(LinkNum);
@@ -1343,13 +1327,11 @@ state Active {
 				SelectedWindow();
 			}
 			else if (Number == LM_PRIM_DESELECTED) {
-				Debug("Object deselected");
 				IsObjectSelected = FALSE;
 				DisplayWindow(WindowWhenSelected);
 				HudStatus("");
 			}
 			else if (Number == LM_TASK_COMPLETE) {    // sent when loading or clearing a scene is complete
-				Debug("Task complete");
 				if (IsObjectSelected) {
 					SelectedWindow();
 				}
@@ -1358,23 +1340,18 @@ state Active {
 				}
 			}
 			else if (Number == LM_FAILURE) {
-				Debug("Failure: " + Text);
 				HandleFailure(Text);
 			}
 			else if (Number == LM_HUD_STATUS) {
-				Debug("Setting status: " + Text);
 				SendHud(HUD_API_STATUS_LINE, [ Text ]);
 			}
 			else if (Number == LM_PUBLIC_DATA) {
-				Debug("Rec'd public data: " + Text);
 				ParsePublicData(Text);
 			}
 			else if (Number == LM_OBJECTS_COUNT) {
-				Debug("Rec'd objects count: " + Text);
 				SceneObjectsCount = (integer)Text;    // # of objects in scene, from ML
 			}
 			else if (Number == ENV_DONE) {    // Environment script has finished processing
-				Debug("Rec'd 'environment done': " + Text);
 				if (Text == "land") DisplayWindow("landlevel");
 			}
 		}
@@ -1384,7 +1361,6 @@ state Active {
 				if (Number == HUD_API_CLICK_BUTTON) {
 					string WindowName = llList2String(Parts, 0);
 					string Tag = llList2String(Parts, 1);
-					Debug("User clicked: " + Tag + " in window " + WindowName);
 					// Handle menus
 					// --- Home
 					if (WindowName == "home") {
@@ -1601,7 +1577,6 @@ state Active {
 				}
 				else if (Number == HUD_API_BACK_BUTTON) {
 					string WindowName = llList2String(Parts, 0);
-					Debug("Back button on window " + WindowName);
 					if (IsCategoryRef(WindowName)) BackCategory();
 					else if (IsObjectRef(WindowName)) BackObject();
 					else {
@@ -1615,7 +1590,6 @@ state Active {
 					}
 				}
 				else if (Number == HUD_API_READY) {        // HUD is ready, so we send our first page
-					Debug("API ready, so creating windows");
 					llMessageLinked(SfmLinkNum(), SFM_LIST, "", NULL_KEY);    // request list of saves from Scene File Manager
 					HudActive = TRUE;
 					// Dummy home menu (so that parent references to it don't cause issues)
@@ -1694,7 +1668,6 @@ state Active {
 					MainWindow();
 				}
 				else if (Number == HUD_API_GET_METADATA) {    // HUD server requesting our data
-					Debug("Sending metadata to HUD server");
 					SendMetaData();
 				}
 				else if (Number == HUD_API_TAKE_CONTROL) {
@@ -1707,12 +1680,10 @@ state Active {
 					llMessageLinked(LINK_THIS, LM_CAMERA_JUMP_MODE, Text, Id);
 				}
 				else if (Number == HUD_API_LOGIN) {
-					Debug("Processing login");
 					AvId = Id;
 					LogIn(AvId);
 				}
 				else if (Number == HUD_API_LOGOUT) {
-					Debug("Processing logout");
 					LogOut();
 					state Idle;
 				}
@@ -1720,7 +1691,6 @@ state Active {
 			else {        // Not a message from the HUD
 				if (HudActive) {    // only process if HUD is active
 					if (Number == SFM_LIST) {    // Scene File Manager is sending us a list of save files
-						Debug("Got list of save files from SFM");
 						MakeSavesList(llParseStringKeepNulls(Text, [ "|" ], []));    // make lists that need saved scene names
 					}
 					else if (Number == SFM_SAVE_COMPLETE) {
@@ -1751,7 +1721,6 @@ state Active {
 			}
 			else {
 				if (Change & CHANGED_INVENTORY) {
-					Debug("Detected changed inventory");
 					OldSaveString = "!";    // force rebuilding of saved list
 					OldObjectsHash = "";    // force rereading of objects list
 				}
@@ -1812,4 +1781,4 @@ state Hang {
 		}
 	}
 }
-// HUD communicator v1.11.8
+// HUD communicator v1.11.9
