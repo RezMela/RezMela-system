@@ -1,4 +1,4 @@
-// Theme changer v1.0.0
+// Theme changer v1.0.1
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -16,6 +16,8 @@
 // is strictly forbidden unless prior written permission is obtained
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
+
+// v1.0.1 Unlinked modules; bug fixes
 
 string CONFIG_NOTECARD = "Theme changer config";
 string THEMES_NOTECARD = "Themes";
@@ -414,6 +416,9 @@ ShowApplyingMessage(integer On) {
 	}
 	llSetLinkPrimitiveParamsFast(LINK_THIS, [ PRIM_TEXTURE, FACE_APPLY, Texture, Repeats, Offsets, PI ]); // PI is 180°
 }
+SetText(string Text) {
+	llSetText(Text, <0.8, 0.8, 0.1>, 1.0);
+}
 // We read our config information from a notecard whose name is defined by CONFIG_NOTECARD.
 integer ReadConfig() {
 	if (llGetInventoryType(CONFIG_NOTECARD) != INVENTORY_NOTECARD) {
@@ -499,6 +504,7 @@ default {
 		ShowApplyingMessage(FALSE);		
 		Display();
 		DataRequested = DataReceived = FALSE;
+		SetText("Loading ...");
 	}
 	link_message(integer Sender, integer Number, string String, key Id) {
 		if (Number == LM_ANNOUNCE_OBJECT) { // new object added to scene
@@ -566,6 +572,7 @@ default {
 				Display();
 			}
 			DataReceived = TRUE;
+			SetText("");			
 		}
 	}
 	timer() {
@@ -609,4 +616,4 @@ state Hang {
 		}
 	}
 }
-// Theme changer v1.0.0
+// Theme changer v1.0.1
