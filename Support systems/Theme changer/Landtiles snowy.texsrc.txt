@@ -1,0 +1,220 @@
+
+#Name Snowy
+
+#Image 646f07b3-34b5-48ef-b64f-086d8f9f3a9b
+
+#Texture Ground 5917da15-b539-4f75-9e33-fcb324ad965a
+
+#Texture ElmD0 94d9881e-a068-421f-afa7-9cecd2ff67b6
+#Texture ElmN0 4e687cbd-e952-47bc-acfa-4d4ec088639a
+#Texture ElmS0 0aa02c06-1a1f-497a-a504-d2b728f1d7b4
+#Texture ElmD1 27fc97b1-b6b4-42d4-9758-b45d468169c0
+#Texture ElmN1 5f3e2763-2a07-4b52-a172-e7bfd031657f
+#Texture ElmS1 9614c057-9b69-4936-a1d4-e73b3f8ff509
+
+#Texture MapleD0 27325fb6-a2e5-4079-a194-208f827ce484
+#Texture MapleD1 4c8d2fd4-70e5-4e0c-9e79-219c3c8f74b2
+#Texture MapleN1 95eb06fe-c23e-458c-b15c-8637c025c274
+#Texture MapleS1 54a83c5f-649e-4102-9cf9-f645fce1270c
+
+#Texture WillowD0 0990d3ae-7f27-4d63-a2e7-cad6eedc4f9b
+#Texture WillowN0 8880afbf-17df-4d44-a0c9-1b0b45b4b0dd
+#Texture WillowS0 a3dafd21-0768-42a2-b97c-5619d1669d8b
+#Texture WillowD1 6f1ed471-fe91-4206-9241-d92bfb3aa287
+#Texture WillowN1 7ea0f8e0-a908-46c8-b565-4ffe4ceed2ed
+#Texture WillowS1 f79acae9-51e2-4c1f-aa70-0fedf29c9277
+
+#Texture PineD0 a9938d46-77bd-4965-ac4c-0e05ab0c8756
+
+#Texture WildBushD01 18533c0b-6977-404c-97cb-7b6aacf37e85
+
+#Texture MapBushD0 b16c2728-9753-4af7-b1ad-64232ac1a89c
+#Texture MapBushD1 58e96c9e-4319-4a49-b452-b26ceb1e1006
+
+#Texture RezMelaGrassD0 ca4b869b-a374-4e1e-b40e-40d46f54bd35
+
+#Texture RockD0 3911816b-a67a-4f75-b593-bdb8bf524dcb
+
+[RezMela_Square_Tiles.LandtileSquare]
+Texture = Ground
+Side = 0
+Side = 1 
+Side = 2 
+Side = 3 
+Side = 4 
+Side = 5
+
+[RezMela_Hexatiles.Hexagon themed]
+Side = 0
+Side = 1 
+Side = 2 
+Side = 3 
+Side = 4
+Side = 5
+Side = 6
+Side = 7
+
+[RezMela_hills.Landform - Hill - T shape 1]
+Side = 0
+
+[RezMela_hills.Landform - Hill - T shape 2]
+Side = 0
+
+[RezMela_hills.Landform - Hill 1]
+Side = 0
+
+[RezMela_hills.Landform - Hill 2]
+Side = 0
+
+[RezMela_hills.Landform - Hill 3]
+Side = 0
+
+[RezMela_hills.Landform - Hill 4]
+Side = 0
+
+[RezMela_hills.Landform - Rugged Hill 1]
+Side = 0
+
+[RezMela_hills.Landform - Rugged Hill 2]
+Side = 0
+
+[RezMela_Landbases.256mPatch]
+Side = 0
+Side = 1 
+Side = 2 
+Side = 3 
+Side = 4 
+Side = 5
+
+// Elm trees - 0 is foliage, 1 is bark; both have materials
+
+[RezMela_themed_plants.Elm 1]
+Side = 0
+		Texture = ElmD0
+		Normal = ElmN0
+		Specular = ElmS0
+	Side = 1
+		Texture = ElmD1
+		Normal = ElmN1
+		Specular = ElmS1
+
+[RezMela_themed_plants.Elm 2]
+	Side = 0
+		Texture = ElmD0
+		Normal = ElmN0
+		Specular = ElmS0
+	Side = 1
+		Texture = ElmD1
+		Normal = ElmN1
+		Specular = ElmS1
+
+// Maple trees - 0 is bark, 1 is foliage (no materials on foliage)
+
+[RezMela_themed_plants.Maple 1]
+	Side = 0
+		Texture = MapleD0
+	Side = 1
+		Texture = MapleD1
+		Normal = MapleN1
+		Specular = MapleS1
+
+[RezMela_themed_plants.Maple 2]
+	Side = 0
+		Texture = MapleD0
+	Side = 1
+		Texture = MapleD1
+		Normal = MapleN1
+		Specular = MapleS1
+
+[RezMela_themed_plants.Maple 3]
+	Side = 0
+		Texture = MapleD0
+	Side = 1
+		Texture = MapleD1
+		Normal = MapleN1
+		Specular = MapleS1
+	
+// Willow trees - 0 is foliage, 1 is bark; both have materials
+
+[RezMela_themed_plants.Willow 1]
+	Side = 0
+		Texture = WillowD0
+		Normal = WillowN0
+		Specular = WillowS0
+	Side = 1
+		Texture = WillowD1
+		Normal = WillowN1
+		Specular = WillowS1
+	
+[RezMela_themed_plants.Willow 2]
+	Side = 0
+		Texture = WillowD0
+		Normal = WillowN0
+		Specular = WillowS0
+	Side = 1
+		Texture = WillowD1
+		Normal = WillowN1
+		Specular = WillowS1
+	
+// Pines - 0 is foliage, 1 is bark (unchanging). No materials
+
+[RezMela_themed_plants.Pine 1]
+	Side = 0
+		Texture = PineD0
+
+[RezMela_themed_plants.Pine 2]
+	Side = 0
+		Texture = PineD0
+	
+[RezMela_themed_plants.Pine 3]
+	Side = 0
+		Texture = PineD0
+
+// Maple bush - 0 is bark, 1 is foliage. No materials
+
+[RezMela_themed_plants.Maple bush]
+	Side = 0
+		Texture = MapBushD0
+	Side = 1
+		Texture = MapBushD1
+		
+// Wild bush - 0 and 1 are both foliage (use same texture)
+
+[RezMela_themed_plants.Wild bush]
+	Side = 0
+		Texture = WildBushD01
+	Side = 1
+		Texture = WildBushD01
+
+// Themable (RezMela) grass - only side 0, no materials
+
+[RezMela_themed_plants.Theme change grass]
+	Side = 0
+		Texture = RezMelaGrassD0
+		
+// Rocks - only side 0, no materials
+
+[RezMela_rocks.Cave]
+	Side = 0
+		Texture = RockD0
+
+[RezMela_rocks.Tall rock]
+	Side = 0
+
+[RezMela_rocks.Rock arch]
+	Side = 0
+		
+[RezMela_rocks.Katz rock 2]
+	Side = 0
+		
+[RezMela_rocks.Katz rock 3]
+	Side = 0
+		
+[RezMela_rocks.Katz rock 5]
+	Side = 0
+		
+[RezMela_rocks.Katz rock 6]
+	Side = 0
+
+[RezMela_rocks.Katz rock 7]
+	Side = 0
