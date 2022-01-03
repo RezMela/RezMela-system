@@ -1,4 +1,4 @@
-// RezMela HUD attachment v1.4.3
+// RezMela HUD attachment v1.4.4
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.4.4 - improved version number extraction from object name
 // v1.4.3 - fix: logo on sign-in prim disappearing
 // v1.4.2 - more prim blanking to keep Ilan and Oren happy (Market upload requirements)
 // v1.4.1 - add sign-in button
@@ -1195,7 +1196,15 @@ RegionChange() {
 }
 string GetHudVersion() {
 	string Name = llGetObjectName();
-	string VersionString = llGetSubString(Name, llSubStringIndex(Name, "~") + 1, -1);	// Find part of object name following ~ character
+	string VersionString = "";
+	integer I = llStringLength(Name);
+	while (VersionString == "" && I > 0) {
+		string C = llGetSubString(Name, I, I);
+		if (C == "~" || C == "v" || C == " ") {
+			VersionString = llGetSubString(Name, I + 1, -1);
+		}
+		I--;
+	}
 	return("RezMela HUD version " + VersionString);
 }
 // Set debug mode according to root prim description
@@ -1585,4 +1594,4 @@ state Maintenance {
 	}
 }
 state Hang { on_rez(integer S) { llResetScript(); } state_entry() { }}
-// RezMela HUD attachment v1.4.3
+// RezMela HUD attachment v1.4.4

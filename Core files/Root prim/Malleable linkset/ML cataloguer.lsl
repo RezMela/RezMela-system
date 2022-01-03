@@ -1,4 +1,4 @@
-// ML cataloguer v1.7.7
+// ML cataloguer v1.8.4
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,11 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.8.4 - improve behaviour for missing modules
+// v1.8.3 - still more bug fixes
+// v1.8.2 - more bug fixes
+// v1.8.1 - bug fixes, etc
+// v1.8.0 - unlinked modules; remove debug
 // v1.7.7 - initialisation of objects data before request; some refactoring
 // v1.7.6 - use UUIDs instead of link numbers; add "CommsType" to C card
 // v1.7.5 - improved comms for rezzing objects
@@ -54,23 +59,22 @@
 // v0.3 - bug fix
 // v0.2 - fixed startup timing problem
 
-integer DEBUGGER = -391867620;
-integer DebugMode = FALSE;
-string DebugId = "????";
+integer MODULES_CHANNEL = -91823472; // listener channel for modules
 
-string MODULES_NOTECARD = "Modules";
+// IOM (Inter-Object Message) constants
+string IOM_STRING = "£ML-&"; // magic number for inter-object messages via osMessageObject
 
 vector VEC_NAN = <-99.0,99.0,-99.0>;    // nonsense value to indicate "not a number" for vectors (must be consistent across scripts)
 
 // My LMs
 integer CT_REQUEST_DATA		= -83328400;
 integer CT_CATALOG 			= -83328401;
-integer CT_START			= -83328402;
-integer CT_REZZED_ID		= -83328404;
+integer CT_REZ_BATCH		= -83328402;
+integer CT_REZ_OBJECTS		= -83328403;
+integer CT_REZZED_IDS		= -83328404;
 integer CT_ARRANGE_PRIMS	= -83328405;
-integer CT_ERRORS			= -83328406;
 integer CT_MODULES			= -83328407;
-integer CT_READY			= -83328408;
+integer CT_WO_RECEIVED		= -83328408;
 
 // Librarian's LMs
 integer LIB_GET_DATA	= -879189100;
@@ -78,69 +82,100 @@ integer LIB_CATEGORIES 	= -879189101;
 integer LIB_METADATA	= -879189102;
 integer LIB_REZ_OBJECT 	= -879189120;
 
+// Utils LMs
+integer UTIL_WAITING = -181774800;
+integer UTIL_GO = -181774801;
+integer UTIL_TIMER_SET = -181774802;
+integer UTIL_TIMER_CANCEL = -181774803;
+integer UTIL_TIMER_RETURN = -181774804;
+
 // ML main's LMs
 integer LM_EXTERNAL_LOGIN = -405521;
 integer LM_EXTERNAL_LOGOUT = -405522;
 integer LM_RESET = -405535;
 integer LM_PUBLIC_DATA = -405546;
 
-// Basic list of modules from notecard
-list Modules;
+// HUD Communicator's LMs
+integer COM_LOGOUT = -8172621;
 
-list CatalogErrors;
-
-string CurrentNotecard;
-
-list Libraries;
-integer LB_INDEX = 0;	// held -ve so we can find on link number
-integer LB_MODULE_ID = 1;
-integer LB_NAME = 2;
-integer LB_CATALOG = 3;
-integer LB_STRIDE = 4;
-integer LibrariesCount = 0;
+// Basic list of modules
+list ModulesList;
+integer MOD_PRIORITY = 0;
+integer MOD_UUID = 1;
+integer MOD_MODULE_ID = 2;
+integer MOD_DESC = 3;
+integer MOD_SER_CATEGORIES = 4;
+integer MOD_SER_OBJECTS = 5;
+integer MOD_STRIDE = 6;
 
 list ObjectsData;
 integer OBJ_NAME = 0;
-// Static data is from 0 to 5
-integer OBJ_LIBINDEX 		= 7;	// sort key value for library
+integer OBJ_MODULE_ID = 8;
+integer OBJ_DETACHED = 15;
 // For positions of other fields, see end of ProcessObjectData()
-integer OBJ_STRIDE 			= 34;
+integer OBJ_STRIDE = 34;
 integer ObjectsCount = 0;	// number of rows
 
-list ModuleIds = [];		// UUIDs of all modules
-list WaitModules = [];	// UUIDs of modules we're waiting for data from
-integer Retries = 0;	// have we retried contacting the libraries?
-integer LibDataReceived = FALSE;	// Have we received all data?
+list ObjectsToRez = [];	// Queue of object names that need to be rezzed
+list RezzedUuids = []; // Queue of object UUIDs that have been rezzed
+integer RezBatchSize = 100; // Maximum size of a batch of rezzed objects
 
-// "Public" data
-vector ModuleSize;
-vector ModulePosNormal;
-vector ModulePosHidden;
+key OwnerId;
 
 integer DataRequested = FALSE;
 
-key AvId;
+list ModuleIds = [];		// UUIDs of all modules
+list WaitModules = [];	// UUIDs of modules we're waiting for data from
+float WaitTimer;
+integer DataChanged = FALSE;
+string DataHash = ""; // Hash of ModulesList and ObjectsData
 
+key AvId = NULL_KEY;
+
+// We've received an "L" type IOM message from a module. Here, we record the data
+ProcessModuleData(key ModuleKey, string Data) {
+	// Extract the data segments from the incoming message
+	list Segments = llParseStringKeepNulls(Data, [ "^" ], []); // they're separated by ^
+	string ModuleId = llList2String(Segments, 0);
+	integer ModulePriority = (integer)llList2String(Segments, 1);
+	string ModuleDesc = llList2String(Segments, 2);
+	string SerializedCategories = llList2String(Segments, 3);
+	string SerializedObjects = llList2String(Segments, 4);
+	DeleteModuleData(ModuleId); // delete any previous data for this module
+	// Now add the module
+	ModulesList += [ ModulePriority, ModuleKey, ModuleId, ModuleDesc, SerializedCategories, SerializedObjects ];
+	ModulesList = llListSort(ModulesList, MOD_STRIDE, TRUE); // sort modules by priority
+	// Now process the data for the objects
+	list DataLines = llParseStringKeepNulls(Base64ToString("MD " + ModuleId, SerializedObjects), [ "|" ], []);
+	// Data is in pairs, [ name, configdata ]
+	integer Len = llGetListLength(DataLines);
+	integer P;
+	for (P = 0; P < Len; P += 2 ) {
+		string ObjectName = llList2String(DataLines, P);
+		string ObjectDataString = Base64ToString("OD " + ModuleId, llList2String(DataLines, P + 1));
+		ProcessObjectData(ObjectName, ModuleId, ObjectDataString);
+	}
+}
 SendData() {
-	if (CatalogErrors != []) {
-		Debug((string)llGetListLength(CatalogErrors) + " catalog errors, eg: " + llList2String(CatalogErrors, 0));
-		llMessageLinked(LINK_THIS, CT_ERRORS, llDumpList2String(CatalogErrors, "\n"), AvId);
+	if (ModulesList == []) return; // If there are no modules at all, don't send anything
+	string NewDataHash = ListHash(ModulesList + ObjectsData);
+	if (NewDataHash == DataHash) { // if the modules list or object data hasn't changed
 		return;
 	}
+	DataHash = NewDataHash;
 	// First, send all library catalog data
 	list SendModules = [];
-	Libraries = llListSort(Libraries, LB_STRIDE, TRUE);
+	integer ModulesCount = llGetListLength(ModulesList); // data count, not no. of rows
 	string CategoryData = "";
 	integer P;	// general purpose pointer
-	for (P = 0; P < LibrariesCount; P++) {
-		integer Q = P * LB_STRIDE;
-		string Name = llList2String(Libraries, Q + LB_NAME);
-		integer Index = llList2Integer(Libraries, Q + LB_INDEX);
-		string CatalogEntry = llList2String(Libraries, Q + LB_CATALOG);
-		CategoryData += CatalogEntry + "\n";
-		SendModules += [ Index, Name ];
+	for (P = 0; P < ModulesCount; P += MOD_STRIDE) {
+		string ModuleId = llList2String(ModulesList, P + MOD_MODULE_ID);
+		string ModuleDesc = llList2String(ModulesList, P + MOD_DESC);
+		string CatalogData = Base64ToString("SD " + ModuleId, llList2String(ModulesList, P + MOD_SER_CATEGORIES));
+		CategoryData += CatalogData + "\n";
+		SendModules += [ ModuleId, ModuleDesc ];
 	}
-	// Now send a list of modules with LibIndex for each
+	// Now send a list of modules
 	llMessageLinked(LINK_ROOT, CT_MODULES, llDumpList2String(SendModules, "|"), NULL_KEY);
 	// Next, send all objects data
 	// Each object is on a separate line, and the elements are |-separated, in the order they're stored
@@ -150,37 +185,18 @@ SendData() {
 		list DataList = llList2List(ObjectsData, Q, Q + OBJ_STRIDE - 1);
 		ObjectsDataString += llDumpList2String(DataList, "|") + "\n";
 	}
-	string CatalogData = llStringToBase64(CategoryData) + "|" + llStringToBase64(ObjectsDataString);
-	llMessageLinked(LINK_ROOT, CT_CATALOG, CatalogData, NULL_KEY);
-	// Free up memory
-	ClearData();
+	ObjectsDataString = llGetSubString(ObjectsDataString, 0, -2); // strip last "\n"
+	string SendData = llStringToBase64(CategoryData) + "|" + llStringToBase64(ObjectsDataString);
+	llMessageLinked(LINK_ROOT, CT_CATALOG, SendData, NULL_KEY);
+	DataChanged = FALSE; // unless data changes from here on, no need to resend
 }
 // Initialise library data
 ClearData() {
-	Libraries = [];
-	LibrariesCount = 0;
+	ModulesList = [];
 	ObjectsData = [];
 	ObjectsCount = 0;
 }
-ProcessObjects(key ModuleId, string sData) {
-	// First, find the library this is from
-	integer LibPtr = llListFindList(Libraries, [ ModuleId ]);
-	// If it doesn't exist, ignore (it's probably not in the Modules notecard)
-	if (LibPtr == -1) return;
-	LibPtr -= LB_MODULE_ID;	// position at start of stride
-	integer LibIndex = llList2Integer(Libraries, LibPtr + LB_INDEX);
-	// Now process the data
-	list Data = llParseStringKeepNulls(sData, [ "|" ], []);
-	// Data is in pairs, [ name, configdata ]
-	integer Len = llGetListLength(Data);
-	integer P;
-	for (P = 0; P < Len; P += 2 ) {
-		string ObjectName = llList2String(Data, P);
-		string ObjectData = llBase64ToString(llList2String(Data, P + 1));
-		ProcessObjectData(ObjectName, LibIndex, ObjectData);
-	}
-}
-ProcessObjectData(string ObjectName, integer LibIndex, string ObjectData) {
+ProcessObjectData(string ObjectName, string ModuleId, string ObjectData) {
 	string ShortDesc = "";
 	string LongDescBase64  = "";
 	key ThumbnailId = TEXTURE_TRANSPARENT;
@@ -200,8 +216,7 @@ ProcessObjectData(string ObjectName, integer LibIndex, string ObjectData) {
 	vector JumpLookAt = VEC_NAN;
 	integer Sittable = FALSE;
 	integer DoRotation = TRUE;
-	integer DoBinormal = TRUE;
-	integer CopyRotation = FALSE;
+	integer DoBinormal = TRUE;	integer CopyRotation = FALSE;
 	integer Center = FALSE;
 	integer AdjustHeight = FALSE;
 	integer DummyMove = FALSE;
@@ -275,9 +290,7 @@ ProcessObjectData(string ObjectName, integer LibIndex, string ObjectData) {
 	}
 	string StickPoints64 = llStringToBase64(llGetSubString(StickPointsRaw, 0, -2)); // Ignore last character, which is |
 	if (PreviewId == TEXTURE_TRANSPARENT) PreviewId = ThumbnailId;
-	// Static data is kept loaded at all times by the ML. Dynamic data is only loaded when the user is signed in.
 	ObjectsData += [
-		// Static data
 		ObjectName, // 0
 		CameraPos, // 1
 		CameraAltPos,
@@ -286,8 +299,7 @@ ProcessObjectData(string ObjectName, integer LibIndex, string ObjectData) {
 		JumpLookAt, // 5
 		Phantom,
 		AutoHide, // 7
-		// Dynamic data
-		LibIndex, // 8
+		ModuleId, // 8
 		ShortDesc,
 		LongDescBase64, // 10
 		ThumbnailId,
@@ -316,6 +328,137 @@ ProcessObjectData(string ObjectName, integer LibIndex, string ObjectData) {
 			// If you change this list, don't forget to ensure OBJ_STRIDE is correct (1 more than last column)!
 			];
 	ObjectsCount++;
+}
+// Delete module and objects data for given module ID
+// 
+DeleteModuleData(string ModuleId) {
+	list NewModulesList = [];
+	integer ModulesSize = llGetListLength(ModulesList);
+	integer ModulesPtr;
+	for (ModulesPtr = 0; ModulesPtr < ModulesSize; ModulesPtr += MOD_STRIDE) {
+		string ThisModuleId = llList2String(ModulesList, ModulesPtr + MOD_MODULE_ID);
+		if (ThisModuleId != ModuleId) {
+			NewModulesList += llList2List(ModulesList, ModulesPtr, ModulesPtr + MOD_STRIDE - 1);
+		}
+	}
+	ModulesList = NewModulesList;
+	DeleteModuleObjectsData(ModuleId); // we do this inside this block because most of the time there won't be existing data
+}
+// Remove all entries from ObjectsData for the given module ID
+// We do this by creating a temporary list for the new ObjectsData and including
+// all objects' data in that list that isn't for the specified module ID.
+// This is much cleaner than deleting in situ - remember that deleting elements 
+// while cycling through elements is a bad idea. Also, a repeated llListFindlist()
+// is a bad idea because of efficiency concerns. So, old list -> new list, one 
+// stride at a time! JFH
+DeleteModuleObjectsData(string ModuleId) {
+	list NewObjectsData = []; // This will replace ObjectsData
+	integer Len = ObjectsCount * OBJ_STRIDE;
+	integer P;
+	for (P = 0; P < Len; P += OBJ_STRIDE) {
+		string ThisModuleId = llList2String(ObjectsData, P + OBJ_MODULE_ID);
+		if (ThisModuleId != ModuleId) { // If it's not for the module being cleared ...
+			// ... include this data in the new list
+			NewObjectsData += llList2List(ObjectsData, P, P + OBJ_STRIDE - 1);
+		}
+		else {
+			// We're effectively deleting a row
+			ObjectsCount--;
+		}
+	}
+	ObjectsData = NewObjectsData;
+}
+RezObjects(string Data) {
+	ObjectsToRez += llParseStringKeepNulls(Data, [ "|" ], []);
+	// This LM only goes to the same script, to trigger a separate event for each batch
+	// of objects being rezzed
+	llMessageLinked(LINK_THIS, CT_REZ_BATCH, "", NULL_KEY);
+}
+RezObjectsFromQueue() {
+	if (ObjectsToRez == []) return;
+	integer RezCount = llGetListLength(ObjectsToRez);
+	if (RezCount > RezBatchSize) RezCount = RezBatchSize;
+	list ModObjects = [];
+	list RezModules = [];
+	integer C;
+	for (C = 0; C < RezCount; C++) {
+		string Name = llList2String(ObjectsToRez, C);
+		string ModuleId = ObjectName2ModuleId(Name);
+		if (llListFindList(RezModules, [ ModuleId ]) == -1) { // if we haven't recorded this module yet
+			// add it in
+			if (!ModuleExists(ModuleId)) { // If the module doesn't exist
+				// Clear and log them out
+				ObjectsToRez = [];
+				LogoutUser("Module missing!");
+				DeleteModuleData(ModuleId);
+				SendData();
+				return;
+			}
+			RezModules += [ ModuleId ];
+		}
+		ModObjects += [ ModuleId, Name ];
+	}
+	// RezData consists of strides [ <module id>, <name> ]
+	integer RezModulesCount = llGetListLength(RezModules);
+	integer ModObjectsLength= llGetListLength(ModObjects);
+	integer M;
+	for (M = 0; M < RezModulesCount; M++) {
+		string ModuleId = llList2String(RezModules, M);
+		key ModuleUuid = ModuleId2ModuleUuid(ModuleId);
+		if (ModuleUuid == NULL_KEY) {
+			llOwnerSay("Module missing or disabled: " + ModuleId + "!");
+		}
+		else {
+			list SendObjects = [];
+			list DetachedObjects = [];
+			integer R;
+			for (R = 0; R < ModObjectsLength; R += 2) {
+				string ThisModuleId = llList2String(ModObjects, R);
+				if (ThisModuleId == ModuleId) {
+					string ObjectName = llList2String(ModObjects, R + 1);
+					SendObjects += ObjectName;					
+					integer P = llListFindList(ObjectsData, [ ObjectName ]);
+					if (P == -1) { LogError("Can't find object for rez data"); return; }
+					P -= OBJ_NAME; // position at start of stride
+					integer Detached = llList2Integer(ObjectsData, P + OBJ_DETACHED);
+					if (Detached) DetachedObjects += ObjectName;
+				}
+			}
+			// If there are detached objects, we want to hear from the module(s) when their WorldObjects scripts have
+			// loaded (WO_INITIALISE). So we tell the module which objects we need to hear about.
+			if (DetachedObjects != []) SendIom(ModuleUuid, "W", llDumpList2String(DetachedObjects, "^"));
+			SendIom(ModuleUuid, "Z", llDumpList2String(SendObjects, "^"));
+		}
+	}
+	ObjectsToRez = llDeleteSubList(ObjectsToRez, 0, RezCount - 1);
+	if (ObjectsToRez != []) {	// if there are still objects to rez
+		// Request a callback from the ML Utils script
+		llMessageLinked(LINK_THIS, UTIL_TIMER_SET, "rez|5|0", NULL_KEY); // tag "rez", duration 5, repeat FALSE
+	}
+}
+// A librarian has sent us a list of ^-separated rezzed UUIDs, so we pass that on to the ML
+SendRezzedObjects(string Data) {
+	llMessageLinked(LINK_THIS, CT_REZZED_IDS, Data, NULL_KEY); // send list of UUIDs to the ML
+}
+// Wrapper for llBase64ToString that prevents ugly run-time errors when Base64 string is empty.
+// Providing context helps with debugging when this happens.
+string Base64ToString(string Context, string Data) {
+	if (Data == "") {
+		llOwnerSay("Empty data received: " + Context);
+		return "";
+	}
+	return llBase64ToString(Data);
+}
+key ModuleId2ModuleUuid(string ModuleId) {
+	integer Ptr = llListFindList(ModulesList, [ ModuleId ]);
+	if (Ptr == -1) return NULL_KEY;
+	Ptr -= MOD_MODULE_ID;
+	return llList2Key(ModulesList, Ptr + MOD_UUID);
+}
+string ObjectName2ModuleId(string Name) {
+	integer Ptr = llSubStringIndex(Name, ".");
+	if (Ptr == -1) return "";
+	return llGetSubString(Name, 0, Ptr - 1);
 }
 // Certain strings evaluate TRUE, everything else is FALSE
 integer String2Bool(string Text) {
@@ -353,166 +496,20 @@ vector ParseSnapGrid(string Value) {
 	}
 	return SnapGrid;
 }
+// Returns hash of passed list
+string ListHash(list Data) {
+	return llSHA1String((string)Data);
+}
 ConfigError(string ObjectName, string Text) {
 	llOwnerSay("Error in config file for MLO '" + ObjectName + "':\n" + Text);
 }
-// Check all modules
-ProcessModules() {
-	CatalogErrors = [];
-	if (llGetInventoryType(MODULES_NOTECARD) != INVENTORY_NOTECARD) {
-		LogError("Notecard missing: '" + MODULES_NOTECARD + "'");
-		state Hang;
-	}
-	integer P;	// generic pointer
-	// Build list of modules from prim names
-	list PrimModules = [];
-	ModuleIds = [];
-	integer PrimCount = llGetNumberOfPrims();
-	for (P = 2; P <= PrimCount; P++) {
-		string Name = ExtractModuleName(llGetLinkName(P));
-		if (Name != "") {
-			PrimModules += Name;
-			ModuleIds += llGetLinkKey(P);
-		}
-	}
-	// Build list of modules from notecard
-	Modules = [];
-	CurrentNotecard = osGetNotecard(MODULES_NOTECARD);
-	list RawList = llParseStringKeepNulls(CurrentNotecard, [ "\n" ], []);	// read notecard into list
-	integer RawLen = llGetListLength(RawList);
-	for (P = 0; P < RawLen; P++) {
-		string Line = llStringTrim(llList2String(RawList, P), STRING_TRIM);
-		if (Line != "" && llGetSubString(Line, 0, 1) != "//") {
-			if (llListFindList(Modules, [ Line ]) > -1) {
-				CatalogErrors += "Duplicate module: '" + Line + "'";
-			}
-			// Check that module prim exists
-			else if (llListFindList(PrimModules, [ Line ]) == -1) {
-				CatalogErrors += "Module prim doesn't exist: '" + Line + "'";
-			}
-			else {
-				Modules += Line;
-			}
-		}
-	}
-}
-ProcessCatalogue(key PrimId, string Data) {
-	// This comes before objects data, so we initialise the library here
-	integer LibPtr = llListFindList(Libraries, [ PrimId ]);
-	if (LibPtr > -1) {
-		LibPtr -= LB_MODULE_ID;	// position at start of stride
-		DeleteLibrary(LibPtr);	// Delete the library if it already exists (together with its objects)
-	}
-	// Find the associated module from the notecard list
-	string ModuleName = ExtractModuleName(GetPrimName(PrimId));
-	integer Ptr = llListFindList(Modules, [ ModuleName ]);
-	// Ignore module if it's not in the notecard
-	if (Ptr == -1) return;
-	integer LibIndex = -100000 + Ptr;	// Position in notecard dictates sort key
-	Libraries += [ LibIndex, PrimId, ModuleName, Data ];
-	LibrariesCount++;
-}
-DeleteLibrary(integer LibPtr) {
-	integer LibIndex = llList2Integer(Libraries, LibPtr + LB_INDEX);
-	Libraries = llDeleteSubList(Libraries, LibPtr, LibPtr + LB_STRIDE - 1);
-	LibrariesCount--;
-	// We delete associated objects by writing to a new list (more efficient than changing the existing list)
-	list NewObjects = [];
-	integer O;
-	for (O = 0; O < ObjectsCount; O++) {
-		integer OP = O * OBJ_STRIDE;
-		integer ObjectLibIndex = llList2Integer(ObjectsData, OP + OBJ_LIBINDEX);
-		if (ObjectLibIndex != LibIndex) {
-			NewObjects += llList2List(ObjectsData, OP, OP + OBJ_STRIDE - 1);
-		}
-	}
-	ObjectsData = NewObjects;
-	ObjectsCount = llGetListLength(ObjectsData	) / OBJ_STRIDE;
-}
-// Request data from all libraries
-GetLibraryData() {
-	ClearData();	
-	// Populate list of UUIDs we need to hear from. We store each UUID twice, because we expect two responses
-	// from each librarian (category data and objects data).
-	WaitModules = ModuleIds + ModuleIds;
-	Debug("Getting data from " + (string)(llGetListLength(WaitModules) / 2) + " libraries");
-	LibDataReceived = FALSE;
-	llMessageLinked(LINK_ALL_CHILDREN, LIB_GET_DATA, "", NULL_KEY);
-}
-// If it's a library module prim, return its library name, otherwise blank
-// Format is: &Lib: <library name>
-string ExtractModuleName(string PrimName) {
-	if (llGetSubString(PrimName, 0, 4) == "&Lib:") {
-		string ModuleName = llGetSubString(PrimName, 5, -1);
-		// Remove "~.*" (RE) to get rid of date/version/whatever on prim name
-		integer TildePos = llSubStringIndex(ModuleName , "~");
-		if (TildePos > -1) ModuleName = llGetSubString(ModuleName , 0, TildePos - 1);
-		ModuleName = llStringTrim(ModuleName , STRING_TRIM);
-		return ModuleName;
-	}
-	return "";
-}
-ArrangePrims(integer Visible) {
-	vector HiddenSize = <0.001, 0.001, 0.001>;
-	list ModulePrims = [];
-	integer PrimCount = llGetNumberOfPrims();
-	integer LinkNum;
-	for (LinkNum = 2; LinkNum <= PrimCount; LinkNum++) {
-		string ModuleName = ExtractModuleName(llGetLinkName(LinkNum));
-		if (ModuleName != "") ModulePrims += [ LinkNum, ModuleName ];
-	}
-	integer ModulePrimsCount = llGetListLength(ModulePrims) / 2;
-	integer NormalCounter = 0;
-	integer OrphanCounter = 0;
-	list PrimParams;
-	integer P;
-	for (P = 0; P < ModulePrimsCount; P++) {
-		integer Q = P * 2;	// stride of 2
-		LinkNum = llList2Integer(ModulePrims, Q);
-		vector OldPos = llList2Vector(llGetLinkPrimitiveParams(LinkNum, [ PRIM_POS_LOCAL ]), 0);
-		PrimParams += PrimLinkTarget("Cataloguer", LinkNum);	// Validate & set PRIM_LINK_TARGET
-		PrimParams += [ PRIM_ROT_LOCAL, ZERO_ROTATION ];
-		if (Visible) {
-			string ModuleName = llList2String(ModulePrims, Q + 1);
-			vector Pos;
-			integer ModulePosition = llListFindList(Modules, [ ModuleName ]);
-			if (ModulePosition > -1) {	// If it's in the Modules notecard
-				// set is position vertically according to its place in the notecard
-				Pos = ModulePosNormal + <0.0, 0.0, (float)NormalCounter++ * ModuleSize.z>;
-			}
-			else {	// If it's NOT in the Modules notecard
-				// Position it to the side, in a separate stack
-				Pos = ModulePosNormal + <-ModuleSize.x, 0.0, (float)OrphanCounter++ * ModuleSize.z>;
-			}
-			PrimParams += [ PRIM_SIZE, ModuleSize ];
-			PrimParams += MoveParams(OldPos, Pos);
-			llSetLinkAlpha(LinkNum, 1.0, ALL_SIDES);	// Can't use PrimParams because of colour
-		}
-		else {
-			PrimParams += [ PRIM_SIZE, HiddenSize ];
-			PrimParams += MoveParams(OldPos, ModulePosHidden);
-			llSetLinkAlpha(LinkNum, 0.0, ALL_SIDES);
-		}
-	}
-	llSetLinkPrimitiveParamsFast(LINK_THIS, PrimParams);
-}
-// Moves a linked prim from a to b
-list MoveParams(vector From, vector To) {
-	float MoveDistance = llVecDist(From, To);    // calculate distance prim will move
-	integer Hops = (integer)(MoveDistance / 10.0) + 1;    // divide it into 10m hops
-	list PrimParams = [];
-	while(Hops--) {
-		PrimParams += [ PRIM_POS_LOCAL, To ];
-	}
-	return PrimParams;
-}
-list PrimLinkTarget(string DebugInfo, integer LinkNum) {
+list PrimLinkTarget(integer LinkNum) {
 	// we need this next check because invalid link numbers can cause huge problems with OpenSim (eg high CPU that
 	// persists even after object is removed from simulator; 0 objects allowed in simulator, etc). To fix, load from an
 	// OAR that doesn't have the object in, and restart simulator. This was a big problem in 0.8; its status in 0.9 is
 	// not presently known.
 	if (LinkNum <= 0) {
-		LogError("Invalid link number encountered! Info: " + DebugInfo);
+		LogError("Invalid link number encountered!");
 		LinkNum = llGetNumberOfPrims();	// Set to highest link num
 	}
 	return [ PRIM_LINK_TARGET, LinkNum ];
@@ -520,74 +517,53 @@ list PrimLinkTarget(string DebugInfo, integer LinkNum) {
 string GetPrimName(key PrimId) {
 	return llList2String(llGetObjectDetails(PrimId, [ OBJECT_NAME ]), 0);
 }
-// Set retry timer, in case librarian script(s) haven't loaded.
-// It's 25-30 seconds (to avoid simultaneous load when rezzing large number of child Apps)
-SetRetryTimer() {
-	llSetTimerEvent(25.0 + llFrand(5.0));
+WaitModulesAdd(key Id) {
+	if (llListFindList(WaitModules, [ Id ]) == -1) WaitModules += Id;
+}
+WaitModulesDelete(key Id) {
+	integer Ptr = llListFindList(WaitModules, [ Id ]);
+	if (Ptr > -1) WaitModules = llDeleteSubList(WaitModules, Ptr, Ptr);
 }
 // Process public data sent by ML
 ParsePublicData(string Data) {
 	list Parts = llParseStringKeepNulls(Data, [ "|" ], []);
-	ModuleSize = (vector)llList2String(Parts, 6);
-	ModulePosNormal = (vector)llList2String(Parts, 7);
-	ModulePosHidden = (vector)llList2String(Parts, 8);
+	RezBatchSize = (integer)llList2String(Parts, 13);
 }
-// After receiving a librarian message containing catalogue data or object metadata, we remove it
-// from the queue (which for each module contains two entries, one for each type of data). The queue
-// is a list of UUIDs. If the queue becomes empty, we send the data to the ML.
-CheckSendData(integer LinkNum) {
-	key SenderUuid = llGetLinkKey(LinkNum);
-	integer P = llListFindList(WaitModules, [ SenderUuid ]);
-	if (P > -1) {	// we ignore messages from modules we've already received data from
-		WaitModules = llDeleteSubList(WaitModules, P, P);
-		if (WaitModules == []) {
-			LibDataReceived = TRUE;
-			Debug("Sending catalog data");
-			SendData();
-			llSetTimerEvent(0.0);
-		}
+// Wrapper for osMessageObject that checks object exists and uses IOM format
+SendIom(key Destination, string Command, string Data) {
+	if (ObjectExists(Destination)) {
+		osMessageObject(Destination, EncodeIom(Command, Data));
 	}
 }
-Debug(string Text) {
-	if (DebugMode) {
-		llOwnerSay("Cat " + DebugId + ": " + Text);
-		llRegionSay(DEBUGGER, "Cat: " + Text);
+// Sign user out with an optional message
+LogoutUser(string Text) {
+	if (Text != "") MessageUser(Text);
+	llMessageLinked(LINK_ROOT, COM_LOGOUT, "", NULL_KEY);
+}
+MessageUser(string Text) {
+	if (AvId != NULL_KEY) { // If they're signed in
+		llDialog(AvId, "\n" + Text, [ "OK" ], -8172911);
 	}
 }
-// Set debug mode according to root prim description
-SetDebug() {
-	if (llGetObjectDesc() == "debug") {
-		DebugId = llGetSubString((string)llGetKey(), 0, 3);
-		DebugMode = TRUE;
-	}
+// Check if module object exists in the region
+integer ModuleExists(key ModuleId) {
+	integer M = llListFindList(ModulesList, [ ModuleId ]);
+	if (M == -1) return FALSE; // shouldn't happen
+	M -= MOD_MODULE_ID; // position at start of stride
+	key ModuleKey = llList2Key(ModulesList, M + MOD_UUID);
+	return (ObjectExists(ModuleKey));
 }
-DebugDump() {
-	integer P;
-	string Output = "Libraries [" + (string)LibrariesCount + "]:\n";
-	for (P = 0; P < LibrariesCount; P++) {
-		integer Q = P * LB_STRIDE;
-		integer LibIndex = llList2Integer(Libraries, Q + LB_INDEX);
-		integer LibKey	= llList2Integer(Libraries, Q + LB_MODULE_ID);
-		string Catalog = llList2String(Libraries, Q + LB_CATALOG);
-		Catalog = llDumpList2String(llParseStringKeepNulls(Catalog, [ "\n" ], []), " ");	// turn \n into spaces
-		Catalog = llGetSubString(Catalog, 0, 80);
-		Output += llDumpList2String([ LibIndex, LibKey, Catalog ], " ") + "\n";
-	}
-	if (LibrariesCount != (llGetListLength(Libraries) / LB_STRIDE)) {
-		Output += "Libraries count is wrong!";
-	}
-	llOwnerSay(Output);
-	Output = "Objects [" + (string)ObjectsCount + "]:\n";
-	for (P = 0; P < ObjectsCount; P++) {
-		integer Q = P * OBJ_STRIDE;
-		string ObjectName = llList2String(ObjectsData, OBJ_NAME);
-		integer LibIndex = llList2Integer(ObjectsData, Q + OBJ_LIBINDEX);
-		Output += llDumpList2String([ ObjectName, LibIndex ], " ") + "\n";
-	}
-	if (ObjectsCount != (llGetListLength(ObjectsData) / OBJ_STRIDE)) {
-		Output += "Objects count is wrong!";
-	}
-	llOwnerSay(Output);
+// Return true if specified prim/object exists in same region (not so reliable for avatars)
+integer ObjectExists(key Uuid) {
+	return (llGetObjectDetails(Uuid, [ OBJECT_POS ]) != []) ;
+}
+// Send discovery message (for other objects to know we're here)
+SendDiscovery() {
+	llRegionSay(MODULES_CHANNEL, "A");
+}
+// Encode standard inter-object message
+string EncodeIom(string Command, string Data) {
+	return IOM_STRING + "|" + Command + "|" + Data;
 }
 LogError(string Text) {
 	llMessageLinked(LINK_ROOT, -7563234, Text, AvId);
@@ -595,86 +571,80 @@ LogError(string Text) {
 default {
 	on_rez(integer Param) { llResetScript(); }
 	state_entry() {
+		OwnerId = llGetOwner();
+		AvId = NULL_KEY;
+		ClearData();
 		if (llGetNumberOfPrims() == 1) state Hang; // we're in a box or something
-		SetDebug();
-		Debug("Loading ...");
+		llListen(MODULES_CHANNEL, "", NULL_KEY, "");
+		SendDiscovery();
+		WaitTimer = 1.0;
+		llSetTimerEvent(WaitTimer); // Wait for responses from modules
 	}
-	link_message(integer Sender, integer Number, string Text, key Id) {
-		if (Number == CT_START) { // Message from ML telling us to start processing
-			state Normal;
-		}
-		else if (Number == LM_PUBLIC_DATA) {
-			ParsePublicData(Text);
-		}
-		else if (Number == CT_REQUEST_DATA) {
-			// If we get this here, it means that we've been reset after handshaking with other scripts. This
-			// happens if the user manually resets scripts via the viewer menus. This is so slow that scripts
-			// that have just been reset will handshake with scripts that have not yet been reset, causing
-			// problems when the latter (eg this script) actually do get reset.
-			DataRequested = TRUE;
-			Debug("Received data request while waiting to start");
-			state Normal;
-		}
-	}
-}
-state Normal {
-	on_rez(integer Param) { llResetScript(); }
-	state_entry() {
-		Retries = 0;
-		Libraries = [];
-		LibrariesCount = 0;
-		ProcessModules();
-		Debug("Ready");
-		llMessageLinked(LINK_THIS, CT_READY, "", NULL_KEY);	// Tell other scripts we're ready
-		llSetTimerEvent(0.0);
-		if (DataRequested) {	// see above
-			GetLibraryData();
-			SetRetryTimer(); // Set retry timer, in case librarian script(s) haven't loaded.
-		}
-	}
-	timer() {
-		if (!LibDataReceived) {
-			if (Retries++ < 10) {
-				Debug("Retrying ...");
-				GetLibraryData();
-				SetRetryTimer();
+	listen(integer Channel, string Name, key Uuid, string Text) {
+		if (Channel == MODULES_CHANNEL) {
+			if (llGetOwnerKey(Uuid) != OwnerId) return; // if it has a different owner, ignore
+			string Command = llGetSubString(Text, 0, 0); // command is first char of message
+			if (Command == "M") { // if it's an enabled module
+				// Add it to the list of modules we're waiting for data from
+				WaitModulesAdd(Uuid);
+				// Request its data
+				SendIom(Uuid, "S", "");
+				// Log them out if they're logged in, otherwise HUD menus will be out of date
+				LogoutUser("New module detected");
+				// SendData();				
 			}
-			else {
-				llSetTimerEvent(0.0);
-				string ErrorText = "Unresponsive library module(s):";
-				// Loop through modules that haven't responded, ignoring ones
-				// we've already processed, and generate string of module
-				// names to report the error.
-				integer I;
-				list Done = [];
-				integer Len = llGetListLength(WaitModules);
-				for (I = 0; I < Len; I++) {
-					key Id = llList2Key(WaitModules, I);
-					if (llListFindList(Done, [ Id ]) == -1) {
-						Done += Id;
-						ErrorText += "\n  " + llKey2Name(Id);
-					}
+			else if (Command == "E") { // if it's a module that's just been enabled
+				// We need to log them out (if they're logged in) because HUD menu has changed
+				LogoutUser("Module enabled");
+			}
+			else if (Command == "D") { // if it's a disabled module
+				WaitModulesDelete(Uuid);
+				integer ModulesPtr = llListFindList(ModulesList, [ Uuid ]);
+				if (ModulesPtr > -1) { // we had this one recorded
+					ModulesPtr -= MOD_UUID; // position at start of stride
+					string ModuleId = llList2String(ModulesList, ModulesPtr + MOD_MODULE_ID);
+					DeleteModuleData(ModuleId);				
+					// Log them out if they're logged in, otherwise HUD menus will be out of date
+					LogoutUser("Module disabled");
+					SendData(); // send the updated data to the ML
 				}
-				Debug(ErrorText);
-				LogError(ErrorText);
+			}
+		}
+	}
+	dataserver(key From, string Text) {
+		list Parts = llParseStringKeepNulls(Text, [ "|" ], []);
+		if (llList2String(Parts, 0) == IOM_STRING) { // it's an IOM message
+			string Command = llList2String(Parts, 1);
+			string Data = llList2String(Parts, 2);
+			if (Command == "L") { // module sending us its data
+				WaitModulesDelete(From);
+				ProcessModuleData(From, Data);
+				SendData();
+			}
+			else if (Command == "U") { // module sending us rezzed object UUIDs
+				SendRezzedObjects(Data); // send them to the ML
+			}
+			else if (Command == "W") { // module sending us WO_INITIALISE message
+				llMessageLinked(LINK_THIS, CT_WO_RECEIVED, "", (key)Data);
 			}
 		}
 	}
 	link_message(integer Sender, integer Number, string Text, key Id) {
 		if (Sender == 1) {	// Message from script in root prim
-			if (Number == LM_EXTERNAL_LOGIN) {
+			if (Number == UTIL_GO) { // Message from ML telling us to start processing
+			}
+			else if (Number == LM_EXTERNAL_LOGIN) {
 				AvId = Id;
 			}
 			else if (Number == LM_EXTERNAL_LOGOUT) {
 				AvId = NULL_KEY;
 			}
 			else if (Number == CT_REQUEST_DATA) {
-				Debug("Received data request");
-				GetLibraryData();
-				SetRetryTimer(); // Set retry timer, in case librarian script(s) haven't loaded.
+				DataHash = ""; // force send regardless of whether data has changed
+				SendData();
 			}
-			else if (Number == CT_ARRANGE_PRIMS) {
-				ArrangePrims((integer)Text);	// argument is 1 if modules are being edited
+			else if (Number == CT_REZ_OBJECTS) {
+				RezObjects(Text);
 			}
 			else if (Number == LM_RESET) {
 				llResetScript();
@@ -682,51 +652,44 @@ state Normal {
 			else if (Number == LM_PUBLIC_DATA) {
 				ParsePublicData(Text);
 			}
-			else if (Number == CT_START) {
-				Debug("Encountered start while in normal mode - restarting");
-				state ReNormal;
+			else if (Number == CT_REZ_BATCH) {
+				RezObjectsFromQueue();
+			}
+			else if (Number == UTIL_TIMER_RETURN) {
+				if (Text == "rez") { // the timer tag we set during RezObjectsFromQueue()
+					// Rez the next batch
+					RezObjectsFromQueue();
+				}
 			}
 		}
-		else {	// Messages from child prims
-			key PrimId = llGetLinkKey(Sender);
-			if (Number == LIB_CATEGORIES) {	// Copy of "!Objects" notecard (objects in categories)
-				if (DebugMode) Debug("Received Category data from " + llGetLinkName(Sender));
-				ProcessCatalogue(PrimId, Text);
-				SetRetryTimer();	// Timer may be cancelled in CheckSendData
-				CheckSendData(Sender);	// If this is the last data we need, send it all to the ML
+	}
+	timer() {
+		if (WaitModules == []) {
+			// We have all the modules' data, so we're ready to start talking to other scripts
+			llMessageLinked(LINK_THIS, UTIL_WAITING, "A", NULL_KEY); // tell servicer that we're ready
+			llSetTimerEvent(0.0);
+			return;
+		}
+		else {
+			// If we're still waiting for data, then maybe the system is under heavy load, so increase timer value
+			// (eg lots of child apps being rezzed in a short time)
+			if (WaitTimer < 30.0) {
+				WaitTimer += llFrand(5.0);
 			}
-			else if (Number == LIB_METADATA) {	// Data from C card (object metadata)
-				if (DebugMode) Debug("Received objects metadata from " + llGetLinkName(Sender));
-				ProcessObjects(PrimId, Text);
-				SetRetryTimer();	// Timer may be cancelled in CheckSendData
-				CheckSendData(Sender);	// If this is the last data we need, send it all to the ML
-			}
+			llSetTimerEvent(WaitTimer);
 		}
 	}
 	changed(integer Change) {
-		if (Change & CHANGED_INVENTORY) {
-			// Has the Modules notecard changed?
-			string NewNotecard = osGetNotecard(MODULES_NOTECARD);
-			if (NewNotecard != CurrentNotecard) {
-				// Modules list has changed; reacquire catalog data
-				ProcessModules();
-				state ReNormal;
-			}
-		}
+		if (Change & CHANGED_OWNER) OwnerId = llGetOwner();
 	}
-}
-state ReNormal {
-	on_rez(integer Param) { llResetScript(); }
-	state_entry() { state Normal; }
 }
 state Hang {
 	on_rez(integer Param) { llResetScript(); }
 	state_entry() {
-		Debug("Hung!");
 	}
 	changed(integer Change) {
 		if (Change & CHANGED_INVENTORY) llResetScript();
 		if (Change & CHANGED_LINK) llResetScript();
 	}
 }
-// ML cataloguer v1.7.7
+// ML cataloguer v1.8.4

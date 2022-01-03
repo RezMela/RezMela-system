@@ -1,6 +1,4 @@
-// Module Deployment Pre-check v1.0
-
-// Drop into module before conversion
+// Module deployment permissions check v1.1
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -19,8 +17,13 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.1 - rework for unlinked modules
+// v1.0.1 - wasn't checking perms of librarian script
+
 integer SCRIPT_PIN = -19318100; // PIN for modules
 integer MLO_PIN = 8000; // PIN for MLOs (objects in modules)
+
+integer LIB_SUSPEND	= -879189123; // message to librarin to suspend it
 
 string LIBRARY_CONFIG = "!Library config";
 string OBJECTS_CARD = "!Objects";
@@ -28,6 +31,7 @@ string OBJECTS_CARD = "!Objects";
 string ThisObjectName;
 string ThisScriptName;
 string LibrarianName = "";
+key OwnerId;
 
 key ParentObject = NULL_KEY;
 list ChildObjects = [];
@@ -35,8 +39,20 @@ integer ChildCount;
 integer MLOErrors = FALSE;
 
 integer CheckModule() {
+	list ObjectDetails = llGetObjectDetails(llGetKey(), [ OBJECT_CREATOR, OBJECT_GROUP ]);
+	key CreatorId = llList2Key(ObjectDetails, 0);
+	//	key GroupId = llList2Key(ObjectDetails, 1);
+	if (CreatorId != OwnerId) {
+		Say("*** Module has not been created by " + llKey2Name(OwnerId));
+		return FALSE;
+	}
+	//	if (GroupId != NULL_KEY) {
+	//		Say("*** Module has group set");
+	//		return FALSE;
+	//	}
 	list Bads = [];
 	string Indent = "        ";
+	if (CheckObjPerm(MASK_NEXT, PERM_TRANSFER)) Bads += Indent + "Module has transfer perms";
 	if (CheckObjPerm(MASK_EVERYONE, PERM_COPY)) Bads += Indent + "Everyone can copy";
 	if (CheckObjPerm(MASK_EVERYONE, PERM_MODIFY)) Bads += Indent + "Everyone can modify";
 	if (CheckObjPerm(MASK_EVERYONE, PERM_TRANSFER)) Bads += Indent + "Everyone can transfer";
@@ -157,7 +173,7 @@ integer CheckContents() {
 	if (ExtraNotecards != []) Summary += ExceptionsList("Notecard(s) that are not 'C' cards", ExtraNotecards);
 	if (ExtraScripts != []) Summary += ExceptionsList("Unrecognised script(s)", ExtraScripts);
 	if (Unknowns != []) Summary += ExceptionsList("Unknown item(s)", Unknowns);
-	Say("Summary: \n\n" + llDumpList2String(Summary, "\n\n"));
+	Say("\n" + llDumpList2String(Summary, "\n\n"));
 	integer Errors = FALSE;
 	// Error lines begin with "*** ERROR"
 	Len = llGetListLength(Summary);
@@ -195,11 +211,29 @@ integer CheckInvPerms() {
 	else {
 		Say("Object perms: \n" + llDumpList2String(ObjectsList, "\n"));
 	}
+	Len = llGetInventoryNumber(INVENTORY_SCRIPT);
+	for (P = 0; P < Len; P++) {
+		string ScriptName = llGetInventoryName(INVENTORY_SCRIPT, P);
+		if (ScriptName != ThisScriptName) {
+			if (BadInvPerms(ScriptName)) {
+				Errors = TRUE;
+			}
+			if (CheckInvPerm(MASK_NEXT, ScriptName, PERM_MODIFY)) {
+				Say("Script " + ScriptName + " has modify perms");
+				Errors = TRUE;
+			}
+			if (CheckInvPerm(MASK_NEXT, ScriptName, PERM_TRANSFER)) {
+				Say("Script " + ScriptName + " has transfer perms");
+				Errors = TRUE;
+			}
+		}
+	}
 	return (!Errors);
 }
 integer BadInvPerms(string Name) {
 	list Bads = [];
 	string Indent = "        ";
+	if (CheckInvPerm(MASK_NEXT, Name, PERM_TRANSFER)) Bads += Indent + "Transferrable";
 	if (CheckInvPerm(MASK_EVERYONE, Name, PERM_COPY)) Bads += Indent + "Everyone can copy";
 	if (CheckInvPerm(MASK_EVERYONE, Name, PERM_MODIFY)) Bads += Indent + "Everyone can modify";
 	if (CheckInvPerm(MASK_EVERYONE, Name, PERM_TRANSFER)) Bads += Indent + "Everyone can transfer";
@@ -223,13 +257,8 @@ integer CheckObjPerm(integer CheckMask, integer Perm) {
 integer InventoryExists(integer Type, string Name) {
 	return (llGetInventoryType(Name) == Type);
 }
-integer IsModule(string Name) {
-	return (llGetSubString(Name, 0, 5) == "&Lib: ");
-}
 SetColor(vector RGB) {
-	llSetColor(RGB, ALL_SIDES);
-	llSetColor(<1.0, 1.0, 1.0>, 1);
-	llSetColor(<1.0, 1.0, 1.0>, 3);
+	llSetColor(RGB, 1);
 }
 Say(string Text) {
 	string N = llGetObjectName();
@@ -242,21 +271,20 @@ default {
 		llResetScript();
 	}
 	state_entry() {
+		OwnerId = llGetOwner();
+		ThisObjectName = llGetObjectName();
+		ThisScriptName = llGetScriptName();
 		ParentObject = osGetRezzingObject();
 		if (ParentObject != NULL_KEY) {
 			state CheckMLO;
-		}
-		ThisObjectName = llGetObjectName();
-		ThisScriptName = llGetScriptName();
-		if (!IsModule(ThisObjectName)) {
-			Say("Not a module name: " + ThisObjectName);
-			state Hang;
 		}
 		if (llGetNumberOfPrims() != 1) {
 			Say("Module must be unlinked");
 			state Hang;
 		}
 		Say("\n\n" + ThisObjectName + "\n");
+		llMessageLinked(LINK_THIS, LIB_SUSPEND, "", NULL_KEY); // tell librarian to go into suspended mode
+		SetColor(<1.0, 0.5, 0.0>);
 		llSetRemoteScriptAccessPin(SCRIPT_PIN);
 		if (CheckModule()) {
 			if (CheckContents()) {
@@ -264,15 +292,15 @@ default {
 					state CheckAllMLOs;
 				}
 				else {
-					llOwnerSay("Inventory permission errors");
+					Say("Inventory permission errors");
 				}
 			}
 			else {
-				llOwnerSay("Contents errors");
+				Say("Contents errors");
 			}
 		}
 		else {
-			llOwnerSay("Errors in module");
+			Say("Errors in module");
 		}
 		Say("Check halted");
 		SetColor(<0.9, 0.0, 0.0>);
@@ -282,6 +310,7 @@ default {
 state CheckAllMLOs {
 	on_rez(integer Param) { llResetScript(); }
 	state_entry() {
+		Say("Checking objects ...");
 		MLOErrors = FALSE;
 		vector RezPos = llGetPos() + <0.0, 0.0, 5.0>;
 		ChildObjects = [];
@@ -302,7 +331,7 @@ state CheckAllMLOs {
 	dataserver(key From, string Data) {
 		integer P = llListFindList(ChildObjects, [ From ]);
 		if (P == -1) {
-			llOwnerSay("*** Can't find child object!");
+			Say("*** Can't find child object!");
 			return;
 		}
 		ChildObjects = llDeleteSubList(ChildObjects, P, P);
@@ -336,12 +365,14 @@ state Finish {
 			llRemoveInventory(llGetScriptName());
 			return;
 		}
-		SetColor(<0.1, 0.8, 0.1>);
-		Say("Done.");
-		if (llGetSubString(ThisObjectName, -1, -1) != "C") {
-			ThisObjectName += "C";
-			llSetObjectName(ThisObjectName);
-		}
+		SetColor(<1.0, 1.0, 1.0>);
+		llSetTexture(TEXTURE_BLANK, 3); // set image face blank
+		llSetTexture(TEXTURE_BLANK, 4); // set description face blank
+		Say("All OK - take module into inventory and upload");
+		//		if (llGetSubString(ThisObjectName, -1, -1) != "C") {
+		//			ThisObjectName += "C";
+		//			llSetObjectName(ThisObjectName);
+		//		}
 		llRemoveInventory(llGetScriptName());
 	}
 }
@@ -350,21 +381,34 @@ state CheckMLO {
 	state_entry() {
 		MLOErrors = FALSE;
 		list ObjectData = llGetObjectDetails(llGetKey(), [ OBJECT_GROUP, OBJECT_CREATOR ]);
-		// We currently don't do anything here! Is there any point to rezzing the objects?
-		// Leaving it in just in case we find the need for it later. -- John
-
-		
-		//		key GroupId = llList2Key(ObjectData, 0);
-		//		key CreatorId = llList2Key(ObjectData, 1);
-		//		string Creator = llKey2Name(CreatorId);
-		//		if (Creator == "") Creator = "[" + (string)CreatorId + "]";
-		//		llOwnerSay("Creator: " + Creator);
+		key GroupId = llList2Key(ObjectData, 0);
+		key CreatorId = llList2Key(ObjectData, 1);
+		string Creator = llKey2Name(CreatorId);
+		if (Creator == "") Creator = "[" + (string)CreatorId + "]";
 		//		if (GroupId != NULL_KEY) {
 		//			string Group = llKey2Name(GroupId);
 		//			if (Group == "") Group = "[" + (string)GroupId + "]";
 		//			llOwnerSay("*** Group is set!");
 		//			MLOErrors = TRUE;
 		//		}
+		integer P;
+		integer Len = llGetInventoryNumber(INVENTORY_ALL);
+		for (P = 0; P < Len ; P++) {
+			string ItemName = llGetInventoryName(INVENTORY_ALL, P);
+			if (ItemName != ThisScriptName) {
+				integer IsMod = CheckInvPerm(MASK_NEXT, ItemName, PERM_MODIFY);
+				integer IsTrans = CheckInvPerm(MASK_NEXT, ItemName, PERM_TRANSFER);
+				integer ItemType = llGetInventoryType(ItemName);
+				if (ItemType == INVENTORY_SCRIPT && IsMod) {
+					llOwnerSay("*** Modifiable script: " + ItemName);
+					MLOErrors = TRUE;
+				}
+				if (IsTrans) {
+					llOwnerSay("*** Transferrable item: " + ItemName);
+					MLOErrors = TRUE;
+				}
+			}
+		}
 		osMessageObject(ParentObject, (string)MLOErrors);
 		llDie();
 	}
@@ -374,4 +418,4 @@ state Hang {
 	changed(integer Change) { llResetScript(); }
 	touch_start(integer Count) { llResetScript(); }
 }
-// Module Deployment Pre-check v1.0
+// Module deployment permissions check v1.1

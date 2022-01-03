@@ -1,4 +1,4 @@
-// RezMela HUD server v1.9.1
+// RezMela HUD server v1.9.2
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.9.2 - hardwire name on prim sides
 // v1.9.1 - handle beacons
 // v1.9.0 - render prim-drawing textures here rather than in HUD attachment
 // v1.8.1 - allow for null buttons
@@ -1588,7 +1589,6 @@ integer ReadConfig() {
 		return FALSE;
 	}
 	// Set config defaults
-	ApplicationName = "RezMela";
 	TextureRenderFace = 5;
 	PrimTitleSides = [];
 	PrimTitleFontSize = 64;
@@ -1733,7 +1733,6 @@ integer ReadConfig() {
 						else if (Name == "minmax") UuidMinMax = Value;
 						else if (Name == "integritycheck") DoIntegrityCheck = (integer)Value;
 						else if (Name == "backgroundcolor") PageColor = Value;
-						else if (Name == "hudtitle") ApplicationName = StripQuotes(Value, Line);
 						else if (Name == "texturerenderface") TextureRenderFace = (integer)Value;
 						else if (Name == "primtitlesides") PrimTitleSides = llCSV2List(Value);
 						else if (Name == "primtitlefontsize") PrimTitleFontSize = (integer)Value;
@@ -1923,7 +1922,6 @@ integer ReadConfig() {
 	MakePrevNext();
 	ImageCalculations();
 	PrimTitleSidesCount = llGetListLength(PrimTitleSides);
-	SetPrimTitleSides();
 	return TRUE;
 }
 // Certain strings evaluate TRUE, everything else is FALSE
@@ -1942,36 +1940,6 @@ string StripQuotes(string Text, string Line) {
 	else {
 		llOwnerSay("Invalid string literal (missing \"\"?): " + Line);
 		return("");
-	}
-}
-SetPrimTitleSides() {
-	if (PrimTitleSidesCount == 0) return;
-	integer S;
-	integer Side1 = llList2Integer(PrimTitleSides, 0);
-	string CommandList = "";
-	vector TextSize = osGetDrawStringSize( "vector", ApplicationName, PrimTitleFontName, PrimTitleFontSize);
-	integer TextHeight = (integer)TextSize.y;
-	integer TextWidth = (integer)TextSize.x;
-	// Background
-	CommandList = osMovePen(CommandList, 0, 0);
-	CommandList = osSetPenColor(CommandList, PrimTitleBackColor);
-	CommandList = osDrawFilledRectangle(CommandList, PRIM_TITLE_SIZE, PRIM_TITLE_SIZE);
-	// Text
-	CommandList = osMovePen(CommandList,
-		(PRIM_TITLE_SIZE / 2) - (TextWidth / 2),
-		(PRIM_TITLE_SIZE / 2) - (TextHeight/ 2)
-			);
-	CommandList = osSetFontName(CommandList, PrimTitleFontName);
-	CommandList = osSetFontSize(CommandList, PrimTitleFontSize);
-	CommandList = osSetPenColor(CommandList, PrimTitleTextColor);
-	CommandList = osDrawText(CommandList, ApplicationName);
-	osSetDynamicTextureDataBlendFace("", "vector", CommandList, "width:" + (string)PRIM_TITLE_SIZE + ",height:"+ (string)PRIM_TITLE_SIZE, FALSE, 2, 0, 255, Side1);
-	key TextureId = llGetTexture(Side1);
-	// Normally I would use llSetLinkPrimitiveParamsFast to set all sides at once, but we don't know the repeats/offsets
-	// the app developer has set, and discovering those involves even more CPU, so let's keep it simple. -- JFH
-	for (S = 1; S < PrimTitleSidesCount; S++) {
-		integer Side = llList2Integer(PrimTitleSides, S);
-		llSetTexture(TextureId, Side);
 	}
 }
 // Returns UUID of parcel at current position (string, not key)
@@ -2219,7 +2187,7 @@ default {
 			state Hang;
 		}
 		llSetRemoteScriptAccessPin(SCRIPT_PIN);
-		ApplicationName = "";
+		ApplicationName = "RezMela Composer";
 		HudName = "";
 		if (!ReadConfig()) {
 			state Hang;
@@ -2271,7 +2239,6 @@ state Idle {
 		}
 		if (Change & CHANGED_REGION_START) {
 			HashTable = []; // We may have lost region cache textures
-			SetPrimTitleSides();
 		}
 	}
 	timer() {
@@ -2348,7 +2315,6 @@ state ActivateHud {
 		}
 		if (Change & CHANGED_REGION_START) {
 			HashTable = []; // We may have lost region cache textures
-			SetPrimTitleSides();
 			state Idle;
 		}
 	}
@@ -2380,7 +2346,6 @@ state GiveHud {
 	changed(integer Change) {
 		if (Change & CHANGED_REGION_START) {
 			HashTable = []; // We may have lost region cache textures
-			SetPrimTitleSides();
 			state Idle;
 		}
 	}
@@ -2438,7 +2403,6 @@ state Normal {
 		}
 		if (Change & CHANGED_REGION_START) {
 			HashTable = []; // We may have lost region cache textures
-			SetPrimTitleSides();
 			state Idle;
 		}
 	}
@@ -2473,4 +2437,4 @@ state Hang {
 	}
 	changed(integer Change) { llResetScript(); }
 }
-// RezMela HUD server v1.9.1
+// RezMela HUD server v1.9.2

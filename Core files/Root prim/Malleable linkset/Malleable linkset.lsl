@@ -1,4 +1,4 @@
-// Malleable linkset v1.21.18
+// Malleable linkset v1.22.4
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,7 +18,12 @@
 // or modification, contact support@rezmela.com
 // Additional documentation about ML, ML Linkset limits http://wiki.rezmela.org/doku.php/ml-limits?s[]=primsource
 
-// v1.12.18 Reset on rez
+// v1.22.4 Rotation changes for stickpoints altered for walls module
+// v1.22.3 Make snap-to-grid optional
+// v1.22.2 Add AOC requesting object's module ID to requested object
+// v1.22.1 Bug fixes, etc
+// v1.22.0 Unlinked modules; remove debug
+// v1.21.18 Reset on rez
 // v1.21.17 Broadcast LM_ANNOUNCE_OBJECT when object added
 // v1.21.16 Further batch controls for activation queue; add LM_REGION_START; implement RotationButtons
 // v1.21.15 Fixed bug causing nudge to not work as expected when App is rotated; Reserved Touch Faces can now be set dynamically ( e.g. during login and logout)
@@ -104,6 +109,7 @@ integer LM_SEAT_USER = -405520;
 integer LM_EXTERNAL_LOGIN = -405521;
 integer LM_EXTERNAL_LOGOUT = -405522;
 integer LM_EXTERNAL_DESELECT = -405523;    // if we receive this, we deselect the object
+integer LM_GRID_SNAP = -405524;
 integer LM_LOADING_COMPLETE = -405530;
 integer LM_AUTOHIDE_SET  = -405532; // from communicator: hide/unhide commands
 integer LM_REGION_START = -405533; // sent out on region restart
@@ -114,7 +120,6 @@ integer LM_APP_BACKUP_SEND = -405539;
 integer LM_APP_RESTORE = -405542;
 integer LM_HUD_STATUS = -405543;
 integer LM_NUDGE_STATUS = -405544;
-integer LM_LOCKED = -405545;
 integer LM_PUBLIC_DATA = -405546;
 integer LM_CAMERA_JUMP_MODE = -405547;
 integer LM_OBJECTS_COUNT = -405548;
@@ -139,24 +144,24 @@ integer SFM_BACKUP = -3310424;
 integer SFM_DELETE_ALL = -3310427;
 
 // Cataloguer's messages
-integer CT_REQUEST_DATA    = -83328400;
-integer CT_CATALOG            = -83328401;
-integer CT_START            = -83328402;
-integer CT_MODULES            = -83328407;
-integer CT_READY            = -83328408;
+integer CT_REQUEST_DATA		= -83328400;
+integer CT_CATALOG 			= -83328401;
+integer CT_REZ_OBJECTS		= -83328403;
+integer CT_REZZED_IDS		= -83328404;
+integer CT_ARRANGE_PRIMS	= -83328405;
+integer CT_MODULES			= -83328407;
+integer CT_WO_RECEIVED		= -83328408;
 
-
-// Librarian commands
-integer LIB_REZ_OBJECTS     = -879189120;
-integer LIB_INITIALIZE     = -879189122;
-integer LIB_REZZED            = -879189123;
+// Utils LMs
+integer UTIL_WAITING = -181774800;
+integer UTIL_GO = -181774801;
 
 // World object commands
 integer WO_MOVE = 3000;
 integer WO_ROTATE = 3001;
 integer WO_MOVE_ROTATE = 3002;
 integer WO_DELETE = 3003;
-integer WO_INITIALISE = 3004;
+integer WO_INITIALISE = 3004;	
 integer WO_SELECT = 3005;
 integer WO_DESELECT = 3006;
 integer WO_RESIZE = 3009;
@@ -205,52 +210,42 @@ list HUDAttachPoints = [
 
 // Modules data rec'd from Cataloguer
 list ModulesList;
-integer MOD_LIB_KEY = 0;
-integer MOD_NAME = 1;
-//integer MOD_STRIDE = 2;
+integer MOD_MODULE_ID = 0;
+integer MOD_DESC = 1;
+integer MOD_STRIDE = 2;
 
-// ObjectsStatic - objects' data needed at all times
-list ObjectsStatic;
-integer OBS_NAME = 0;
-integer OBS_REFERENCE = 1;
-integer OBS_CAMERA_POS = 2;
-integer OBS_CAMERA_ALT_POS = 3;
-integer OBS_CAMERA_FOCUS = 4;
-integer OBS_JUMP_POS = 5;
-integer OBS_JUMP_LOOKAT = 6;
-integer OBS_PHANTOM = 7;
-integer OBS_AUTOHIDE         = 8;
-integer OBS_STRIDE = 9;
+// ObjectsData - data for all objects in library
+list ObjectsData;
+integer OBJ_NAME			= 0;
+integer OBJ_CAMERA_POS		= 1;
+integer OBJ_CAMERA_ALT_POS	= 2;
+integer OBJ_CAMERA_FOCUS	= 3;
+integer OBJ_JUMP_POS		= 4;
+integer OBJ_JUMP_LOOKAT		= 5;
+integer OBJ_PHANTOM			= 6;
+integer OBJ_AUTOHIDE		= 7;
+integer OBJ_DETACHED		= 8;    
+integer OBJ_SOURCE_B64		= 9;
+integer OBJ_SIZEFACTOR		= 10;
+integer OBJ_OFFSET_POS		= 11;
+integer OBJ_OFFSET_ROT		= 12;
+integer OBJ_SITTABLE		= 13;
+integer OBJ_DO_ROTATION		= 14;
+integer OBJ_DO_BINORMAL		= 15;
+integer OBJ_COPY_ROTATION	= 16;
+integer OBJ_CENTER			= 17;
+integer OBJ_ADJUST_HEIGHT	= 18;
+integer OBJ_DUMMY_MOVE		= 19;
+integer OBJ_RESIZABLE		= 20;
+integer OBJ_FLOATING		= 21;
+integer OBJ_IS_APP			= 22;
+integer OBJ_STICKPOINT_B64	= 23;
+integer OBJ_SNAP_GRID		= 24;
+integer OBJ_REGION_SNAP		= 25;
+integer OBJ_COMMS_TYPE		= 26;
+integer OBJ_MODULE_ID		= 27;
+integer OBJ_STRIDE			= 28;
 integer ObjectsLibraryCount;    // number of objects in library (static and dynamic have same count when dynamic is loaded)
-
-// ObjectsDynamic - objects' data only required while signed in
-list ObjectsDynamic;
-integer OBD_REFERENCE        = 0;        // Always first
-integer OBD_DETACHED         = 1;    
-integer OBD_SOURCE_B64         = 2;
-integer OBD_SIZEFACTOR         = 3;
-integer OBD_OFFSET_POS         = 4;
-integer OBD_OFFSET_ROT         = 5;
-integer OBD_SITTABLE        = 6;
-integer OBD_DO_ROTATION     = 7;
-integer OBD_DO_BINORMAL     = 8;
-integer OBD_COPY_ROTATION    = 9;
-integer OBD_CENTER         = 10;
-integer OBD_ADJUST_HEIGHT    = 11;
-integer OBD_DUMMY_MOVE         = 12;
-integer OBD_RESIZABLE         = 13;
-integer OBD_FLOATING         = 14;
-integer OBD_IS_APP         = 15;
-integer OBD_STICKPOINT_B64    = 16;
-integer OBD_SNAP_GRID         = 17;
-integer OBD_REGION_SNAP     = 18;
-integer OBD_COMMS_TYPE        = 19;
-integer OBD_STRIDE         = 20;
-
-// Which objects use which modules
-list ObjectModules = [];
-integer OBM_NAME        = 0;
-integer OBM_LIBKEY        = 1;
 
 // List of prim names of autohide objects
 list AutoHides = [];
@@ -262,7 +257,7 @@ list Selections = [];
 integer SEL_AVID = 0;        // positions of fields in strided list
 integer SEL_OBJECT_ID = 1;    // UUID of object
 integer SEL_ICON_ID = 2;    // Icon ID (maps only)
-integer SEL_OBD_PTR = 3;    // Pointer to detached objects table or linked objects table (depending on mode)
+integer SEL_OBJ_PTR = 3;    // Pointer to detached objects table or linked objects table (depending on mode)
 integer SEL_STRIDE = 4;     // list stride length
 
 // Linked objects (ie app objects)
@@ -281,7 +276,7 @@ integer LO_STRIDE = 8;
 list DetachedObjects = [];
 integer DO_OBJECT_ID = 0;
 integer DO_ICON_ID = 1;
-integer DO_LIB_PTR = 2;
+integer DO_OBJECTS_PTR = 2;
 integer DO_SIZE_FACTOR = 3;
 integer DO_EXTRA_DATA = 4;
 integer DO_APP_DATA = 5;
@@ -322,7 +317,6 @@ integer NOB_TYPE_GROUP = 4;
 integer NOB_TYPE_AOC = 5;
 
 integer ObjectsToLoad;    // a count of the number of objects still to be created when loading from notecard
-integer LoadStaticObjectsOnly; // when TRUE, we're only loading static data for objects
 
 key UserId;    // user who is signed in
 
@@ -408,7 +402,6 @@ integer AppBackupsTimeout;
 string AppRestoreData;
 
 list ChildQueue = [];    // List of child apps that have sent LM_CHILD_READY but not WO_INITIALISE (yet)
-integer WaitingForCataloguer = TRUE;
 
 integer Initialized = FALSE; // Has Initialize() main processing been executed?
 
@@ -425,6 +418,11 @@ key OurUuid;
 integer CommsChannelListener;
 integer CommandChatListener;
 float NudgeDistance; // the current nudge distance (can be changed by user)
+integer GridSnapOn = TRUE;
+
+string LoadFilename = "";
+integer LoadObjectsCount = 0;
+integer LoadTotalObjects = 0;
 
 // Config file data
 string ScoreboardChannel;
@@ -446,14 +444,12 @@ float CursorAlpha;
 float CursorHeight;    // distance above the object
 vector WorldSize;
 vector WorldOrigin;
-vector RezPosition;
 vector BoardOffset;
 float ScalingFactor;
 vector IconHoverTextColour;
 float IconHoverTextAlpha;
 float IconSelectGlow;
 vector IconSelectParticleColour;
-integer Locked;
 integer DummyMoveSet;
 float LinkedSelectGlow;
 integer LinkBatchSize; // size of link batch used during load of scene
@@ -527,26 +523,22 @@ PositionObjectOnFace(
     integer DoBinormal = TRUE;
     integer CopyRotation = FALSE;
     rotation StickPointRot = ROT_NAN;
-    string BaseName = GetBaseName(ObjectName);
-    string ObjectReference = GetObjectReference(BaseName);    // returns "" if no object in table
-    if (ObjectReference == "") { LogError("No object in library to position " + ObjectName); return; }
-    integer LibPtr = GetDynamicPointer(ObjectReference);    // get pointer to ObjectsDynamic
-    if (LibPtr == -1) return; // should never happen
+	string BaseName = GetBaseName(ObjectName);
+	integer ObjPtr = GetObjectsPointer(BaseName);
+    if (ObjPtr == -1) return; // should never happen
     if (!IsMap && TargetId != NULL_KEY) {
         integer TargetLink = Uuid2LinkNum(TargetId);
         if (TargetLink == -1) return;
         string TargetName = llGetLinkName(TargetLink);
         // Check to see if target object has a snap grid
-        string TargetObjectReference = GetObjectReference(TargetName);
-        if (TargetObjectReference != "") {    // Target is an object
-            integer TargetLibPtr = GetDynamicPointer(TargetObjectReference);
-            if (TargetLibPtr == -1) return; // should never happen
+        integer TargetObjectsPointer = GetObjectsPointer(TargetName);
+        if (TargetObjectsPointer > -1) {    // Target is an object
             list TargetParams = llGetLinkPrimitiveParams(TargetLink, [ PRIM_POS_LOCAL, PRIM_ROT_LOCAL, PRIM_SIZE ]);
             TargetLocalRot = llList2Rot(TargetParams, 1);
             //
             // StickPoints processing
             //
-            string StickPoints64 = llList2String(ObjectsDynamic, TargetLibPtr + OBD_STICKPOINT_B64);
+            string StickPoints64 = llList2String(ObjectsData, TargetObjectsPointer + OBJ_STICKPOINT_B64);
             list SPList = FindStickPoint(TargetId, StickPoints64, TouchPos, TouchST, TouchFace, Normal);    // Returns VEC_NAN if not found
             vector StickPoint = llList2Vector(SPList, 0);
             StickPointRot = llList2Rot(SPList, 1);
@@ -556,8 +548,8 @@ PositionObjectOnFace(
             //
             // SnapGrid processing
             //
-            else {    // No StickPoint, so maybe there's a grid?
-                vector SnapGrid = llList2Vector(ObjectsDynamic, TargetLibPtr + OBD_SNAP_GRID);
+            else if (GridSnapOn) {    // No StickPoint, so maybe there's a grid and we have Snap enabled?
+                vector SnapGrid = llList2Vector(ObjectsData, TargetObjectsPointer + OBJ_SNAP_GRID);
                 if (SnapGrid != ZERO_VECTOR) {
                     // The target object has a snap grid
                     vector TargetPos = llList2Vector(TargetParams, 0);
@@ -573,11 +565,11 @@ PositionObjectOnFace(
             }
         }
     }
-    vector V = llList2Vector(ObjectsDynamic, LibPtr + OBD_OFFSET_POS); if (V != VEC_NAN) ObjectOffset = V;
-    V = llList2Vector(ObjectsDynamic, LibPtr + OBD_OFFSET_ROT); if (V != VEC_NAN) SpecifiedRot = llEuler2Rot(V * DEG_TO_RAD);
-    DoRotation = llList2Integer(ObjectsDynamic, LibPtr + OBD_DO_ROTATION);
-    DoBinormal = llList2Integer(ObjectsDynamic, LibPtr + OBD_DO_BINORMAL);
-    CopyRotation = llList2Integer(ObjectsDynamic, LibPtr + OBD_COPY_ROTATION);
+    vector V = llList2Vector(ObjectsData, ObjPtr + OBJ_OFFSET_POS); if (V != VEC_NAN) ObjectOffset = V;
+    V = llList2Vector(ObjectsData, ObjPtr + OBJ_OFFSET_ROT); if (V != VEC_NAN) SpecifiedRot = llEuler2Rot(V * DEG_TO_RAD);
+    DoRotation = llList2Integer(ObjectsData, ObjPtr + OBJ_DO_ROTATION);
+    DoBinormal = llList2Integer(ObjectsData, ObjPtr + OBJ_DO_BINORMAL);
+    CopyRotation = llList2Integer(ObjectsData, ObjPtr + OBJ_COPY_ROTATION);
 
     ObjectOffset *= SizeFactor;        // Adjust scale of offset according to changed size
 
@@ -600,7 +592,8 @@ PositionObjectOnFace(
     ObjectRot *= BasicRot;
     vector ObjectPos;
     if (StickPointRot != ROT_NAN) {    // there is a stickpoint rotation, so apply it
-        ObjectRot *=  (StickPointRot * TargetLocalRot);
+        //ObjectRot *=  (StickPointRot * TargetLocalRot); // Line below was this until v1.22.4
+        ObjectRot *=  (StickPointRot / llGetLocalRot());		
         ObjectPos = CpPos + (ObjectOffset * BasicRot * StickPointRot * TargetLocalRot);
         ClearStoredRotation(AvId); // stored rotations don't work well with stickpoint rotations
     }
@@ -624,12 +617,12 @@ PositionObjectOnFace(
     else {
         ClearStoredRotation(AvId);    // we might as well clear this now, since it can never be relevant
     }
-    vector RegionSnap = llList2Vector(ObjectsDynamic, LibPtr + OBD_REGION_SNAP);
+    vector RegionSnap = llList2Vector(ObjectsData, ObjPtr + OBJ_REGION_SNAP);
     if (IsMap) {
         string Ext = llGetSubString(ObjectName, -1, -1);
         if (Ext == "W") {
             vector WorldPos = BoardPos2WorldPos(TouchPos);
-            integer Center = llList2Integer(ObjectsDynamic, LibPtr + OBD_CENTER);
+            integer Center = llList2Integer(ObjectsData, ObjPtr + OBJ_CENTER);
             if (Center) WorldPos = WorldOrigin + WorldSize * 0.5;
             WorldPos += ObjectOffset * IconRot2WorldRot(BasicRot);
             integer DetPtr = llListFindList(DetachedObjects, [ ObjectId ]);
@@ -645,7 +638,7 @@ PositionObjectOnFace(
     else if (Detached) {
         // Convert local position to world position
         ObjectPos = llGetPos() + (ObjectPos * llGetRot());
-        integer Center = llList2Integer(ObjectsDynamic, LibPtr + OBD_CENTER);
+        integer Center = llList2Integer(ObjectsData, ObjPtr + OBJ_CENTER);
         if (Center) {
             ObjectPos = WorldOrigin + WorldSize * 0.5;
         }
@@ -656,7 +649,7 @@ PositionObjectOnFace(
         MessageStandard(ObjectId, WO_MOVE_ROTATE, [ ObjectPos, ObjectRot ]);
     }
     else {    // Linked object in App
-        integer Center = llList2Integer(ObjectsDynamic, LibPtr + OBD_CENTER);
+        integer Center = llList2Integer(ObjectsData, ObjPtr + OBJ_CENTER);
         if (Center) {
             ObjectPos = WorldOrigin + WorldSize * 0.5;
             ObjectPos = RegionPos2LocalPos(ObjectPos);                
@@ -807,7 +800,7 @@ Clone(key AvId) {
         Pos = llList2Vector(ObjectDetails, 1);
         Rot = llList2Rot(ObjectDetails, 2);
         string BaseName = GetBaseName(ObjectName);
-        integer DetPtr = llList2Integer(Selections, SelPtr + SEL_OBD_PTR);
+        integer DetPtr = llList2Integer(Selections, SelPtr + SEL_OBJ_PTR);
         SizeFactor = llList2Float(DetachedObjects, DetPtr + DO_SIZE_FACTOR);
         // Extra data not used in Maps
         if (IsMap) {
@@ -827,7 +820,7 @@ Clone(key AvId) {
         if (SelectedLinkNum == -1) return;
         
         ObjectName = llGetLinkName(SelectedLinkNum);
-        if (llListFindList(ObjectsStatic, [ ObjectName ]) == -1) {
+        if (GetObjectsPointer(ObjectName) == -1) {
             Message(AvId, "Can't clone this object");
             return;
         }
@@ -861,17 +854,25 @@ Clone(key AvId) {
     RezObjects([ RezObjectName ]);    // Trigger creation of object
 }
 // Automatic object creation
-AocCreate(key AvId, string Data) {
+AocCreate(key AvId, string SendingName, string Data) {
     list Elements = llParseStringKeepNulls(Data, [ "|" ], []);
     string ObjectName = llList2String(Elements, 0);
     vector PrimPos = (vector)llList2String(Elements, 1);
     rotation PrimRot = (rotation)llList2String(Elements, 2);
     string ExtraData = llList2String(Elements, 3);
+	if (llSubStringIndex(ObjectName, ".") == -1) { // if requested object name doesn't include the module ID
+		// Find module ID of requesting object
+		integer P = llSubStringIndex(SendingName, ".");
+		if (P > -1) {
+			string ModuleId = llGetSubString(SendingName, 0, P - 1);
+			ObjectName = ModuleId + "." + ObjectName; // prepend module ID of requesting object to requested object
+		}
+	}
     integer NewPrimId = 0;    // this gets allocated later
     vector OriginalSize = VEC_NAN;    // we don't know this yet
     vector ActualSize = VEC_NAN;    // nor this
-    integer LibPtr = llListFindList(ObjectsStatic, [ ObjectName ]);
-    if (LibPtr == -1) {
+    integer ObjPtr = GetObjectsPointer(ObjectName);
+    if (ObjPtr == -1) {
         LogError("Unknown object in AOC request: '" + ObjectName + "'");
         return;
     }
@@ -922,7 +923,6 @@ CreatePosition(integer CreatePtr, key TargetUuid, vector TouchPos, integer Touch
     // It's OK as long as TouchPos, TouchFace, CpPos, CpNormal and CPBinormal are adjacent in that sequence
     NewObjects = llListReplaceList(NewObjects, [ NOB_TYPE_CREATE_REZZING ], CreatePtr + NOB_TYPE, CreatePtr + NOB_TYPE);    // update type of record
     NewObjects = llListReplaceList(NewObjects, [ TouchPos, TouchFace, TouchST, CpPos, CpNormal, CpBinormal ], CreatePtr + NOB_TOUCH_POS, CreatePtr + NOB_CP_BINORMAL);
-    NewObjects = llListReplaceList(NewObjects, [ TouchPos, TouchFace, TouchST, CpPos, CpNormal, CpBinormal ], CreatePtr + NOB_TOUCH_POS, CreatePtr + NOB_CP_BINORMAL);
     NewObjects = llListReplaceList(NewObjects, [ TargetUuid ], CreatePtr + NOB_TARGET_UUID, CreatePtr + NOB_TARGET_UUID);
     string ObjectName = llList2String(NewObjects, CreatePtr + NOB_OBJECTNAME);
     if (IsMap) {
@@ -932,7 +932,7 @@ CreatePosition(integer CreatePtr, key TargetUuid, vector TouchPos, integer Touch
         RezObjects([ ObjectName ]);
     }
 }
-// Create an object
+// Create objects
 RezObjects(list ObjectNames) {
     integer ObjectsLength = llGetListLength(ObjectNames);
     ObjectsRezzing += ObjectsLength;
@@ -943,52 +943,15 @@ RezObjects(list ObjectNames) {
         }
         return;
     }
-    // We have a list of object names, with possibly duplicates. We need to convert that into a list of unique
-    // object names, each with a count of the number of occurrences in the first list.
     if (ObjectNames == []) return; // probably should never happen
-    // First, sort the list so that duplicates are together
-    ObjectNames = llListSort(ObjectNames, 1, TRUE);
-    
-    // Set up our output list
-    list RezCommands = []; // [ ObjectName, Quantity ]
-
-    // Loop through objects, adding to output list
-    integer I;
-    string SavedObject = llList2String(ObjectNames, 0);;
-    integer Count = 0;
-    for (I = 0; I < ObjectsLength; I++) {
-        string ObjectName = llList2String(ObjectNames, I);
-        // Validation of this object name
-        string BaseName = GetBaseName(ObjectName);
-        integer O = llListFindList(ObjectsStatic, [ BaseName ]);
-        if (O == -1) {
-            LogError("Object not in libraries: '" + BaseName + "'");
-            NewObjects = [];    // so other functions aren't waiting for objects to appear
-            return;
-        }
-        // Now the counting part
-        if (ObjectName == SavedObject) {
-            Count++;
-        }
-        else {
-            RezCommands += [ SavedObject, (string)Count ];
-            Count = 1;
-            SavedObject = ObjectName;
-        }
-    }
-    RezCommands += [ SavedObject, (string)Count ];
-    integer RezCommandsLength  = llGetListLength(RezCommands);
-    for (I = 0; I < RezCommandsLength; I += 2) {
-        // The command we send to the libraries has data: "<ObjectName>|<Count>"
-        string RezString = llList2String(RezCommands, I) + "|" + (string)llList2Integer(RezCommands, I + 1);
-        llMessageLinked(LINK_SET, LIB_REZ_OBJECTS, RezString, NULL_KEY);
-    }
+    string RezString = llDumpList2String(ObjectNames, "|");
+    llMessageLinked(LINK_SET, CT_REZ_OBJECTS, RezString, NULL_KEY);
     // We have to stop here because we need the return message to pick up the prim UUID. Then we need to
     // use the prim name in the creators list to identify whose prim it is. A great example of when event logic
     // can be a pain, or alternatively when the lack of dynamic event handlers is a shortcoming in LSL.
 }
 // We call this when:
-// (a) WO: we get WO_INITIALISE from a detached object (via the librarian) 
+// (a) WO: we get CT_WO_RECEIVED from a detached object (via the librarian and cataloguer) 
 //   OR
 // (b) ML: we get LM_CHILD_READY from the child app's ML.
 // These two calls can be in either sequence - it's asynch. If the object is not an app, we will
@@ -1028,24 +991,15 @@ MessageFromChild(integer FromWo, key ChildId) {
 CreateContinue(key ObjectId) {
     string ObjectName = llList2String(llGetObjectDetails(ObjectId, [ OBJECT_NAME ]), 0);    // get its name
     string BaseName = GetBaseName(ObjectName);
-    string ObjectReference = GetObjectReference(BaseName);
-    if (ObjectReference == "") {
-        LogError("Can't continue with object creation for: '" + ObjectName + "'");
+    integer ObjPtr = GetObjectsPointer(BaseName);
+    if (ObjPtr == -1) { // should never happen
+        LogError("Invalid pointer: " + (string)ObjPtr);
         return;
     }
-    if (ObjectsDynamic == []) {
-        LogError("Can't continue with creation - no dynamic objects entries");
-        return;
-    }
-    integer StaticLibPtr = llListFindList(ObjectsStatic, [ BaseName ]);
-    integer DynamicLibPtr = GetDynamicPointer(ObjectReference);
-    if (StaticLibPtr == -1 || DynamicLibPtr == -1) { // should never happen
-        LogError("Invalid pointer(s): " + (string)StaticLibPtr + "/" + (string)DynamicLibPtr);
-        return;
-    }
-    integer Detached = llList2Integer(ObjectsDynamic, DynamicLibPtr + OBD_DETACHED);
+    integer Detached = llList2Integer(ObjectsData, ObjPtr + OBJ_DETACHED);
 
     ObjectsRezzing--;
+    LoadObjectsCount++;
 
     integer NobPtr = FindNewObject(NULL_KEY, BaseName, NOB_TYPE_CREATE_REZZING);
     if (NobPtr == -1) NobPtr = FindNewObject(NULL_KEY, BaseName, NOB_TYPE_CLONE);
@@ -1073,13 +1027,12 @@ CreateContinue(key ObjectId) {
     key TargetUuid = llList2Key(NewObjects, NobPtr + NOB_TARGET_UUID);
 
     if (CType == NOB_TYPE_CREATE_REZZING || CType == NOB_TYPE_AOC) {
-        SizeFactor = llList2Float(ObjectsDynamic, DynamicLibPtr + OBD_SIZEFACTOR);
+        SizeFactor = llList2Float(ObjectsData, ObjPtr + OBJ_SIZEFACTOR);
     }
     if (IsMap) {
         CreateContMap(
             NobPtr,
-            StaticLibPtr,
-            DynamicLibPtr,
+            ObjPtr,
             ObjectId,
             ObjectName,
             TargetUuid,
@@ -1101,8 +1054,7 @@ CreateContinue(key ObjectId) {
         if (Detached) {
             CreateContDetached(
                 NobPtr,
-                StaticLibPtr,
-                DynamicLibPtr,
+                ObjPtr,
                 ObjectId,
                 ObjectName,
                 TargetUuid,
@@ -1123,8 +1075,7 @@ CreateContinue(key ObjectId) {
         else {
             CreateContLinked(
                 NobPtr,
-                StaticLibPtr,
-                DynamicLibPtr,
+                ObjPtr,
                 ObjectId,
                 ObjectName,
                 TargetUuid,
@@ -1149,8 +1100,7 @@ CreateContinue(key ObjectId) {
 }
 CreateContMap(
     integer NobPtr,
-    integer StaticLibPtr,
-    integer DynamicLibPtr,
+    integer ObjPtr,
     key ObjectId,
     string ObjectName,
     key TargetUuid,
@@ -1190,7 +1140,7 @@ CreateContMap(
         // Note that it doesn't matter if there is more than one potential match - they're all instances of the same icon anyway
         if (IsWo) {
             // Pick up data from objects library
-            integer IsApp = llList2Integer(ObjectsDynamic, DynamicLibPtr + OBD_IS_APP);
+            integer IsApp = llList2Integer(ObjectsData, ObjPtr + OBJ_IS_APP);
             // Relate WO back to its icon
             integer P = llListFindList(IconsWaiting, [ BaseName ]);
             if (P == -1) { LogError("Can't find waiting icon for " + BaseName); return; }
@@ -1205,10 +1155,10 @@ CreateContMap(
                     SendAppData = llDeleteSubList(SendAppData, S, S + 2);
                 }
             }
-            DetachedObjects += [ WoUuid, IconUuid, DynamicLibPtr, SizeFactor, ExtraData, AppData ];
+            DetachedObjects += [ WoUuid, IconUuid, ObjPtr, SizeFactor, ExtraData, AppData ];
             ObjectsCount++;
 
-            integer AdjustHeight = llList2Integer(ObjectsDynamic, DynamicLibPtr + OBD_ADJUST_HEIGHT);
+            integer AdjustHeight = llList2Integer(ObjectsData, ObjPtr + OBJ_ADJUST_HEIGHT);
             MessageStandard(ObjectId, WO_INITIALISE, [ ZERO_VECTOR, 0.0, AdjustHeight, IconUuid, ExtraData, "" ]);
 
         }
@@ -1261,8 +1211,7 @@ CreateContMap(
     }
 CreateContDetached(
     integer NobPtr,
-    integer StaticLibPtr,
-    integer DynamicLibPtr,
+    integer ObjPtr,
     key ObjectId,
     string ObjectName,
     key TargetUuid,
@@ -1295,7 +1244,7 @@ CreateContDetached(
             MessageStandard(ObjectId, WO_RESIZE, [ SizeFactor ]);
         }
         string AppData = "";
-        integer IsApp = llList2Integer(ObjectsDynamic, DynamicLibPtr + OBD_IS_APP);
+        integer IsApp = llList2Integer(ObjectsData, ObjPtr + OBJ_IS_APP);
         if (IsApp) {
             // Format of SendAppData is name, position, data
             integer S = llListFindList(SendAppData, [ ObjectName, Pos ]);
@@ -1304,13 +1253,12 @@ CreateContDetached(
                 SendAppData = llDeleteSubList(SendAppData, S, S + 2);
             }
         }        
-        DetachedObjects += [ ObjectId, NULL_KEY, DynamicLibPtr, SizeFactor, ExtraData, AppData ];
+        DetachedObjects += [ ObjectId, NULL_KEY, ObjPtr, SizeFactor, ExtraData, AppData ];
         ObjectsCount++;
     }
 CreateContLinked(
     integer NobPtr,
-    integer StaticLibPtr,
-    integer DynamicLibPtr,
+    integer ObjPtr,
     key ObjectId,
     string ObjectName,
     key TargetUuid,
@@ -1366,7 +1314,7 @@ CreateContLinked(
         }
         if (OriginalSize == VEC_NAN) {
             OriginalSize = llList2Vector(llGetLinkPrimitiveParams(NewLinkNum, [ PRIM_SIZE ]), 0);
-            SizeFactor = llList2Float(ObjectsDynamic, DynamicLibPtr + OBD_SIZEFACTOR);
+            SizeFactor = llList2Float(ObjectsData, ObjPtr + OBJ_SIZEFACTOR);
         }
         if (ActualSize == VEC_NAN) {
             ActualSize = OriginalSize * SizeFactor;
@@ -1411,7 +1359,7 @@ CreateContLinked(
             }
         }
         if (CType == NOB_TYPE_GROUP) {
-            integer CommsType = llList2Integer(ObjectsDynamic, DynamicLibPtr + OBD_COMMS_TYPE);
+            integer CommsType = llList2Integer(ObjectsData, ObjPtr + OBJ_COMMS_TYPE);
             ActivationQueue += [ ObjectId, CommsType ];
             ActivationQueueSize++;
 			ActivationTickCount = 0; // first time, we don't delay
@@ -1425,7 +1373,7 @@ CreateContLinked(
             SelectObject(AvId, ObjectId);    // select new prim
         }
         // Also, set "phantom" state if necessary (map objects' needs here currently undetermined)
-        integer Phantom = llList2Integer(ObjectsStatic, StaticLibPtr + OBS_PHANTOM);
+        integer Phantom = llList2Integer(ObjectsData, ObjPtr + OBJ_PHANTOM);
 
         if (Phantom) {
             llSetLinkPrimitiveParamsFast(NewLinkNum, [ PRIM_PHYSICS_SHAPE_TYPE, PRIM_PHYSICS_SHAPE_NONE ]);
@@ -1441,6 +1389,10 @@ DeleteFromNewObjects(string ObjectName) {
         P -= NOB_OBJECTNAME;
         NewObjects = llDeleteSubList(NewObjects, P, P + NOB_STRIDE - 1);
     }
+}
+// Get pointer to ObjectsData for given name
+integer GetObjectsPointer(string ObjectName) {
+	return llListFindList(ObjectsData, [ ObjectName ]) - OBJ_NAME;
 }
 float RandomResizeFactor() {
     return 1.0 - RandomResize + llFrand(RandomResize * 2.0);
@@ -1553,23 +1505,6 @@ OnRez(integer Param) {
     Debug(DebugText);
 	llResetScript();
 }
-// Get internal object reference from object name. Returns "" if object doesn't exist
-string GetObjectReference(string ObjectName) {
-    string ObjectReference = "";
-    integer StaticPtr = llListFindList(ObjectsStatic, [ ObjectName ]);
-    if (StaticPtr > -1) {
-        ObjectReference = llList2String(ObjectsStatic, StaticPtr + OBS_REFERENCE);
-    }
-    return ObjectReference;
-}
-// Get pointer to Objects dynamic table row based on object reference (-1 if not found)
-integer GetDynamicPointer(string ObjectReference) {
-    integer Ptr = llListFindList(ObjectsDynamic, [ ObjectReference ]); // Reference is 1st field, so beginning of table row
-    if (Ptr == -1) {
-        LogError("Can't find dynamic objects entry"); 
-    }
-    return Ptr;
-}
 // Initial code, executed when script first starts
 Initialize() {
     SetDebug();
@@ -1604,8 +1539,7 @@ Initialize() {
         SetPrimIds();
         AwakenTicks = 0;
         ObjectsToLoad = 0;
-        ObjectsStatic = [];
-        ObjectsDynamic = [];
+        ObjectsData = [];
         ObjectsLibraryCount = 0;
         AppBackupsWaiting = 0;
         SendAppData = [];
@@ -1644,7 +1578,7 @@ Initialize() {
     // We set this value and that triggers a LM to say that loading is done.
     LoadingCompleteTicks = 20;
     SetTimer();
-    llMessageLinked(LINK_THIS, CT_START, "", NULL_KEY); // Tell cataloguer to start processing
+	llMessageLinked(LINK_THIS, UTIL_WAITING, "M", NULL_KEY); // tell servicer that we're ready
     Debug("Ready");
 }
 // Return the offset to be applied to a cloned object to lift it away from its original
@@ -1658,28 +1592,20 @@ vector CloneOffset() {
 // Is the given object an App or not?
 integer IsObjectAnAppByName(string ObjectName) {
     if (IsMap) ObjectName = GetBaseName(ObjectName);
-    string ObjectReference = GetObjectReference(ObjectName);
-    if (ObjectReference == "") {
-        LogError("Can't get library entry for object '" + ObjectName + "'");
-        return FALSE;
-    }
-    integer LibPtr = GetDynamicPointer(ObjectReference);
-    if (LibPtr == -1) return FALSE; // should never happen
-    return IsObjectAnAppByPtr(LibPtr);
+	integer ObjPtr = GetObjectsPointer(ObjectName);
+	return IsObjectAnAppByPtr(ObjPtr);
 }
-integer IsObjectAnAppByPtr(integer LibPtr) {
-    return llList2Integer(ObjectsDynamic, LibPtr + OBD_IS_APP);
+integer IsObjectAnAppByPtr(integer ObjPtr) {
+    return llList2Integer(ObjectsData, ObjPtr + OBJ_IS_APP);
 }
 MoveMapObject(string ObjectName, integer DetPtr, key WorldId, key IconId, vector WorldPos, rotation IconRot, vector Normal) {
     if (ObjectName == "") ObjectName = llList2String(llGetObjectDetails(WorldId, [ OBJECT_NAME ]), 0);
-    string ObjectReference = GetObjectReference(GetBaseName(ObjectName));
-    if (ObjectReference == "") { LogError("Can't find map object to move: " + ObjectName); return; }
-    integer LibPtr = GetDynamicPointer(ObjectReference);
-    if (LibPtr == -1) return; // should never happen
-    integer DoRotation = llList2Integer(ObjectsDynamic, LibPtr + OBD_DO_ROTATION);
-    integer Center = llList2Integer(ObjectsDynamic, LibPtr + OBD_CENTER);
-    integer Floating = llList2Integer(ObjectsDynamic, LibPtr + OBD_FLOATING);
-    integer DummyMove = llList2Integer(ObjectsDynamic, LibPtr + OBD_DUMMY_MOVE);
+    integer ObjPtr = GetObjectsPointer(ObjectName);
+    if (ObjPtr == -1) return; // should never happen
+    integer DoRotation = llList2Integer(ObjectsData, ObjPtr + OBJ_DO_ROTATION);
+    integer Center = llList2Integer(ObjectsData, ObjPtr + OBJ_CENTER);
+    integer Floating = llList2Integer(ObjectsData, ObjPtr + OBJ_FLOATING);
+    integer DummyMove = llList2Integer(ObjectsData, ObjPtr + OBJ_DUMMY_MOVE);
     if (Center) WorldPos = WorldOrigin + WorldSize * 0.5;
     if (Floating) WorldPos = AdjustFloatingObject(WorldPos);
     IconRot = IconRot * RotBetween(llRot2Up(IconRot), Normal);
@@ -1776,14 +1702,25 @@ rotation RotBetween(vector start, vector end) { //adjusts quaternion magnitude s
     }
     return rot;
 }
-// Shows count of objects in scene on HUD (when appropriate)
+// Shows count of objects loaded on HUD (when appropriate)
 integer UpdateObjectsCountStatus() {
     llMessageLinked(LINK_SET, LM_OBJECTS_COUNT, (string)ObjectsCount, UserId);
     if (ObjectsLimit == 0) return TRUE;    // no limit
     integer ReturnValue;
     string StatusMessage;
     if (ObjectsCount < ObjectsLimit) {
-        StatusMessage = "Objects in scene: " + (string)ObjectsCount + "/" + (string)ObjectsLimit;
+		if (LoadTotalObjects > 0) { // if we're loading a scene
+			string ObjectsCountString;
+			if (LoadObjectsCount < LoadTotalObjects) {
+				ObjectsCountString = (string)LoadObjectsCount + "/" + (string)LoadTotalObjects;
+			} else {
+				ObjectsCountString = (string)LoadTotalObjects;
+				LoadTotalObjects = 0; // switch back to count of objects in scene
+			}
+			StatusMessage = "Objects loaded: " + ObjectsCountString;
+		} else  {
+			StatusMessage = "Objects in scene: " + (string)ObjectsCount;
+		}
         ReturnValue = TRUE;
     }
     else {
@@ -1793,36 +1730,33 @@ integer UpdateObjectsCountStatus() {
     llMessageLinked(LINK_SET, LM_HUD_STATUS, StatusMessage, UserId);    // $C expands to camera angle in HUD
     return ReturnValue;
 }
+// Store modules data. Format is [ ModuleId, ModuleDesc ]
 StoreModules(string sData) {
     ModulesList = llParseStringKeepNulls(sData, [ "|" ], []);
 }
 // Takes all libraries' category data from the cataloguer and stores it
 StoreCatalog(string sData) {
-    ObjectsStatic = [];
-    ObjectsDynamic = [];
-    ObjectModules = [];
+    ObjectsData = [];
     AutoHides = [];
     integer NextReferenceInt = 0;
     // Data comes across as catalog data (base-64) and objects metadata (base-64) separated by "|"
     list Parts = llParseStringKeepNulls(sData, [ "|" ], []);    // extract
     sData = llBase64ToString(llList2String(Parts, 1));            // and convert
 // Each object is on a separate line
-    list ObjectData = llParseStringKeepNulls(sData, [ "\n" ], []);
-    integer OCount = llGetListLength(ObjectData);
+    list ObjectDataList = llParseStringKeepNulls(sData, [ "\n" ], []);
+    integer OCount = llGetListLength(ObjectDataList);
     integer P;
-    for (P = 0; P < (OCount - 1); P++) {    // -1 because the last line is empty
-        string Line = llList2String(ObjectData, P);
+	for (P = 0; P < OCount; P++) {
+        string Line = llList2String(ObjectDataList, P);
         list Data = llParseStringKeepNulls(Line, [ "|" ], []);
         // format of line is:
-        //  Static:
         //         ObjectName,
         //        CameraPos,
         //        CameraAltPos,
         //        CameraFocus,
         //        JumpPos,
         //        JumpLookAt,
-        // Dynamic:
-        //         LibKey,
+        //        ModuleId,
         //        ShortDesc,
         //        LongDescBase64,
         //        ThumbnailId,
@@ -1850,7 +1784,6 @@ StoreCatalog(string sData) {
         //        CopyRotation
         //        CommsType
         string ObjectName = llList2String(Data, 0);
-        string ObjectReference = "%O" + (string)NextReferenceInt++;
         if (llStringTrim(ObjectName, STRING_TRIM) == "") LogError("Warning: blank object name in StoreCatalog() function in ML");
         vector CameraPos = (vector)            llList2String(Data, 1);
         vector CameraAltPos = (vector)        llList2String(Data, 2);
@@ -1859,82 +1792,69 @@ StoreCatalog(string sData) {
         vector JumpLookAt = (vector)        llList2String(Data, 5);
         integer Phantom = (integer)            llList2String(Data, 6);
         integer AutoHide = (integer)         llList2String(Data, 7);
-        ObjectsStatic += [
-                ObjectName,
-                ObjectReference,
-                CameraPos,
-                CameraAltPos,
-                CameraFocus,
-                JumpPos,
-                JumpLookAt,
-                Phantom,
-                AutoHide
-            ];
-        if (!LoadStaticObjectsOnly) {
-            integer LibKey = (integer)            llList2String(Data, 8);
-            // Not used by ML:
-            // ShortDesc            9
-            // LongDescBase64         10
-            // ThumbnailId         11
-            // PreviewId             12
-            // RandomRotate         13
-            // RandomResize         14
-            integer Detached = (integer)        llList2String(Data, 15);
-            string SourceBase64 =                 llList2String(Data, 16);
-            float SizeFactor = (float)            llList2String(Data, 17);
-            vector OffsetPos = (vector)            llList2String(Data, 18);
-            vector OffsetRot = (vector)            llList2String(Data, 19);
-            integer Sittable = (integer)        llList2String(Data, 20);
-            integer DoRotation = (integer)        llList2String(Data, 21);
-            integer DoBinormal = (integer)        llList2String(Data, 22);
-            integer Center = (integer)            llList2String(Data, 23);
-            integer AdjustHeight = (integer)        llList2String(Data, 24);
-            integer DummyMove = (integer)        llList2String(Data, 25);
-            integer Resizable = (integer)        llList2String(Data, 26);
-            integer Floating = (integer)        llList2String(Data, 27);
-            integer IsApp = (integer)            llList2String(Data, 28);
-            string StickPoint64 =                 llList2String(Data, 29);
-            vector SnapGrid = (vector)            llList2String(Data, 30);
-            vector RegionSnap = (vector)        llList2String(Data, 31);
-            integer CopyRotation = (integer)        llList2String(Data, 32);
-            integer CommsType = (integer)        llList2String(Data, 33);
-            
-            ObjectsDynamic += [
-                ObjectReference,
-                Detached,
-                SourceBase64,
-                SizeFactor,
-                OffsetPos,
-                OffsetRot,
-                Sittable,
-                DoRotation,
-                DoBinormal,
-                CopyRotation,
-                Center,
-                AdjustHeight,
-                DummyMove,
-                Resizable,
-                Floating,
-                IsApp,
-                StickPoint64,
-                SnapGrid,
-                RegionSnap,
-                CommsType
-                    ];
-            ObjectModules += [ ObjectName, LibKey ];
-            if (AutoHide) AutoHides += ObjectName;
-        }
+		string ModuleId = 		            llList2String(Data, 8);
+		// Not used by ML:
+		// ShortDesc            9
+		// LongDescBase64         10
+		// ThumbnailId         11
+		// PreviewId             12
+		// RandomRotate         13
+		// RandomResize         14
+		integer Detached = (integer)        llList2String(Data, 15);
+		string SourceBase64 =                 llList2String(Data, 16);
+		float SizeFactor = (float)            llList2String(Data, 17);
+		vector OffsetPos = (vector)            llList2String(Data, 18);
+		vector OffsetRot = (vector)            llList2String(Data, 19);
+		integer Sittable = (integer)        llList2String(Data, 20);
+		integer DoRotation = (integer)        llList2String(Data, 21);
+		integer DoBinormal = (integer)        llList2String(Data, 22);
+		integer Center = (integer)            llList2String(Data, 23);
+		integer AdjustHeight = (integer)        llList2String(Data, 24);
+		integer DummyMove = (integer)        llList2String(Data, 25);
+		integer Resizable = (integer)        llList2String(Data, 26);
+		integer Floating = (integer)        llList2String(Data, 27);
+		integer IsApp = (integer)            llList2String(Data, 28);
+		string StickPoint64 =                 llList2String(Data, 29);
+		vector SnapGrid = (vector)            llList2String(Data, 30);
+		vector RegionSnap = (vector)        llList2String(Data, 31);
+		integer CopyRotation = (integer)        llList2String(Data, 32);
+		integer CommsType = (integer)        llList2String(Data, 33);
+        ObjectsData += [
+			ObjectName,
+			CameraPos,
+			CameraAltPos,
+			CameraFocus,
+			JumpPos,
+			JumpLookAt,
+			Phantom,
+			AutoHide,
+			Detached,
+			SourceBase64,
+			SizeFactor,
+			OffsetPos,
+			OffsetRot,
+			Sittable,
+			DoRotation,
+			DoBinormal,
+			CopyRotation,
+			Center,
+			AdjustHeight,
+			DummyMove,
+			Resizable,
+			Floating,
+			IsApp,
+			StickPoint64,
+			SnapGrid,
+			RegionSnap,
+			CommsType,
+			ModuleId
+				];
+		if (AutoHide) AutoHides += ObjectName;
     }
-    ObjectsLibraryCount = llGetListLength(ObjectsStatic) / OBS_STRIDE;
-    if (DebugMode) {
-        string What = "dynamic";
-        if (LoadStaticObjectsOnly) What = "static";
-        Debug("Received " + (string)ObjectsLibraryCount + " objects' " + What + " data from cataloguer");
-    }
+    ObjectsLibraryCount = llGetListLength(ObjectsData) / OBJ_STRIDE;
     // If we're a child App, we now have all we need to start work. Tell this
     // to our parent.
     if (ParentId != NULL_KEY && !ParentInformed) {
-        Debug("Sending CHILD_READY message to parent");
         MessageStandard(ParentId, LM_CHILD_READY, []);    
         ParentInformed = TRUE;
     }
@@ -1996,7 +1916,6 @@ Login(key LoginId) {
         llRegionSayTo(LoginId, 0, "You are already signed in!");
         return;
     }
-    LoadStaticObjectsOnly = FALSE;
     SendPublicData();
     if (DummyMoveSet) MoveLinkset();
     UserId = LoginId;
@@ -2005,13 +1924,11 @@ Login(key LoginId) {
     NudgeDistance = DefaultNudgeDistance; // Reset nudge distance
     if (IsMap) ReadMapPrims();
     llMessageLinked(LINK_SET, LM_SEAT_USER, "0", UserId);        // Tell other scripts that they've logged in
-    llMessageLinked(LINK_ALL_CHILDREN, LIB_INITIALIZE, (string)RezPosition, UserId);    // Tell library modules where to rez objects
     ClearStoredRotation(UserId);    // in case it was left behind
     MemorySizeObject = "";    // break the chain of same-named objects
     if (IsMap) CommandChatListener = llListen(CommandChatChannel, "", UserId, "");
 }
 Logout() {
-    // LoadStaticObjectsOnly = True;
     CancelCreation(UserId);  // cancel any creation they may have
     llMessageLinked(LINK_SET, LM_SEAT_USER, "", UserId);        // Tell other scripts that they've logged out
     ClearStoredRotation(UserId);
@@ -2019,7 +1936,6 @@ Logout() {
     RandomCreate = FALSE;
     if (CommandChatListener) llListenRemove(CommandChatListener);
     MemorySizeObject = "";    // break the chain of same-named objects
-    ObjectsDynamic = []; // Free up memory
 }
 ReadMapPrims() {
     BoardLinkNum = -1;
@@ -2092,7 +2008,7 @@ RemoveObject(key AvId) {
     if (IsMap) {
         key ObjectId = llList2Key(Selections, P + SEL_OBJECT_ID);
         key IconId = llList2Key(Selections, P + SEL_ICON_ID);
-        integer DPtr = llList2Integer(Selections, P + SEL_OBD_PTR);
+        integer DPtr = llList2Integer(Selections, P + SEL_OBJ_PTR);
         DeselectByAvId(AvId);
         DetachedObjects = llDeleteSubList(DetachedObjects, DPtr, DPtr + DO_STRIDE - 1);
         MessageStandard(IconId, IC_DELETE, []);
@@ -2149,9 +2065,9 @@ AutoHideSet(integer Hide) {
         LinkNum = Uuid2LinkNum(LoUuid);
         if (LinkNum == -1) return;
         string PrimName = llGetLinkName(LinkNum);
-        integer StaticLibPtr = llListFindList(ObjectsStatic, [ PrimName ]);
-        if (StaticLibPtr > -1) {    // It's an actual library object
-            integer AutoHide = llList2Integer(ObjectsStatic, StaticLibPtr + OBS_AUTOHIDE);
+        integer ObjPtr = GetObjectsPointer(PrimName);
+        if (ObjPtr > -1) {    // It's an actual library object
+            integer AutoHide = llList2Integer(ObjectsData, ObjPtr + OBJ_AUTOHIDE);
             if (AutoHide) {    // if this is an autohide object
                 llSetLinkAlpha(LinkNum, Alpha, ALL_SIDES);    // I'd rather do it all in a single llSetLinkPrimitiveParamsFast call, but that needs the object's color data
                 // Shrink or restore size of object
@@ -2277,7 +2193,7 @@ RotateSelectedObject(key AvId, string ArgumentString) {
         return;
     }
     if (IsMap) {
-        integer DPtr = llList2Integer(Selections, SelPtr + SEL_OBD_PTR);
+        integer DPtr = llList2Integer(Selections, SelPtr + SEL_OBJ_PTR);
         RotateMapObject(DPtr, Degrees);
     }
     else {
@@ -2301,12 +2217,10 @@ RotateLinkedObject(key AvId, key ObjectId, integer Degrees) {
     integer LinkNum = Uuid2LinkNum(ObjectId);
     if (LinkNum == -1) return;
     string ObjectName = llGetLinkName(LinkNum);
-    string ObjectReference = GetObjectReference(ObjectName);
-    if (ObjectReference == "") { LogError("No object in library to rotate"); return; }
-    integer LibPtr = GetDynamicPointer(ObjectReference);
-    if (LibPtr == -1) return; // should never happen
-    integer DummyMove = llList2Integer(ObjectsDynamic, LibPtr + OBD_DUMMY_MOVE);
-    vector OffsetRotV = llList2Vector(ObjectsDynamic, LibPtr + OBD_OFFSET_ROT);
+    integer ObjPtr = GetObjectsPointer(ObjectName);
+    if (ObjPtr == -1) return; // should never happen
+    integer DummyMove = llList2Integer(ObjectsData, ObjPtr + OBJ_DUMMY_MOVE);
+    vector OffsetRotV = llList2Vector(ObjectsData, ObjPtr + OBJ_OFFSET_ROT);
     rotation OffsetRot = llEuler2Rot(OffsetRotV * DEG_TO_RAD);
     if (OffsetRotV == VEC_NAN) {    // it's not specified in the config card for this object
         OffsetRot = ZERO_ROTATION;    // no offset rotation
@@ -2354,7 +2268,7 @@ ResizeObjectFrontEnd(key AvId, string Argument) {
     // Argument is an integer that represents a %age change (eg 25 for a change of 1.25)
     float Factor = 1.0 + ((float)Argument / 100.0);
     if (IsMap) {
-        integer DetPtr = llList2Integer(Selections, SelPtr + SEL_OBD_PTR);
+        integer DetPtr = llList2Integer(Selections, SelPtr + SEL_OBJ_PTR);
         ResizeMapObject(DetPtr, Factor);
     }
     else {
@@ -2431,7 +2345,7 @@ ProcessNudge(string Data) {
     else if (Command == "D") NudgeValue.z -= NudgeDistance;
     SelPtr -= SEL_AVID;
     if (IsMap) {
-        integer DetPtr = llList2Integer(Selections, SelPtr + SEL_OBD_PTR);
+        integer DetPtr = llList2Integer(Selections, SelPtr + SEL_OBJ_PTR);
         key WorldId = llList2Key(DetachedObjects, DetPtr + DO_OBJECT_ID);
         key IconId = llList2Key(DetachedObjects, DetPtr + DO_ICON_ID);
         list ObjectDetails = llGetObjectDetails(WorldId, [ OBJECT_POS, OBJECT_ROT ]);
@@ -2446,7 +2360,7 @@ ProcessNudge(string Data) {
         key ObjectId = llList2Key(Selections, SelPtr + SEL_OBJECT_ID);
         integer LinkNum = Uuid2LinkNum(ObjectId);
         if (LinkNum == -1) return;
-        integer LPtr = llList2Integer(Selections, SelPtr + SEL_OBD_PTR);
+        integer LPtr = llList2Integer(Selections, SelPtr + SEL_OBJ_PTR);
         vector CpPos = llList2Vector(LinkedObjects, LPtr + LO_CP_POSITION);
         list Params = llGetLinkPrimitiveParams(LinkNum, [ PRIM_POS_LOCAL, PRIM_ROT_LOCAL ]);
         vector LocalPos = llList2Vector(Params, 0);
@@ -2541,42 +2455,46 @@ string SaveData(string SaveName) {
     return SerializedData;
 }
 list ListModules() {
-    list LibKeys = [];
+    list UsedModuleIds = [];
     integer O;
     // Linked objects
     integer Len = llGetListLength(LinkedObjects);
     for (O = 0; O < Len; O += LO_STRIDE) {
-        key ObjectId = llList2Key(LinkedObjects, O + LO_OBJECT_ID);
-        integer LinkNum = Uuid2LinkNum(ObjectId);
-        if (LinkNum == -1) return [];
-        // Some bad naming here. LibKey is a unique integer identifier for each
-        // library module, and has nothing to do with UUID keys. 
-        integer LibKey = GetLibKey(llGetLinkName(LinkNum));
-        if (llListFindList(LibKeys, [ LibKey ]) == -1) LibKeys += LibKey;
+        key ObjectUuid = llList2Key(LinkedObjects, O + LO_OBJECT_ID);
+		string ModuleId = Uuid2ModuleId(ObjectUuid);
+        if (llListFindList(UsedModuleIds, [ ModuleId ]) == -1) UsedModuleIds += ModuleId;
     }
     // Detached objects
     Len = llGetListLength(DetachedObjects);
     for (O = 0; O < Len; O += DO_STRIDE) {
-        key Uuid = llList2Key(DetachedObjects, O + DO_OBJECT_ID);
-        integer LibKey = GetLibKey(llKey2Name(Uuid));
-        if (llListFindList(LibKeys, [ LibKey ]) == -1) LibKeys += LibKey;
+        key ObjectUuid = llList2Key(DetachedObjects, O + DO_OBJECT_ID);
+		string ModuleId = Uuid2ModuleId(ObjectUuid);
+        if (llListFindList(UsedModuleIds, [ ModuleId ]) == -1) UsedModuleIds += ModuleId;
     }
     list Data = [];    // return data
-    Len = llGetListLength(LibKeys);
+    Len = llGetListLength(UsedModuleIds);
     for (O = 0; O < Len; O++) {
-        integer LibKey = llList2Integer(LibKeys, O);
-        integer P = llListFindList(ModulesList, [ LibKey ]);
-        if (P > -1) {
-            Data += "    Module: " + llList2String(ModulesList, P - MOD_LIB_KEY + MOD_NAME);
-        }
+		string ModuleId = llList2String(UsedModuleIds, O);
+		integer ModulePtr = llListFindList(ModulesList, [ ModuleId ]);
+		if (ModulePtr == -1) {
+			LogError("Can't find module ID for list:" + ModuleId);
+			return "";
+		}
+		ModulePtr -= MOD_MODULE_ID; // position at start of stride
+		string ModuleDesc = llList2String(ModulesList, ModulePtr + MOD_DESC);
+        Data += "    Module: " + ModuleId + "|" + ModuleDesc;
     }
     return Data;
 }
-// Return libkey for object (ie pointer to the modules table)
-integer GetLibKey(string ObjectName) {
-    integer Ptr = llListFindList(ObjectModules, [ ObjectName ]);
-    if (Ptr == -1) { LogError("Object missing from object modules list: " + ObjectName); return -1; }
-    return llList2Integer(ObjectModules, Ptr + 1);
+// Return Module ID of object given UUID
+string Uuid2ModuleId(key Uuid) {
+	string Name = Uuid2Name(Uuid);
+	integer Dot = llSubStringIndex(Name, ".");
+	return llGetSubString(Name, 0, Dot - 1);
+}
+// Return name of object given UUID
+string Uuid2Name(key Uuid) {
+	return llList2String(llGetObjectDetails(Uuid, [ OBJECT_NAME]), 0);
 }
 list LinkedObjectSaveData(integer LoPtr) {
     key ObjectId = llList2Key(LinkedObjects, LoPtr + LO_OBJECT_ID);
@@ -2753,8 +2671,12 @@ string NiceFloat(float F) {
 integer LoadData(key AvId, list Data, list MetaData) {
     if (DebugMode) Debug("Loading scene (" + (string)llGetListLength(Data) + " lines)");
     string Filename = llList2String(MetaData, 0);
+    LoadFilename = Filename;
+    LoadObjectsCount = 0;
+    LoadTotalObjects = 0; ///%%%
     integer CreateGroup = (integer)llList2String(MetaData, 1);
     integer Quiet = (integer)llList2String(MetaData, 2);
+
     MemorySizeObject = "";    // break the chain of same-named objects
     SendAppData = [];
     
@@ -2967,9 +2889,14 @@ integer LoadData(key AvId, list Data, list MetaData) {
     integer Len = llGetListLength(ModulesNeeded);
     integer M;
     for (M = 0; M < Len; M++) {
-        string ModuleName = llList2String(ModulesNeeded, M);
-        integer P = llListFindList(ModulesList, [ ModuleName ]);    // check that the needed module is in Modules table
-        if (P == -1) ModulesMissing += ModuleName;
+        string ModuleEntry = llList2String(ModulesNeeded, M); // format is <module ID>|<module desc>
+		list ModuleParts = llParseStringKeepNulls(ModuleEntry, [ "|" ], []);
+		string ModuleId = llList2String(ModuleParts, 0);
+        integer P = llListFindList(ModulesList, [ ModuleId ]);    // check that the needed module is in Modules table
+        if (P == -1) {
+			string ModuleDesc = llList2String(ModuleParts, 1);
+			ModulesMissing += "- " + ModuleDesc;
+		}
     }
     if (ModulesMissing != []) {
         Debug("Missing modules!");
@@ -2978,6 +2905,7 @@ integer LoadData(key AvId, list Data, list MetaData) {
         return FALSE;
     }
     Debug("Finished parsing notecard");    
+    LoadTotalObjects = ObjectsInFile;
     list ObjectsToRez = [];
     integer LinkedCount = llGetListLength(MakeLinkedObjects);
     integer LinkedStride = 11;    // the number of columns per row of data
@@ -3057,6 +2985,7 @@ integer LoadData(key AvId, list Data, list MetaData) {
             ];
         // Trigger creation of object
         string RezError = "";
+        ObjectsToLoad++;
         if (IsMap) {
             ObjectsToRez += ObjectName + "I";
         }
@@ -3070,7 +2999,7 @@ integer LoadData(key AvId, list Data, list MetaData) {
     integer R = 0;
     for (R = 0; R < Len; R++) {
         string RezObjectName = llList2String(ObjectsToRez, R);
-        if (GetObjectReference(GetBaseName(RezObjectName)) == "") {
+        if (GetObjectsPointer(GetBaseName(RezObjectName)) == -1) {
             MissingObjects += RezObjectName;
         }
     }
@@ -3086,12 +3015,8 @@ integer LoadData(key AvId, list Data, list MetaData) {
     RezObjects(ObjectsToRez);
     if (IsMap) {
         if (DetachedCount == 0) {    // For Map saves without objects, we're finished
-            if(!Quiet) Message(AvId, "'" + Filename + "' loaded.");
             llMessageLinked(LINK_SET, LM_TASK_COMPLETE, "", UserId);
         }
-    }
-    else {
-        if(!Quiet) Message(AvId, "'" + Filename + "' loaded.");        // for maps, it happens in the CreateContinue event stuff
     }
     Debug("Scene loaded");
     // If there are no objects, release the HUD
@@ -3115,6 +3040,8 @@ FinishNewObjects() {
         // Any code to be executed at the end of a scene load can go here
         if (LoadingWithParent && UserId == NULL_KEY) AutoHideSet(TRUE);    
         LoadingScene = FALSE;
+
+        llRegionSayTo(UserId, 0, "Scene '" + LoadFilename + "' loaded.");
     }
     llMessageLinked(LINK_SET, LM_TASK_COMPLETE, "", UserId);
 }
@@ -3229,14 +3156,12 @@ ReadConfig() {
     WorldOrigin = <0.0, 0.0, 21.0>;
 	BoundaryMargin = 1.0;
     BoardOffset = ZERO_VECTOR;
-    RezPosition = ZERO_VECTOR;
     ScalingFactor = 0.0;
     IconHoverTextColour = <1.0, 1.0, 1.0>;
     IconHoverTextAlpha = 1.0;
     IconSelectGlow = 0.3;
     LinkedSelectGlow = 0.04;
     IconSelectParticleColour = ZERO_VECTOR;        // NULL means avatar-specific colour
-    Locked = FALSE;
     EnvironmentalChange = FALSE;
     TerrainChange = FALSE;
     DefaultSeaLevel = 20.0;
@@ -3299,14 +3224,12 @@ ReadConfig() {
                     else if (Name == "worldsize")    WorldSize = (vector)Value;
                     else if (Name == "worldorigin")    WorldOrigin = (vector)Value;
 					else if (Name == "boundarymargin")    BoundaryMargin = (float)Value;
-                    else if (Name == "rezposition")    RezPosition = (vector)Value;
                     else if (Name == "scalingfactor") ScalingFactor = (float)Value;
                     else if (Name == "iconselectglow") IconSelectGlow = (float)Value;
                     else if (Name == "linkedselectglow") LinkedSelectGlow = (float)Value;
                     else if (Name == "iconselectparticlecolor") IconSelectParticleColour = (vector)Value / 256.0;
                     else if (Name == "iconhovertextcolor") IconHoverTextColour = (vector)Value;
                     else if (Name == "iconhovertextalpha") IconHoverTextAlpha = (float)Value;
-                    else if (Name == "locked") Locked = String2Bool(Value);
                     else if (Name == "environmentalchange") EnvironmentalChange = String2Bool(Value);
                     else if (Name == "defaultsealevel") DefaultSeaLevel = (float)Value;
                     else if (Name == "defaultlandlevel") DefaultLandLevel = (float)Value;
@@ -3346,7 +3269,6 @@ ReadConfig() {
     ObjectsLimit = (integer)llList2String(Parts, 0);
     SizeLimit = (float)llList2String(Parts, 1);
     DistanceLimit = (float)llList2String(Parts, 2);        
-    llMessageLinked(LINK_SET, LM_LOCKED, (string)Locked, NULL_KEY);
     SendPublicData();
 }
 // Change a single entry in the config file. If Value is empty, the entry is deleted.
@@ -3467,8 +3389,8 @@ ExecuteCommand(key AvId, string Text, key PrimUuid, integer IsLinkMessaged) {
             integer DLen = llGetListLength(DetachedObjects);
             integer DPtr;
             for (DPtr = 0; DPtr < DLen; DPtr += DO_STRIDE) {
-                integer LibPtr = llList2Integer(DetachedObjects, DPtr + DO_LIB_PTR);
-                if (IsObjectAnAppByPtr(LibPtr)) {    // if the object is an app
+                integer ObjPtr = llList2Integer(DetachedObjects, DPtr + DO_OBJECTS_PTR);
+                if (IsObjectAnAppByPtr(ObjPtr)) {    // if the object is an app
                     key AppId = llList2Key(DetachedObjects, DPtr + DO_OBJECT_ID);
                     if (DebugMode) Debug("Requesting app data from " + llKey2Name(AppId));    // Test to save executing Key2Name unnecessarily
                     MessageObject(AppId, (string)LM_APP_BACKUP_REQUEST); // Request data from app
@@ -3570,7 +3492,7 @@ SelectObject(key AvId, key SelId) {
     if (IsMap) {
         key IconId = SelId;
         llMessageLinked(LINK_SET, LM_PRIM_SELECTED, (string)IconId, AvId);
-        // First, find the ObjectData entry
+        // First, find the DetachedObjects entry
         integer DetPtr = llListFindList(DetachedObjects, [ IconId ]);
         if (DetPtr == -1) { LogError("Can't find detached object to select"); return; }
         DetPtr -= DO_ICON_ID;         // position at beginning of stride
@@ -3759,14 +3681,14 @@ SetCameraJump(key ObjectId, integer LinkNum, key AvId, integer ClickType, vector
     // Get library data
     string ObjectName = llKey2Name(ObjectId);
     string BaseName = GetBaseName(ObjectName);
-    integer LibPtr = llListFindList(ObjectsStatic, [ BaseName ]);
-    if (LibPtr == -1) { LogError("Can't find library entry for camera/jump: " + BaseName); return; }
+    integer ObjPtr = GetObjectsPointer(BaseName);
+    if (ObjPtr == -1) { LogError("Can't find library entry for camera/jump: " + BaseName); return; }
     list HudMessage = [];
     if (ClickType == SHORT_CLICK) {
         // Set camera
-        vector CameraPos = llList2Vector(ObjectsStatic, LibPtr + OBS_CAMERA_POS);
-        vector CameraAltPos = llList2Vector(ObjectsStatic, LibPtr + OBS_CAMERA_ALT_POS);
-        vector CameraFocus = llList2Vector(ObjectsStatic, LibPtr + OBS_CAMERA_FOCUS);
+        vector CameraPos = llList2Vector(ObjectsData, ObjPtr + OBJ_CAMERA_POS);
+        vector CameraAltPos = llList2Vector(ObjectsData, ObjPtr + OBJ_CAMERA_ALT_POS);
+        vector CameraFocus = llList2Vector(ObjectsData, ObjPtr + OBJ_CAMERA_FOCUS);
         // Calculate camera position
         if (CameraPos == VEC_NAN) {    // if no CameraPos in C card
             // Calculate camera position as <DefaultDistance> away from object on a line connecting
@@ -3815,14 +3737,14 @@ SetCameraJump(key ObjectId, integer LinkNum, key AvId, integer ClickType, vector
     }
     else {
         // Is it sittable? If so, sit on it
-        integer Sittable = llList2Integer(ObjectsStatic, LibPtr + OBD_SITTABLE);
+        integer Sittable = llList2Integer(ObjectsData, ObjPtr + OBJ_SITTABLE);
         if (Sittable) {
             osForceOtherSit(AvId, ObjectId);
             return;
         }
         // Set jump
-        vector JumpPos = llList2Vector(ObjectsStatic, LibPtr + OBS_JUMP_POS);
-        vector JumpLookAt = llList2Vector(ObjectsStatic, LibPtr + OBS_JUMP_LOOKAT);
+        vector JumpPos = llList2Vector(ObjectsData, ObjPtr + OBJ_JUMP_POS);
+        vector JumpLookAt = llList2Vector(ObjectsData, ObjPtr + OBJ_JUMP_LOOKAT);
         if (JumpPos != VEC_NAN) {
             JumpPos *= SizeFactor; // Compensate for size changes
             JumpPos = ObjectPos + (JumpPos * ObjectRot); // convert local pos to region
@@ -3855,9 +3777,9 @@ SetAllPhantom() {
         string ObjectName = llGetLinkName(LinkNum);
         string ObjectDesc = llList2String(llGetObjectDetails(llGetLinkKey(LinkNum), [ OBJECT_DESC ]), 0);
         if (llGetSubString(ObjectDesc, 0, 0) == "*") {    // if it's a moveable prim (ie MLO)
-            integer ObjPtr = llListFindList(ObjectsStatic, [ ObjectName ]);
+            integer ObjPtr = GetObjectsPointer(ObjectName);
             if (ObjPtr > -1) {
-                integer Phantom = llList2Integer(ObjectsStatic, ObjPtr + OBS_PHANTOM);
+                integer Phantom = llList2Integer(ObjectsData, ObjPtr + OBJ_PHANTOM);
                 if (Phantom) {
                     Params += [ PRIM_LINK_TARGET, LinkNum, PRIM_PHYSICS_SHAPE_TYPE, PRIM_PHYSICS_SHAPE_NONE ];
                 }
@@ -3877,7 +3799,7 @@ SetTimer() {
     // - A scene is being saved but there are still activations (loading complete) waiting
     // - We're an app that's been sent App data to restore, but we're waiting for the catalogue data
 	// etc etc
-    if (UuidLinksInvalid || AwakenTicks || LoadingCompleteTicks || ActivationQueueSize || RestartQueue != [] || LinksToDo != [] || AppBackupsWaiting || AppRestoreData != "" || LogoutTicks || WaitingForCataloguer) {
+    if (UuidLinksInvalid || AwakenTicks || LoadingCompleteTicks || ActivationQueueSize || RestartQueue != [] || LinksToDo != [] || AppBackupsWaiting || AppRestoreData != "" || LogoutTicks) {
         llSetTimerEvent(TIMER_FREQUENCY);
 	} else {
         llSetTimerEvent(0.0);
@@ -4022,9 +3944,6 @@ default {
                 llMessageLinked(LINK_SET, LM_LOADING_COMPLETE, "", UserId);
 			}
         }
-        if (WaitingForCataloguer) {
-            llMessageLinked(LINK_THIS, CT_START, "", NULL_KEY); // Tell cataloguer to start processing
-        }
         // If MLOs that have been rezzed are in the queue to be linked, process a batch from that queue
         if (LinksToDo != []) {
             if (DebugMode) Debug("Objects to be linked: " + (string)llGetListLength(LinksToDo));
@@ -4051,8 +3970,9 @@ default {
 					integer CommsType = llList2Integer(ActivationQueue, P + 1);
 					if (CommsType == 0) { // Type 0 (deprecated) uses link messages
 						integer LinkNum = Uuid2LinkNum(Uuid);
-						if (LinkNum == -1) return;                
-						llMessageLinked(LinkNum, LM_LOADING_COMPLETE, "", UserId);
+						if (LinkNum > -1) {
+							llMessageLinked(LinkNum, LM_LOADING_COMPLETE, "", UserId);
+						}
 					} else {
 						MessageStandard(Uuid, LM_LOADING_COMPLETE, [ UserId ]);
 					}
@@ -4065,7 +3985,7 @@ default {
 				}
 				else {
 					ActivationQueue = [];
-					if (!ObjectsToLoad && ParentId == NULL_KEY) Message(UserId, "Loaded.");    // Otherwise there are still prims queued to link up
+					if (ObjectsToLoad == 0 && ParentId == NULL_KEY) Message(UserId, "Loaded.");    // Otherwise there are still prims queued to link up
 				}
 			}
         }
@@ -4200,7 +4120,7 @@ default {
                     else {    // Click on control board for map with icon selected, so position the object
                         key SelObjectId = llList2Key(Selections, SPtr + SEL_OBJECT_ID);
                         key SelIconId = llList2Key(Selections, SPtr + SEL_ICON_ID);
-                        integer DPtr = llList2Integer(Selections, SPtr + SEL_OBD_PTR);
+                        integer DPtr = llList2Integer(Selections, SPtr + SEL_OBJ_PTR);
                         float SizeFactor = llList2Float(DetachedObjects, DPtr + DO_SIZE_FACTOR);
                         PositionObjectOnFace(AvId, "", ObjectId, FALSE, SelObjectId, SelIconId, -1, TouchPos, TouchFace, TouchST, CpPos, CpNormal, CpBinormal, SizeFactor);
                     }
@@ -4294,7 +4214,7 @@ default {
                     return;
                 }
                 key ObjectId = llList2Key(Selections, SelPtr + SEL_OBJECT_ID);
-                integer DetPtr = llList2Integer(Selections, SelPtr + SEL_OBD_PTR);
+                integer DetPtr = llList2Integer(Selections, SelPtr + SEL_OBJ_PTR);
                 key IconId = llList2Key(Selections, SelPtr + SEL_ICON_ID);
                 float SizeFactor = llList2Float(DetachedObjects, DetPtr + DO_SIZE_FACTOR);
                 PositionObjectOnFace(AvId, "", TouchIconId, FALSE, ObjectId, IconId, -1, TouchPos, TouchFace, TouchST, CpPos, TouchNormal, TouchBinormal, SizeFactor);
@@ -4311,7 +4231,7 @@ default {
                     if (SPtr > -1) {        // they have an object selected
                         key ObjectId = llList2Key(Selections, SPtr + SEL_OBJECT_ID);
                         key IconId = llList2Key(Selections, SPtr + SEL_ICON_ID);
-                        integer DPtr = llList2Integer(Selections, SPtr + SEL_OBD_PTR);
+                        integer DPtr = llList2Integer(Selections, SPtr + SEL_OBJ_PTR);
                         float SizeFactor = llList2Float(DetachedObjects, DPtr + DO_SIZE_FACTOR);
                         PositionObjectOnFace(AvId, "", TouchIconId, FALSE, ObjectId, IconId, -1, TouchPos, TouchFace, TouchST, CpPos, TouchNormal, TouchBinormal, SizeFactor);
                     }
@@ -4342,9 +4262,9 @@ default {
             // Now select the object
             SelectObject(AvId, IconId);
         }
-        else if (Number == WO_INITIALISE) {
-            // This LM comes from the librarian which sends it to us when it receives WO_INITIALISE as an osMessageObject
-            // message from a detached object it's rezzed.
+        else if (Number == CT_WO_RECEIVED) {
+            // This LM comes from the cataloguer which sends it to us when it receives WO_INITIALISE as an osMessageObject
+            // message from a module
             MessageFromChild(TRUE, Id);
         }
         else if (Number == LM_EXTRA_DATA_GET && Sender > 1) {    // Request for extra data from another prim
@@ -4384,25 +4304,16 @@ default {
         else if (Number == CT_MODULES) {
             StoreModules(String);
         }
-        else if (Number == CT_READY) { // Cataloguer is ready
-            WaitingForCataloguer = FALSE;
-            if (ParentId != NULL_KEY) {
-                // If we're a child App, we need to get all the catalog data. Non-child Apps do this when the user
-                // signs in, but we need to do it automatically.
-                LoadStaticObjectsOnly = FALSE;
-            } else {
-                LoadStaticObjectsOnly = TRUE;
-            }
-            Debug("Requesting catalog data");
+        else if (Number == UTIL_GO) { // Cataloguer is ready
             llMessageLinked(LINK_THIS, CT_REQUEST_DATA, "", NULL_KEY);
         }
         else if (Number == LM_EXTERNAL_DESELECT) {
             DeselectByAvId(Id);
         }
-        else if (Number == LIB_REZZED) { // message from librarian giving UUIDs of rezzed objects
+        else if (Number == CT_REZZED_IDS) { // message from librarian giving ^-separated UUIDs of rezzed objects
             // We don't actually do anything here for Map objects and icons, because they tell us when they're ready.
             if (IsMap) return;
-            list Uuids = llParseStringKeepNulls(String, [ "|" ], []);
+            list Uuids = llParseStringKeepNulls(String, [ "^" ], []);
             integer UuidsCount = llGetListLength(Uuids);
             integer U;
             for (U = 0; U < UuidsCount; U++) {
@@ -4410,12 +4321,10 @@ default {
                 // We don't do anything for detached objects, because they tell us when they're ready
                 string ObjectName = llKey2Name(Uuid);
                 // Look for an object of this name in the library
-                string ObjectReference = GetObjectReference(ObjectName);
-                if (ObjectReference != "") { // if it's the name of an object in the library
+                integer ObjPtr = GetObjectsPointer(ObjectName);
+                if (ObjPtr > -1) { // if it's the name of an object in the library
                     // Is it a detached object?
-                    integer OPtr = GetDynamicPointer(ObjectReference);
-                    if (OPtr == -1) return; // should never happen
-                    integer Detached = llList2Integer(ObjectsDynamic, OPtr + OBD_DETACHED);
+                    integer Detached = llList2Integer(ObjectsData, ObjPtr + OBJ_DETACHED);
                     if (!Detached) {
                         LinksToDo += Uuid;
                         SetTimer();
@@ -4430,6 +4339,9 @@ default {
         else if (Number == LM_RANDOM_CREATE) {
             RandomCreate = (integer)String;
         }
+		else if (Number == LM_GRID_SNAP) {
+			GridSnapOn = (integer)String;
+		}
         else if (Number == LM_RANDOM_VALUES) {
             list L = llParseStringKeepNulls(String, [ "|" ], []);
             RandomResize = (float)llList2String(L, 0);
@@ -4448,7 +4360,8 @@ default {
         }
         else if (Number == AOC_CREATE) {
             CancelCreation(Id);        // if they have a create cycle going, break it
-            AocCreate(Id, String);
+			string SendingName = llGetLinkName(Sender);
+            AocCreate(Id, SendingName, String);
         }
         else if (Number == ENV_STORE_VALUE) {
             EnvironmentValues = llParseStringKeepNulls(String, [ "|" ], []);
@@ -4668,4 +4581,4 @@ state Hang {
         if (Change & CHANGED_INVENTORY) llResetScript();
     }
 }
-// Malleable linkset v1.21.18
+// Malleable linkset v1.22.4

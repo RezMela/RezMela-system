@@ -1,4 +1,4 @@
-// HUD communicator v1.11.9
+// HUD communicator v1.12.3
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,10 @@
 // or modification, contact support@rezmela.com
 // More detailed information about the HUD communicator script is available here http://wiki.rezmela.org/doku.php/hud-communicator-script
 
+// v1.12.3 - add option to turn on/off grid snap; rationalise Settings menu
+// v1.12.2 - handle absence of modules
+// v1.12.1 - bug fixes, etc
+// v1.12.0 - unlinked modules
 // v1.11.9 - add beacon processing; remove debug feature (not useful)
 // v1.11.8 - configurable rotation increments
 // v1.11.7 - replaced UUID by NULL_KEY to fix deleted scene not updating HUD
@@ -76,12 +80,12 @@
 integer HUD_CHAT_GENERAL = -192801290;
 
 string HUD_STRINGS = "HUD strings";
-string MODULE_EDIT_LOCK = "Module lock";
 string EN_DASH = "-";
 string HUD_PRIM_NAME = "!Activator!";
 string BEACON_CALL = "_8^D+"; // magic number for calling beacons
 
 integer COM_RESET = -8172620;    // for external reset (eg a "reset" button)
+integer COM_LOGOUT = -8172621;
 
 integer LM_PRIM_SELECTED = -405500;        // A prim has been selected
 integer LM_PRIM_DESELECTED = -405501;    // A prim has been deselected
@@ -92,6 +96,7 @@ integer LM_RANDOM_VALUES = -405519;
 integer LM_EXTERNAL_LOGIN = -405521;
 integer LM_EXTERNAL_LOGOUT = -405522;
 integer LM_EXTERNAL_DESELECT = -405523;
+integer LM_GRID_SNAP = -405524;
 integer LM_LIBRARY = -405531;
 integer LM_AUTOHIDE_SET  = -405532; // to ML: hide/unhide commands
 integer LM_RESET = -405535;
@@ -109,6 +114,13 @@ integer LM_TOUCH_NORMAL	= -66168300;
 // Scene file manager
 integer SFM_EXPORT = -3310426;
 
+// Utils LMs
+integer UTIL_WAITING = -181774800;
+integer UTIL_GO = -181774801;
+integer UTIL_TIMER_SET = -181774802;
+integer UTIL_TIMER_CANCEL = -181774803;
+integer UTIL_TIMER_RETURN = -181774804;
+
 // Environment commands
 integer ENV_RESET = -793010;
 integer ENV_SET_VALUE = -79301901;
@@ -124,8 +136,6 @@ integer HudActive = FALSE;
 integer HUD_API_MAX = -4720600;    // Minimum value in this set (but negative)
 integer HUD_API_LOGIN = -47206000;
 integer HUD_API_LOGOUT = -47206001;
-integer HUD_API_GET_METADATA = -47206002;
-integer HUD_API_SET_METADATA = -47206003;
 integer HUD_API_CREATE_WINDOW_BUTTONS = -47206004;
 integer HUD_API_CREATE_WINDOW_LIST = -47206005;
 integer HUD_API_CREATE_WINDOW_CUSTOM = -47206006;
@@ -164,11 +174,11 @@ integer SFM_DELETE = -3310423;
 integer SFM_SAVE_COMPLETE = -3310425;
 
 // Cataloguer LMs
-integer CT_REQUEST_DATA    = -83328400;
-integer CT_CATALOG = -83328401;
-integer CT_START = -83328402;
-integer CT_ARRANGE_PRIMS = -83328405;
-integer CT_ERRORS = -83328406;
+integer CT_REQUEST_DATA		= -83328400;
+integer CT_CATALOG 			= -83328401;
+integer CT_REZZED_ID		= -83328404;
+integer CT_ARRANGE_PRIMS	= -83328405;
+integer CT_MODULES			= -83328407;
 
 // Error handler LMs
 integer ERR_SET_USER = -188137420;
@@ -189,7 +199,7 @@ integer LibraryObjectsCount;
 // This is metadata for objects, in a separate table for efficiency during population
 list MetaData;
 integer MD_NAME = 0;    // Name prepended by "~" to make it searchable (avoid conflict with other strings)
-integer MD_LIBKEY = 1;
+integer MD_MODULE_ID = 1;
 integer MD_SHORTDESC = 2;
 integer MD_LONGDESC64 = 3;
 integer MD_THUMBNAIL = 4;
@@ -214,6 +224,7 @@ integer MenuChannel;
 integer MenuListener;
 
 integer RandomButtonOn;
+integer GridSnapOn;
 integer CreateModeOn;
 integer IsObjectSelected;
 string SelectedDesc;    // short description of selected object
@@ -257,6 +268,317 @@ string DEGREES_SYMBOL = "°";
 //string NUDGE_DISTANCE_DOWN = "Amount -";
 
 string LibraryErrorsText = "";
+
+// Handle LMs from HUD server. Returns TRUE if switch to Idle state needed
+integer HandleHudMessage(integer Number, string Text, key Id) {
+	list Parts = llParseStringKeepNulls(Text, [ HUD_API_SEPARATOR_1 ], []);
+	if (Number == HUD_API_CLICK_BUTTON) {
+		string WindowName = llList2String(Parts, 0);
+		string Tag = llList2String(Parts, 1);
+		// Handle menus
+		// --- Home
+		if (WindowName == "home") {
+			RelinquishControls();
+			if (Tag == "File") DisplayWindow("saves");
+			else if (Tag == "Create" && !DisableCreateMenu) ShowCategories();
+			else if (Tag == "Clear") DisplayWindow("clearall");
+			else if (Tag == "Climate") DisplayWindow("environment");
+			else if (Tag == "Settings") DisplaySettingsMenu();
+			else if (Tag == "Advanced") DisplayAdvancedMenu();
+			else if (Tag == "Finish") LogOutButton();
+		}
+		// --- Selection menu
+		else if (IsSelectedWindow(WindowName)) {
+			RelinquishControls();
+			if (Tag == "Remove") RemoveSelectedObject();
+			else if (Tag == "Clone") CloneSelectedObject();
+			else if (Tag == "Teleport") TeleportToObject();
+			else if (Tag == "Zoom") ZoomToObject();
+			else if (Tag == "Resize") DisplayWindow("resize");
+			else if (Tag == "Rotate") DisplayWindow("rotate");
+			else if (Tag == "Nudge") DisplayWindow("nudge");
+		}
+		// --- Settings menus
+		else if (WindowName == "settings") {
+			if (llGetSubString(Tag, 0, 5) == "Random") SetRandom(!RandomButtonOn, TRUE);
+			else if (llGetSubString(Tag, 0, 8) == "Grid snap") SetGridSnap(!GridSnapOn, TRUE);
+			else if (Tag == "Reset") {
+				CreateWindowAlert("resetconfirm", "Reset Scripts", [
+					"WARNING!",
+					"",
+					"This will reset all scripts in the",
+					"App. Any current scene data will be",
+					"lost, but saved scenes will not be",
+					"affected."
+						], [ "*OK", "Cancel" ]);
+				DisplayWindow("resetconfirm");
+			}
+		}
+		else if (WindowName == "advanced") {
+			if (llGetSubString(Tag, 0, 6) == "Climate") {
+				EnvironmentalChange = !EnvironmentalChange;
+				string ConfigValue;
+				if (EnvironmentalChange) ConfigValue = "True"; else ConfigValue = "False";
+				// Tell ML to change the "ML config" value for Climate/EnvironmentalChange
+				llMessageLinked(LINK_THIS, LM_CHANGE_CONFIG, "EnvironmentalChange|" + ConfigValue, NULL_KEY);
+				MakeMainWindow();    // add/remove "Climate" button from main window
+				DisplayAdvancedMenu();
+			}
+		}
+		else if (WindowName == "resetconfirm") {
+			if (Tag == "OK") {
+				Reset();
+				LogOut();
+				llResetScript();
+			}
+			else {
+				DisplayWindow("settings");
+			}
+		}
+		else if (WindowName == "moduleserror") {
+			MainWindow();
+		}
+		else if (WindowName == "failure") {
+			MainWindow();
+		}
+		// --- File menu
+		else if (WindowName == "saves") {
+			if (Tag == "Save") StartSave();
+			else if (Tag == "Load") DisplayWindow("saveload");
+			else if (Tag == "Rearrange") DisplayWindow("saverearrange");
+			else if (Tag == "Delete") DisplayWindow("savedelete");
+			else if (Tag == "Export") DisplayWindow("saveexport");
+			else if (Tag == "Import") StartImport();
+		}
+		// Selected item menus
+		else if (WindowName == "resize") {
+			ResizeObject(Tag);    // pass the button label to the function that does it
+		}
+		else if (WindowName == "rotate") {
+			RotateObject(Tag);    // pass the button label to the function that does it
+		}
+		else if (WindowName == "nudge") {
+			vector CameraPos = (vector)llList2String(Parts, 2);
+			rotation CameraRot = (rotation)llList2String(Parts, 3);
+			if (CameraPos == ZERO_VECTOR) {    // for some reason, no data, and we don't want to continue
+				LogError("No camera data for nudge");
+				return FALSE;
+			}
+			ProcessNudge(Tag, CameraPos, CameraRot);    // pass the button label to the function that does it
+		}
+		// Elementals
+		else if (WindowName == "saveload") {
+			StartLoad(Tag, TRUE);
+		}
+		else if (WindowName == "saverearrange") {
+			StartLoad(Tag, FALSE);
+		}
+		else if (WindowName == "savedelete") {
+			DeleteSavePrompt(Tag);
+		}
+		else if (WindowName == "savealert") {
+			// it must be a retry
+			StartSave();
+		}
+		else if (WindowName == "saveexport") {
+			Export(Tag);
+		}
+		else if (WindowName == "import") {
+			// Can only be "Cancel" button
+			CancelImport();
+		}
+		else if (WindowName == "clearall") { // "Are you sure?" when clearing scene
+			if (Tag == "Clear")
+				ClearScene();
+			else
+				MainWindow();
+		}
+		else if (WindowName == "deleteprompt") {    // "Are you sure?" when deleting save file
+			DestroyWindow("deleteprompt");    // almost definitely won't need it again (it contains the filename)
+			if (Tag == "Delete")
+				DeleteSave();
+			else
+				MainWindow();
+		}
+		else if (WindowName == "loadscene") {    // "Are you sure?" when loading a scene
+			if (Tag == "Load")
+				DoLoad();
+			else
+				DisplayWindow("saves");
+		}
+		else if (WindowName == "environment") {
+			if (Tag == "Sun time") {
+				DisplayWindow("sunposition");
+				EnvironmentStatus("sun");
+			}
+			else if (Tag == "Sea level") {
+				DisplayWindow("sealevel");
+				EnvironmentStatus("water");
+			}
+			else if (Tag == "Land level") {
+				DisplayWindow("landlevel");
+				EnvironmentStatus("land");
+			}
+			else if (Tag == "Wind") {
+				DisplayWindow("wind");
+				EnvironmentStatus("wind");
+			}
+			else if (Tag == "Reset") {
+				SetEnvironment("resetall");
+			}
+		}
+		else if (WindowName == "sunposition") {
+			SetEnvironment("sunhour," + Tag);
+		}
+		else if (WindowName == "sealevel") {
+			if (Tag == "+1m") SetEnvironment("waterlevel,+");
+			else if (Tag == "-1m") SetEnvironment("waterlevel,-");
+			else if (Tag == "Reset") SetEnvironment("waterlevel,reset");
+		}
+		else if (WindowName == "landlevel") {
+			// The 1 at the end of each CSV tells the env script that it's coming from the menu
+			if (Tag == "+1m") SetEnvironment("terrainheight,+,0,1");
+			else if (Tag == "-1m") SetEnvironment("terrainheight,-,0,1");
+			else if (Tag == "Reset") SetEnvironment("terrainheight,reset,0,1");
+			DisplayWindow("landchange");
+		}
+		else if (WindowName == "wind") {
+			if (llListFindList([ "N", "NE", "E", "SE", "S", "SW", "W", "NW" ], [ Tag ]) > -1)
+				SetEnvironment("winddirection," + Tag);
+			else if (Tag == "Strength+")    SetEnvironment("windstrength,+");
+			else if (Tag == "Strength-")    SetEnvironment("windstrength,-");
+			else if (Tag == "Reset")        SetEnvironment("windstrength,reset");
+		}
+		else if (IsCategoryRef(WindowName)) {
+			SelectFromReference(Tag);
+		}
+	}
+	else if (Number == HUD_API_CURRENT_WINDOW) {    // HUD server telling us which is the currently displayed window
+		string Window = llList2String(Parts, 0);
+		if (!IsObjectSelected) {    // If we don't have an MLO selected ...
+			if (!IsObjectRef(Window)) {    // ... and if it's not an object window (because of complications returning to that state) ...
+				WindowWhenSelected = Window;    // .. store the window so we can return to it after any selection
+			}
+		}
+		else {    // an MLO is selected
+			// and we're on the Selected menu
+			if (IsSelectedWindow(Window)) {
+				HudStatus(SelectedDesc + " selected");
+			}
+		}
+	}
+	else if (Number == HUD_API_BACK_BUTTON) {
+		string WindowName = llList2String(Parts, 0);
+		if (IsCategoryRef(WindowName)) BackCategory();
+		else if (IsObjectRef(WindowName)) BackObject();
+		else {
+			// Just a normal back-button to parent window
+			if (IsSelectedWindow(WindowName)) {    // if they've clicked back button on selected menu
+				Deselect();
+			}
+			else if (WindowName == "resize" || WindowName == "rotate" || WindowName == "nudge") {
+				SelectedWindow();
+			}
+		}
+	}
+	else if (Number == HUD_API_READY) {        // HUD is ready, so we send our first page
+		llMessageLinked(SfmLinkNum(), SFM_LIST, "", NULL_KEY);    // request list of saves from Scene File Manager
+		HudActive = TRUE;
+		// Dummy home menu (so that parent references to it don't cause issues)
+		// Actual home window buttons, etc are set elsewhere later
+		CreateWindowButtons("home", "", "Home", FALSE, [ "Finish" ]);
+		// Static pages
+		//
+		// File menu
+		CreateWindowButtons("saves", "home", "File", TRUE, [
+			MenuEntry("Load"),
+			MenuEntry("Save"),
+			MenuEntry("Rearrange"),
+			MenuEntry("Delete"),
+			MenuEntry("Import"),
+			MenuEntry("Export")
+				]);
+		// Selected menu (with and without Resize)
+		CreateWindowButtons("selectedr", "", "Selected object", TRUE, [
+			MenuEntry("Remove"),
+			MenuEntry("Resize"),
+			MenuEntry("Rotate"),
+			MenuEntry("Nudge"),
+			MenuEntry("Clone")
+				]);
+		CreateWindowButtons("selectednr", "", "Selected object", TRUE, [
+			MenuEntry("Remove"),
+			MenuEntry("Rotate"),
+			MenuEntry("Nudge"),
+			MenuEntry("Clone")
+				]);
+		// Rotate menu
+		if (MenuEntry("Rotate") != "") {
+			list Buttons = [];
+			// RotationButtons is a list of strings containing +ve and -ve degrees, so we convert each
+			// entry into a button label. It's a list of strings because that's what llList2CSV returns.
+			integer Entries = llGetListLength(RotationButtons);
+			integer I;
+			for (I = 0; I < Entries; I++) {
+				integer Degrees = (integer)llList2String(RotationButtons, I);
+				Buttons += RotateLabel(Degrees);
+			}
+			Buttons += MenuEntry("Random");
+			CreateWindowButtons("rotate", "", "Rotate object", TRUE, Buttons);
+		}
+		// Resize menu
+		if (MenuEntry("Resize") != "") {
+			CreateWindowButtons("resize", "", "Resize object", TRUE, [
+				ResizeLabel(TRUE, 100), ResizeLabel(FALSE, 50),
+				ResizeLabel(TRUE, 25), ResizeLabel(FALSE, 25),
+				ResizeLabel(TRUE, 10), ResizeLabel(FALSE, 10),
+				ResizeLabel(TRUE, 1), ResizeLabel(FALSE, 1),
+				MenuEntry("Random")
+					]);
+		}
+		// Nudge menu
+		CreateWindowButtons("nudge", "", "Nudge object", TRUE, NudgeButtons());
+		//
+		// Frequently-used statuses and alerts
+		//
+		CreateWindowAlert("clearall", "Clear scene", [ "This will remove all", "objects from the", "scene. Are you sure?" ], [ "*Clear", "Cancel" ]);
+		CreateWindowAlert("loadscene", "Load scene", [ "Are you sure you want", "to load a scene?" ], [ "*Load", "Cancel" ]);
+		CreateWindowStatus("clearingall", "Clearing scene", [ "Please wait ..." ]);
+		CreateWindowStatus("makecats", "Loading objects", [ "Please wait ..." ]);
+		CreateWindowStatus("settingswait", "Loading settings", [ "Please wait ..." ]);
+		// We make the Climate menu regardelss of whether it's enabled, in case it becomes enabled mid-session
+		if (TerrainChange)
+			CreateWindowButtons("environment", "home", "Climate", TRUE, [ "Sun time", "Sea level", "Land level", "Wind", "Reset" ]);
+		else
+			CreateWindowButtons("environment", "home", "Climate", TRUE, [ "Sun time", "Sea level", "Wind", "Reset" ]);
+		CreateWindowButtons("sunposition", "environment", "Sun Time", TRUE, [ "Dawn", "Morning", "Noon", "Afternoon", "Dusk", "Night", "Reset" ]);
+		CreateWindowButtons("sealevel", "environment", "Sea Level", TRUE, [ "+1m", "-1m", "Reset" ]);
+		CreateWindowButtons("landlevel", "environment", "Land Level", TRUE, [ "+1m", "-1m", "Reset" ]);
+		CreateWindowStatus("landchange", "Changing land level", [ "Please wait ..." ]);
+		CreateWindowButtons("wind", "environment", "Wind", TRUE, [ "N", "NE", "E", "SE", "S", "SW", "W", "NW", "Strength+", "Strength-", "Reset" ]);
+		// Saves lists
+		SendCommandToML("deselect");    // Just in case they already have an object selected when they log in
+		MainWindow();
+	}
+	else if (Number == HUD_API_TAKE_CONTROL) {
+		SetRandom(!RandomButtonOn, FALSE);
+		string OnOff = "off";
+		if (RandomButtonOn) OnOff = "on";
+		MessageUser("Random is now " + OnOff);
+	}
+	else if (Number == HUD_API_CAMERA_JUMP_MODE) {
+		llMessageLinked(LINK_THIS, LM_CAMERA_JUMP_MODE, Text, Id);
+	}
+	else if (Number == HUD_API_LOGIN) {
+		AvId = Id;
+		LogIn(AvId);
+	}
+	else if (Number == HUD_API_LOGOUT) {
+		LogOut();
+		return TRUE;
+	}
+	return FALSE;
+}
 
 ShowCategories() {
 	if (!CheckLibraryIntegrity()) return;
@@ -616,10 +938,6 @@ integer ValidNotecardName(string NotecardName) {
 	return TRUE;
 }
 MainWindow() {
-	if (ModuleLockExists()) {
-		ModulesMode(TRUE);
-		return;
-	}
 	// Home page
 	MakeMainWindow();
 	DisplayWindow("home");
@@ -643,6 +961,11 @@ SetRandom(integer On, integer Display) {
 	llMessageLinked(LINK_ROOT, LM_RANDOM_CREATE, (string)RandomButtonOn, AvId);
 	if (Display) DisplaySettingsMenu();
 }
+SetGridSnap(integer On, integer Display) {
+	GridSnapOn = On;
+	llMessageLinked(LINK_ROOT, LM_GRID_SNAP, (string)GridSnapOn, AvId);
+	if (Display) DisplaySettingsMenu();
+}
 SetAutoHide(integer Hide) {
 	llMessageLinked(LINK_ROOT, LM_AUTOHIDE_SET, (string)Hide, NULL_KEY);
 }
@@ -651,6 +974,19 @@ Reset() {
 	SendHud(HUD_API_RESET, []);
 	llMessageLinked(LINK_SET, LM_RESET, "", NULL_KEY);
 }
+// Process a CT_CATALOG message
+ProcessCatalog(string Text) {
+	// Data comes across as catalog data (base-64) and objects metadata (base-64) separated by "|"
+	list Parts = llParseStringKeepNulls(Text, [ "|" ], []);
+	string CatalogData = llBase64ToString(llList2String(Parts, 0));
+	string ObjectsData = llBase64ToString(llList2String(Parts, 1));
+	if (!ReadObjectsList(CatalogData)) {    // If objects list fails to load, prevent use of Create
+		DisableCreateMenu = TRUE;
+		return;
+	}
+	ProcessObjectData(ObjectsData);
+}
+// Process data sent with CT_CATALOG message
 integer ReadObjectsList(string ObjectData) {
 	integer OK = TRUE;
 	list Lines = llParseStringKeepNulls(ObjectData, [ "\n" ], []);
@@ -768,82 +1104,76 @@ integer ObjectsListError(string Message, integer Ptr, string Line) {
 }
 // Parse and store object metadata sent by library cataloguer
 ProcessObjectData(string Text) {
+	list ObjectLines = llParseStringKeepNulls(Text, [ "\n" ], []);
+	integer ObjectsCount = llGetListLength(ObjectLines);
 	MetaData = [];
-	list Lines = llParseStringKeepNulls(Text, [ "\n" ], []);
-	integer Size = llGetListLength(Lines);
-	integer L;
-	for (L = 0; L < Size; L++ ) {
-		string Line = llList2String(Lines, L);
-		if (Line != "") {
-			list Data = llParseStringKeepNulls(Line, [ "|" ], []);
-			// format of line is:
-			// Static data
-			//        ObjectName, // 0
-			//        CameraPos, // 1
-			//        CameraAltPos,
-			//        CameraFocus,
-			//        JumpPos,
-			//        JumpLookAt, // 5
-			//        Phantom,
-			//        AutoHide, // 7
-			// Dynamic data
-			//        LibIndex, // 8
-			//        ShortDesc,
-			//        LongDescBase64, // 10
-			//        ThumbnailId,
-			//        PreviewId,
-			//        RandomRotate,
-			//        RandomResize,
-			//        Detached, // 15
-			//        Source64,
-			//        SizeFactor,
-			//        OffsetPos,
-			//        OffsetRot,
-			//        Sittable, // 20
-			//        DoRotation,
-			//        DoBinormal,
-			//        Center,
-			//        AdjustHeight,
-			//        DummyMove, // 25
-			//        Resizable,
-			//        Floating,
-			//        IsApp,
-			//        StickPoints64,
-			//        SnapGrid, // 30
-			//        RegionSnap,
-			//        CopyRotation // 32otation
-			//
+	integer P;
+	for (P = 0; P < ObjectsCount; P++) {
+		string ObjectData = llList2String(ObjectLines, P);
+		list Data = llParseStringKeepNulls(ObjectData, [ "|" ], []);
+		// format of line is:
+		//		ObjectName, // 0
+		//		CameraPos, // 1
+		//		CameraAltPos,
+		//		CameraFocus,
+		//		JumpPos,
+		//		JumpLookAt, // 5
+		//		Phantom,
+		//		AutoHide, // 7
+		//		ModuleId, // 8
+		//		ShortDesc,
+		//		LongDescBase64, // 10
+		//		ThumbnailId,
+		//		PreviewId,
+		//		RandomRotate,
+		//		RandomResize,
+		//		Detached, // 15
+		//		Source64,
+		//		SizeFactor,
+		//		OffsetPos,
+		//		OffsetRot,
+		//		Sittable, // 20
+		//		DoRotation,
+		//		DoBinormal,
+		//		Center,
+		//		AdjustHeight,
+		//		DummyMove, // 25
+		//		Resizable,
+		//		Floating,
+		//		IsApp,
+		//		StickPoints64,
+		//		SnapGrid, // 30
+		//		RegionSnap,
+		//		CopyRotation, // 32
+		//		CommsType // 33
 
-			// Static
-			string ObjectName = llList2String(Data, 0);
-			integer AutoHide = (integer)llList2String(Data, 7);
-			// Dynamic
-			string LibKey = llList2String(Data, 8);
-			string ShortDesc = llList2String(Data, 9);
-			string LongDescBase64 = llList2String(Data, 10);
-			key ThumbnailId = (key)llList2String(Data, 11);
-			key PreviewId = (key)llList2String(Data, 12);
-			integer RandomRotate = (integer)llList2String(Data, 13);
-			float RandomResize = (float)llList2String(Data, 14);
-			integer Detached = (integer)llList2String(Data, 15);
-			string SourceBase64 = llList2String(Data, 16);
-			integer Resizable = (integer)llList2String(Data, 26);
-			// A lot of the incoming fields aren't really used here, more the job of the main script.
-			MetaData += [ "~" +
-				ObjectName,
-				LibKey,
-				ShortDesc,
-				LongDescBase64,
-				ThumbnailId,
-				PreviewId,
-				RandomRotate,
-				RandomResize,
-				Detached,
-				AutoHide,
-				SourceBase64,
-				Resizable
-					];
-		}
+		string ObjectName = llList2String(Data, 0);
+		integer AutoHide = (integer)llList2String(Data, 7);
+		string ModuleId = llList2String(Data, 8);
+		string ShortDesc = llList2String(Data, 9);
+		string LongDescBase64 = llList2String(Data, 10);
+		key ThumbnailId = (key)llList2String(Data, 11);
+		key PreviewId = (key)llList2String(Data, 12);
+		integer RandomRotate = (integer)llList2String(Data, 13);
+		float RandomResize = (float)llList2String(Data, 14);
+		integer Detached = (integer)llList2String(Data, 15);
+		string SourceBase64 = llList2String(Data, 16);
+		integer Resizable = (integer)llList2String(Data, 26);
+		// A lot of the incoming fields aren't really used here, more the job of the main script.
+		MetaData += [
+			"~" + ObjectName,
+			ModuleId,
+			ShortDesc,
+			LongDescBase64,
+			ThumbnailId,
+			PreviewId,
+			RandomRotate,
+			RandomResize,
+			Detached,
+			AutoHide,
+			SourceBase64,
+			Resizable
+				];
 	}
 }
 // Certain strings evaluate TRUE, everything else is FALSE
@@ -856,9 +1186,15 @@ DisplaySettingsMenu() {
 		RandomButton = "Random " + CheckboxOn;
 	else
 		RandomButton = "Random " + CheckboxOff;
-	list Buttons = [ RandomButton, "Reset" ];
+	string GridSnapButton;
+	if (GridSnapOn)
+		GridSnapButton = "Grid snap " + CheckboxOn;
+	else
+		GridSnapButton = "Grid snap " + CheckboxOff;
+	list Buttons = [ RandomButton, GridSnapButton, "Reset" ];
 	CreateWindowButtons("settings", "home", "Settings", TRUE, Buttons);
-	DisplayWindow("settings");
+	llMessageLinked(LINK_THIS, UTIL_TIMER_SET, "HUDsettings|5|0", NULL_KEY); // tag "HUDsettings", duration 5, repeat FALSE
+	DisplayWindow("settingswait");
 }
 DisplayAdvancedMenu() {
 	string ClimateButton = "Climate ";
@@ -866,34 +1202,8 @@ DisplayAdvancedMenu() {
 		ClimateButton += CheckboxOn;
 	else
 		ClimateButton += CheckboxOff;
-	CreateWindowButtons("advanced", "home", "Advanced", TRUE, [ "Modules", ClimateButton ]);
+	CreateWindowButtons("advanced", "home", "Advanced", TRUE, [ ClimateButton ]);
 	DisplayWindow("advanced");
-}
-ModulesMode(integer IsOn) {
-	if (IsOn) {
-		if (!ModuleLockExists()) {
-			osMakeNotecard(MODULE_EDIT_LOCK, [ llKey2Name(llGetOwner()) ]);
-		}
-		CreateWindowAlert("modules", "Modules maintenance", [
-			"Edit the module prims as needed,",
-			"then click 'Done'."
-				], [ "Done" ]);
-		DisplayWindow("modules");
-		ArrangeModules();
-	}
-	else {
-		if (ModuleLockExists()) llRemoveInventory(MODULE_EDIT_LOCK);
-		DestroyWindow("modules");
-		DisplaySettingsMenu();
-		ArrangeModules();
-	}
-}
-// Send module lock status to cataloguer for it to arrange the prims
-ArrangeModules() {
-	llMessageLinked(LINK_THIS, CT_ARRANGE_PRIMS, (string)ModuleLockExists(), AvId);
-}
-integer ModuleLockExists() {
-	return (llGetInventoryType(MODULE_EDIT_LOCK) == INVENTORY_NOTECARD);
 }
 MakeSavesList(list NotecardNames) {
 	if (!HudActive) return;    // we don't do anything if the HUD isn't active
@@ -929,6 +1239,11 @@ HandleFailure(string Text) {
 SendCommandToML(string Command) {
 	llMessageLinked(LINK_ROOT, LM_EXECUTE_COMMAND, Command, AvId);
 }
+MessageUser(key UserId, string Text) {
+	if (UserId != NULL_KEY) { // If they're signed in
+		llDialog(UserId, "\n" + Text, [ "OK" ], -8172911);
+	}
+}
 TakeControls(integer On) {
 	if (On)
 		SendHud(HUD_API_TAKE_CONTROL, [ CONTROL_LEFT ]);    // We want to handle PgUp/E
@@ -942,11 +1257,19 @@ RelinquishControls() {
 	}
 }
 LogIn(key Id) {
+	// First, check that there is data. If there are no modules/objects, we don't want them to be
+	// able to log in at all (for simplicity, rather than checks all over the place)
+	if (LibraryObjects == []) {
+		MessageUser(Id, "No modules found.");
+		llMessageLinked(LINK_SET, HUD_API_LOGOUT, "", NULL_KEY); // Tell the HUD to close
+		return;
+	}
 	AvId = Id;
 	IsObjectSelected = FALSE;
 	MenuChannel = -10000 - (integer)llFrand(100000.0);
 	llMessageLinked(LINK_ROOT, LM_EXTERNAL_LOGIN, "", AvId);
 	SetRandom(FALSE, FALSE);    // Turn off randomisation by default
+	SetGridSnap(TRUE, FALSE);    // Turn on grid snap by default
 	SetAutoHide(FALSE);
 	llMessageLinked(LINK_ROOT, ERR_SET_USER, "", AvId);
 }
@@ -1109,9 +1432,6 @@ LogOutButton() {
 	SendHud(HUD_API_LOGOUT, []);
 	state Idle;
 }
-SendMetaData() {
-	SendHud(HUD_API_SET_METADATA, [ "RezMela" ]);
-}
 SendHud(integer Command, list Parts) {
 	integer HudLinkNum = osGetLinkNumber(HUD_PRIM_NAME);
 	if (HudLinkNum == -1) {
@@ -1208,33 +1528,48 @@ state Idle {
 		CategoryWindowsCreated = FALSE;
 		CreateModeOn = FALSE;
 		IsObjectSelected = FALSE;
+		DisableCreateMenu = FALSE;
 		Importing = 0;
+		llMessageLinked(LINK_THIS, UTIL_WAITING, "O", NULL_KEY); // tell servicer that we're ready
 	}
 	link_message(integer Sender, integer Number, string Text, key Id) {
-		if (Number == LM_TOUCH_NORMAL) {
-			list Parts = llCSV2List(Text);
-			integer LinkNum = (integer)llList2String(Parts, 0);
-			if (LinkNum == GetBeaconLinkNum()) {
-				// They've clicked on the beacon - tell the HUD server about this
-				SendHud(HUD_API_BEACON_CLICK, [ Id ]); // Id is user who clicked
+		// LMs from root prim
+		if (Sender == 1) {
+			if (Number == LM_TOUCH_NORMAL) {
+				list Parts = llCSV2List(Text);
+				integer LinkNum = (integer)llList2String(Parts, 0);
+				if (LinkNum == GetBeaconLinkNum()) {
+					// They've clicked on the beacon - tell the HUD server about this
+					SendHud(HUD_API_BEACON_CLICK, [ Id ]); // Id is user who clicked
+				}
+			}
+			else if (Number == LM_PUBLIC_DATA) {
+				ParsePublicData(Text);
+			}
+			else if (Number == LM_OBJECTS_COUNT) {
+				SceneObjectsCount = (integer)Text;    // # of objects in scene, from ML
+			}
+			// Messages from cataloguer
+			else if (Number == CT_CATALOG) {
+				ProcessCatalog(Text);
 			}
 		}
-		else if (Number == HUD_API_LOGIN) {
-			SendBespokeData();
-			AvId = Id;
-			LogIn(AvId);
-			llSetTimerEvent(0.5); // will trigger state change to GetCatalogue
+		// LMs from child prims
+		else {
+			// Messages from HUD server
+			if (Number == HUD_API_LOGIN) {
+				SendBespokeData();
+				AvId = Id;
+				LogIn(AvId);
+				llSetTimerEvent(0.5); // will trigger state change to Active
+			}
+			//			else if (Number == CT_ERRORS) {
+			//				LibraryErrorsText = Text;
+			//				state LibraryErrors;
+			//			}
 		}
-		else if (Number == HUD_API_GET_METADATA) {    // HUD server requesting our data
-			SendMetaData();
-		}
-		else if (Number == LM_PUBLIC_DATA) {
-			ParsePublicData(Text);
-		}
-		else if (Number == LM_OBJECTS_COUNT) {
-			SceneObjectsCount = (integer)Text;    // # of objects in scene, from ML
-		}
-		else if (Number == COM_RESET) {
+		// LMs from any prim
+		if (Number == COM_RESET) {
 			Reset();
 			llResetScript();
 		}
@@ -1243,49 +1578,6 @@ state Idle {
 		if (Data == BEACON_CALL) {
 			key HudOwnerId = llList2Key(llGetObjectDetails(Id, [ OBJECT_OWNER ]), 0);
 			SendHud(HUD_API_BEACON_SHOW, [ HudOwnerId ]);
-		}
-	}
-	timer() {
-		// See timer event in GetCatalogue state for explanation of use of timer
-		llSetTimerEvent(0.0);
-		state GetCatalogue;
-	}
-}
-state GetCatalogue {
-	on_rez(integer S) { llResetScript(); }
-	state_entry() {
-		llMessageLinked(LINK_THIS, CT_REQUEST_DATA, "", AvId); // Request object library data from Cataloguer
-		DisableCreateMenu = FALSE;
-		ArrangeModules();
-	}
-	link_message(integer Sender, integer Number, string Text, key Id) {
-		if (Sender == 1) {
-			if (Number == CT_CATALOG) {
-				// Data comes across as catalog data (base-64) and objects metadata (base-64) separated by "|"
-				list Parts = llParseStringKeepNulls(Text, [ "|" ], []);
-				string CatalogData = llBase64ToString(llList2String(Parts, 0));
-				string ObjectsData = llBase64ToString(llList2String(Parts, 1));
-				if (!ReadObjectsList(CatalogData)) {    // If objects list fails to load, prevent use of Create
-					DisableCreateMenu = TRUE;
-					return;
-				}
-				ProcessObjectData(ObjectsData);
-				llSetTimerEvent(0.5); // this triggers a state change to Active
-			}
-			else if (Number == CT_ERRORS) {
-				LibraryErrorsText = Text;
-				state LibraryErrors;
-			}
-			else if (Number == LM_PUBLIC_DATA) {
-				ParsePublicData(Text);
-			}
-			else if (Number == LM_OBJECTS_COUNT) {
-				SceneObjectsCount = (integer)Text;    // # of objects in scene, from ML
-			}
-		}
-		if (Number == COM_RESET) {
-			Reset();
-			llResetScript();
 		}
 	}
 	timer() {
@@ -1299,8 +1591,8 @@ state GetCatalogue {
 state Active {
 	on_rez(integer S) { llResetScript(); }
 	state_entry() {
-		SendHud(HUD_API_READY, []);        // Tell HUD we're ready
 		llListen(HUD_CHAT_GENERAL, "", NULL_KEY, "");
+		SendHud(HUD_API_READY, []);        // Tell HUD we're ready
 		CameraTracking = FALSE;
 		llSetTimerEvent(0.0);
 	}
@@ -1309,11 +1601,6 @@ state Active {
 		if (Sender == 1) {    // Message from script in root prim
 			// Prim selection/deselection. We handle messages from the main ML script telling us when the user selects/deselects prims.
 			if (Number == LM_PRIM_SELECTED) {
-				// If the module lock exists, prevent selection
-				if (ModuleLockExists()) {
-					Deselect();
-					return;
-				}
 				IsObjectSelected = TRUE;
 				integer LinkNum = (integer)Text;
 				string ObjectName = llGetLinkName(LinkNum);
@@ -1351,342 +1638,21 @@ state Active {
 			else if (Number == LM_OBJECTS_COUNT) {
 				SceneObjectsCount = (integer)Text;    // # of objects in scene, from ML
 			}
+			else if (Number == CT_CATALOG) {	// from cataloguer
+				ProcessCatalog(Text);
+			}
+			else if (Number == UTIL_TIMER_RETURN) {
+				if (Text == "HUDsettings") {
+					DisplayWindow("settings");
+				}
+			}
 			else if (Number == ENV_DONE) {    // Environment script has finished processing
 				if (Text == "land") DisplayWindow("landlevel");
 			}
 		}
 		else {    // messages from child prim, possibly HUD server
 			if (Number >= HUD_API_MIN && Number <= HUD_API_MAX) {    // it's a HUD API message
-				list Parts = llParseStringKeepNulls(Text, [ HUD_API_SEPARATOR_1 ], []);
-				if (Number == HUD_API_CLICK_BUTTON) {
-					string WindowName = llList2String(Parts, 0);
-					string Tag = llList2String(Parts, 1);
-					// Handle menus
-					// --- Home
-					if (WindowName == "home") {
-						RelinquishControls();
-						if (Tag == "File") DisplayWindow("saves");
-						else if (Tag == "Create" && !DisableCreateMenu) ShowCategories();
-						else if (Tag == "Clear") DisplayWindow("clearall");
-						else if (Tag == "Climate") DisplayWindow("environment");
-						else if (Tag == "Settings") DisplaySettingsMenu();
-						else if (Tag == "Advanced") DisplayAdvancedMenu();
-						else if (Tag == "Finish") LogOutButton();
-					}
-					// --- Selection menu
-					else if (IsSelectedWindow(WindowName)) {
-						RelinquishControls();
-						if (Tag == "Remove") RemoveSelectedObject();
-						else if (Tag == "Clone") CloneSelectedObject();
-						else if (Tag == "Teleport") TeleportToObject();
-						else if (Tag == "Zoom") ZoomToObject();
-						else if (Tag == "Resize") DisplayWindow("resize");
-						else if (Tag == "Rotate") DisplayWindow("rotate");
-						else if (Tag == "Nudge") DisplayWindow("nudge");
-					}
-					// --- Settings menus
-					else if (WindowName == "settings") {
-						if (llGetSubString(Tag, 0, 5) == "Random") SetRandom(!RandomButtonOn, TRUE);
-						else if (Tag == "Reset") {
-							CreateWindowAlert("resetconfirm", "Reset Scripts", [
-								"WARNING!",
-								"",
-								"This will reset all scripts in the",
-								"App. Any current scene data will be",
-								"lost, but saved scenes will not be",
-								"affected."
-									], [ "*OK", "Cancel" ]);
-							DisplayWindow("resetconfirm");
-						}
-					}
-					else if (WindowName == "advanced") {
-						if (Tag == "Modules") {
-							if (SceneObjectsCount == 0) {
-								ModulesMode(TRUE);
-							}
-							else {
-								CreateWindowAlert("moduleserror", "Modules Maintenance", [
-									"You cannot use modules maintenance",
-									"while there are objects in the current",
-									"scene.",
-									"",
-									"Please clear the scene and try again."
-										], [ "*OK"    ]);
-								DisplayWindow("moduleserror");
-							}
-						}
-						else if (llGetSubString(Tag, 0, 6) == "Climate") {
-							EnvironmentalChange = !EnvironmentalChange;
-							string ConfigValue;
-							if (EnvironmentalChange) ConfigValue = "True"; else ConfigValue = "False";
-							// Tell ML to change the "ML config" value for Climate/EnvironmentalChange
-							llMessageLinked(LINK_THIS, LM_CHANGE_CONFIG, "EnvironmentalChange|" + ConfigValue, NULL_KEY);
-							MakeMainWindow();    // add/remove "Climate" button from main window
-							DisplayAdvancedMenu();
-						}
-					}
-					else if (WindowName == "resetconfirm") {
-						if (Tag == "OK") {
-							Reset();
-							LogOut();
-							llResetScript();
-						}
-						else {
-							DisplayWindow("settings");
-						}
-					}
-					else if (WindowName == "modules") {
-						if (Tag == "Done") {
-							ModulesMode(FALSE);
-							LogOut();
-							Reset();
-							llResetScript();
-						}
-					}
-					else if (WindowName == "moduleserror") {
-						MainWindow();
-					}
-					else if (WindowName == "failure") {
-						MainWindow();
-					}
-					// --- File menu
-					else if (WindowName == "saves") {
-						if (Tag == "Save") StartSave();
-						else if (Tag == "Load") DisplayWindow("saveload");
-						else if (Tag == "Rearrange") DisplayWindow("saverearrange");
-						else if (Tag == "Delete") DisplayWindow("savedelete");
-						else if (Tag == "Export") DisplayWindow("saveexport");
-						else if (Tag == "Import") StartImport();
-					}
-					// Selected item menus
-					else if (WindowName == "resize") {
-						ResizeObject(Tag);    // pass the button label to the function that does it
-					}
-					else if (WindowName == "rotate") {
-						RotateObject(Tag);    // pass the button label to the function that does it
-					}
-					else if (WindowName == "nudge") {
-						vector CameraPos = (vector)llList2String(Parts, 2);
-						rotation CameraRot = (rotation)llList2String(Parts, 3);
-						if (CameraPos == ZERO_VECTOR) {    // for some reason, no data, and we don't want to continue
-							LogError("No camera data for nudge");
-							return;
-						}
-						ProcessNudge(Tag, CameraPos, CameraRot);    // pass the button label to the function that does it
-					}
-					// Elementals
-					else if (WindowName == "saveload") {
-						StartLoad(Tag, TRUE);
-					}
-					else if (WindowName == "saverearrange") {
-						StartLoad(Tag, FALSE);
-					}
-					else if (WindowName == "savedelete") {
-						DeleteSavePrompt(Tag);
-					}
-					else if (WindowName == "savealert") {
-						// it must be a retry
-						StartSave();
-					}
-					else if (WindowName == "saveexport") {
-						Export(Tag);
-					}
-					else if (WindowName == "import") {
-						// Can only be "Cancel" button
-						CancelImport();
-					}
-					else if (WindowName == "clearall") { // "Are you sure?" when clearing scene
-						if (Tag == "Clear")
-							ClearScene();
-						else
-							MainWindow();
-					}
-					else if (WindowName == "deleteprompt") {    // "Are you sure?" when deleting save file
-						DestroyWindow("deleteprompt");    // almost definitely won't need it again (it contains the filename)
-						if (Tag == "Delete")
-							DeleteSave();
-						else
-							MainWindow();
-					}
-					else if (WindowName == "loadscene") {    // "Are you sure?" when loading a scene
-						if (Tag == "Load")
-							DoLoad();
-						else
-							DisplayWindow("saves");
-					}
-					else if (WindowName == "environment") {
-						if (Tag == "Sun time") {
-							DisplayWindow("sunposition");
-							EnvironmentStatus("sun");
-						}
-						else if (Tag == "Sea level") {
-							DisplayWindow("sealevel");
-							EnvironmentStatus("water");
-						}
-						else if (Tag == "Land level") {
-							DisplayWindow("landlevel");
-							EnvironmentStatus("land");
-						}
-						else if (Tag == "Wind") {
-							DisplayWindow("wind");
-							EnvironmentStatus("wind");
-						}
-						else if (Tag == "Reset") {
-							SetEnvironment("resetall");
-						}
-					}
-					else if (WindowName == "sunposition") {
-						SetEnvironment("sunhour," + Tag);
-					}
-					else if (WindowName == "sealevel") {
-						if (Tag == "+1m") SetEnvironment("waterlevel,+");
-						else if (Tag == "-1m") SetEnvironment("waterlevel,-");
-						else if (Tag == "Reset") SetEnvironment("waterlevel,reset");
-					}
-					else if (WindowName == "landlevel") {
-						// The 1 at the end of each CSV tells the env script that it's coming from the menu
-						if (Tag == "+1m") SetEnvironment("terrainheight,+,0,1");
-						else if (Tag == "-1m") SetEnvironment("terrainheight,-,0,1");
-						else if (Tag == "Reset") SetEnvironment("terrainheight,reset,0,1");
-						DisplayWindow("landchange");
-					}
-					else if (WindowName == "wind") {
-						if (llListFindList([ "N", "NE", "E", "SE", "S", "SW", "W", "NW" ], [ Tag ]) > -1)
-							SetEnvironment("winddirection," + Tag);
-						else if (Tag == "Strength+")    SetEnvironment("windstrength,+");
-						else if (Tag == "Strength-")    SetEnvironment("windstrength,-");
-						else if (Tag == "Reset")        SetEnvironment("windstrength,reset");
-					}
-					else if (IsCategoryRef(WindowName)) {
-						SelectFromReference(Tag);
-					}
-				}
-				else if (Number == HUD_API_CURRENT_WINDOW) {    // HUD server telling us which is the currently displayed window
-					string Window = llList2String(Parts, 0);
-					if (!IsObjectSelected) {    // If we don't have an MLO selected ...
-						if (!IsObjectRef(Window)) {    // ... and if it's not an object window (because of complications returning to that state) ...
-							WindowWhenSelected = Window;    // .. store the window so we can return to it after any selection
-						}
-					}
-					else {    // an MLO is selected
-						// and we're on the Selected menu
-						if (IsSelectedWindow(Window)) {
-							HudStatus(SelectedDesc + " selected");
-						}
-					}
-				}
-				else if (Number == HUD_API_BACK_BUTTON) {
-					string WindowName = llList2String(Parts, 0);
-					if (IsCategoryRef(WindowName)) BackCategory();
-					else if (IsObjectRef(WindowName)) BackObject();
-					else {
-						// Just a normal back-button to parent window
-						if (IsSelectedWindow(WindowName)) {    // if they've clicked back button on selected menu
-							Deselect();
-						}
-						else if (WindowName == "resize" || WindowName == "rotate" || WindowName == "nudge") {
-							SelectedWindow();
-						}
-					}
-				}
-				else if (Number == HUD_API_READY) {        // HUD is ready, so we send our first page
-					llMessageLinked(SfmLinkNum(), SFM_LIST, "", NULL_KEY);    // request list of saves from Scene File Manager
-					HudActive = TRUE;
-					// Dummy home menu (so that parent references to it don't cause issues)
-					// Actual home window buttons, etc are set elsewhere later
-					CreateWindowButtons("home", "", "Home", FALSE, [ "Finish" ]);
-					// Static pages
-					//
-					// File menu
-					CreateWindowButtons("saves", "home", "File", TRUE, [
-						MenuEntry("Load"),
-						MenuEntry("Save"),
-						MenuEntry("Rearrange"),
-						MenuEntry("Delete"),
-						MenuEntry("Import"),
-						MenuEntry("Export")
-							]);
-					// Selected menu (with and without Resize)
-					CreateWindowButtons("selectedr", "", "Selected object", TRUE, [
-						MenuEntry("Remove"),
-						MenuEntry("Resize"),
-						MenuEntry("Rotate"),
-						MenuEntry("Nudge"),
-						MenuEntry("Clone")
-							]);
-					CreateWindowButtons("selectednr", "", "Selected object", TRUE, [
-						MenuEntry("Remove"),
-						MenuEntry("Rotate"),
-						MenuEntry("Nudge"),
-						MenuEntry("Clone")
-							]);
-					// Rotate menu
-					if (MenuEntry("Rotate") != "") {
-						list Buttons = [];
-						// RotationButtons is a list of strings containing +ve and -ve degrees, so we convert each
-						// entry into a button label. It's a list of strings because that's what llList2CSV returns.
-						integer Entries = llGetListLength(RotationButtons);
-						integer I;
-						for (I = 0; I < Entries; I++) {
-							integer Degrees = (integer)llList2String(RotationButtons, I);
-							Buttons += RotateLabel(Degrees);
-						}
-						Buttons += MenuEntry("Random");
-						CreateWindowButtons("rotate", "", "Rotate object", TRUE, Buttons);
-					}
-					// Resize menu
-					if (MenuEntry("Resize") != "") {
-						CreateWindowButtons("resize", "", "Resize object", TRUE, [
-							ResizeLabel(TRUE, 100), ResizeLabel(FALSE, 50),
-							ResizeLabel(TRUE, 25), ResizeLabel(FALSE, 25),
-							ResizeLabel(TRUE, 10), ResizeLabel(FALSE, 10),
-							ResizeLabel(TRUE, 1), ResizeLabel(FALSE, 1),
-							MenuEntry("Random")
-								]);
-					}
-					// Nudge menu
-					CreateWindowButtons("nudge", "", "Nudge object", TRUE, NudgeButtons());
-					//
-					// Frequently-used statuses and alerts
-					//
-					CreateWindowAlert("clearall", "Clear scene", [ "This will remove all", "objects from the", "scene. Are you sure?" ], [ "*Clear", "Cancel" ]);
-					CreateWindowAlert("loadscene", "Load scene", [ "Are you sure you want", "to load a scene?" ], [ "*Load", "Cancel" ]);
-					CreateWindowStatus("clearingall", "Clearing scene", [ "Please wait ..." ]);
-					CreateWindowStatus("makecats", "Loading objects", [ "Please wait ..." ]);
-					// We make the Climate menu regardelss of whether it's enabled, in case it becomes enabled mid-session
-					if (TerrainChange)
-						CreateWindowButtons("environment", "home", "Climate", TRUE, [ "Sun time", "Sea level", "Land level", "Wind", "Reset" ]);
-					else
-						CreateWindowButtons("environment", "home", "Climate", TRUE, [ "Sun time", "Sea level", "Wind", "Reset" ]);
-					CreateWindowButtons("sunposition", "environment", "Sun Time", TRUE, [ "Dawn", "Morning", "Noon", "Afternoon", "Dusk", "Night", "Reset" ]);
-					CreateWindowButtons("sealevel", "environment", "Sea Level", TRUE, [ "+1m", "-1m", "Reset" ]);
-					CreateWindowButtons("landlevel", "environment", "Land Level", TRUE, [ "+1m", "-1m", "Reset" ]);
-					CreateWindowStatus("landchange", "Changing land level", [ "Please wait ..." ]);
-					CreateWindowButtons("wind", "environment", "Wind", TRUE, [ "N", "NE", "E", "SE", "S", "SW", "W", "NW", "Strength+", "Strength-", "Reset" ]);
-					// Saves lists
-					SendCommandToML("deselect");    // Just in case they already have an object selected when they log in
-					MainWindow();
-				}
-				else if (Number == HUD_API_GET_METADATA) {    // HUD server requesting our data
-					SendMetaData();
-				}
-				else if (Number == HUD_API_TAKE_CONTROL) {
-					SetRandom(!RandomButtonOn, FALSE);
-					string OnOff = "off";
-					if (RandomButtonOn) OnOff = "on";
-					MessageUser("Random is now " + OnOff);
-				}
-				else if (Number == HUD_API_CAMERA_JUMP_MODE) {
-					llMessageLinked(LINK_THIS, LM_CAMERA_JUMP_MODE, Text, Id);
-				}
-				else if (Number == HUD_API_LOGIN) {
-					AvId = Id;
-					LogIn(AvId);
-				}
-				else if (Number == HUD_API_LOGOUT) {
-					LogOut();
-					state Idle;
-				}
+				if (HandleHudMessage(Number, Text, Id)) state Idle;
 			}
 			else {        // Not a message from the HUD
 				if (HudActive) {    // only process if HUD is active
@@ -1705,6 +1671,10 @@ state Active {
 			Reset();
 			LogOut();
 			llResetScript();
+		}
+		else if (Number == COM_LOGOUT) {
+			SendHud(HUD_API_LOGOUT, []);
+			LogOut();
 		}
 	}
 	changed(integer Change) {
@@ -1750,25 +1720,25 @@ state Active {
 		DoImport();
 	}
 }
-state LibraryErrors {
-	on_rez(integer Param) { llResetScript(); }
-	state_entry() {
-		llOwnerSay("Errors in modules:\n" + LibraryErrorsText + "\n[Click App/Map to retry]");
-	}
-	touch_start(integer Count) {
-		Reset();
-		llResetScript();
-	}
-	changed(integer Change) {
-		if (Change & CHANGED_INVENTORY) llResetScript();    // in case HUD strings file has been added
-	}
-	link_message(integer Sender, integer Number, string Text, key Id) {
-		if (Number == COM_RESET) {
-			Reset();
-			llResetScript();
-		}
-	}
-}
+//state LibraryErrors {
+//	on_rez(integer Param) { llResetScript(); }
+//	state_entry() {
+//		llOwnerSay("Errors in modules:\n" + LibraryErrorsText + "\n[Click App/Map to retry]");
+//	}
+//	touch_start(integer Count) {
+//		Reset();
+//		llResetScript();
+//	}
+//	changed(integer Change) {
+//		if (Change & CHANGED_INVENTORY) llResetScript();    // in case HUD strings file has been added
+//	}
+//	link_message(integer Sender, integer Number, string Text, key Id) {
+//		if (Number == COM_RESET) {
+//			Reset();
+//			llResetScript();
+//		}
+//	}
+//}
 state Hang {
 	on_rez(integer Param) { llResetScript(); }
 	changed(integer Change) {
@@ -1781,4 +1751,4 @@ state Hang {
 		}
 	}
 }
-// HUD communicator v1.11.9
+// HUD communicator v1.12.3
