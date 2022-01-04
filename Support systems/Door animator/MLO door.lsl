@@ -1,4 +1,4 @@
-// MLO door v1.0
+// MLO door v1.0.1
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -22,6 +22,9 @@
 // represents the degree of movement in degrees - eg <0, 0, 270> for a 90-degree
 // rotation. Line 2 contains the speed of TargetOmega movement, eg 90.
 
+//
+// v1.1 - add MLO lock/unlock
+//
 string CONFIG_FILE = "Door config";
 
 // Link message numbers, sent/rec'd by ML main script
@@ -31,6 +34,8 @@ integer LM_LOADING_COMPLETE = -405530;
 integer LM_MOVED_ROTATED = -405560;
 integer LM_PRIM_SELECTED = -405500;        // A prim has been selected
 integer LM_PRIM_DESELECTED = -405501;    // A prim has been deselected
+integer LM_MLO_LOCK = -405564;   // lock MLO scripts (eg doors close, won't open while saving scene)
+integer LM_MLO_UNLOCK = -405565;  // unlock MLO scripts
 integer LM_RESERVED_TOUCH_FACE = -44088510;        // Reserved Touch Face (RTF)
 integer LM_TOUCH_NORMAL    = -66168300;
 
@@ -47,6 +52,7 @@ rotation OpenRot = ZERO_ROTATION;
 rotation ClosedToOpen = ZERO_ROTATION;
 float Speed = 0.0;
 
+integer Locked = TRUE;
 integer Moving = FALSE;
 integer IsOpen = FALSE;
 integer Selected = FALSE;
@@ -62,7 +68,6 @@ SetRotation() {
 		llSetLocalRot(ClosedRot);
 	}
 }
-
 default {
 	on_rez(integer Param) { llResetScript(); }
 	state_entry() {
@@ -77,6 +82,7 @@ default {
 		ClosedToOpen = llEuler2Rot(ClosedToOpenEulerDeg * DEG_TO_RAD);
 		ClosedRot = llGetLocalRot();
 		CalculateOpenRot();
+		Locked = TRUE;
 	}
 	link_message(integer Sender, integer Number, string String, key Id) {
 		if (Number == LM_LOADING_COMPLETE && !DataRequested) {
@@ -90,6 +96,7 @@ default {
 			ClosedRot = (rotation)String;
 			CalculateOpenRot();
 			SetRotation();
+			Locked = FALSE;
 		}
 		else if (Number == LM_RESERVED_TOUCH_FACE) {
 			key TouchAv = Id;
@@ -98,7 +105,7 @@ default {
 				llMessageLinked(LINK_ROOT, LM_TOUCH_NORMAL, llList2CSV(llGetLinkNumber() + TouchData), TouchAv);
 				return;
 			}
-			if (!Moving) { // ignore clicks while door is in motion
+			if (!Locked && !Moving) { // ignore clicks while locked or door is in motion
 				if (IsOpen) {    // we're open, so closing
 					llTargetOmega(<0.0, 0.0, 1.0>, Speed, 1.0);
 					IsOpen = FALSE;
@@ -110,6 +117,16 @@ default {
 				Moving = TRUE;
 				llSetTimerEvent(1.0) ;
 			}
+		}
+		else if (Number == LM_MLO_LOCK) { // lock - we close the door and lock it
+			IsOpen = FALSE;
+			SetRotation();
+			llSetTimerEvent(0.0); // prevent auto-close from kicking in
+			Moving = FALSE;
+			Locked = TRUE;
+		}
+		else if (Number == LM_MLO_UNLOCK) { // unlock - free to open
+			Locked = FALSE;
 		}
 		else if (Number == LM_PRIM_SELECTED) {
 			if ((integer)String == llGetLinkNumber()) {    // if it's our link number
@@ -146,13 +163,13 @@ default {
 		}
 	}
 	collision_start(integer Count) {
-		if (!IsOpen && !Moving) {
+		if (!Locked && !IsOpen && !Moving) {
 			// open immediately on collision (no TargetOmega)
 			IsOpen = TRUE;
 			SetRotation();
 			llSetTimerEvent(10.0); // delay for auto close of door
 		}
-    }   	
+	}
 }
 state Hang {
 	on_rez(integer Param) { llResetScript(); }
@@ -160,4 +177,4 @@ state Hang {
 		if (Change & CHANGED_INVENTORY) llResetScript();
 	}
 }
-// MLO door v1.0
+// MLO door v1.0.1

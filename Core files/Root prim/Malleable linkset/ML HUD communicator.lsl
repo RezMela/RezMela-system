@@ -1,4 +1,4 @@
-// HUD communicator v1.12.3
+// HUD communicator v1.12.4
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,7 @@
 // or modification, contact support@rezmela.com
 // More detailed information about the HUD communicator script is available here http://wiki.rezmela.org/doku.php/hud-communicator-script
 
+// v1.12.4 - add MLO lock
 // v1.12.3 - add option to turn on/off grid snap; rationalise Settings menu
 // v1.12.2 - handle absence of modules
 // v1.12.1 - bug fixes, etc
@@ -108,6 +109,8 @@ integer LM_CAMERA_JUMP_MODE =  -405547;
 integer LM_OBJECTS_COUNT = -405548;
 integer LM_FAILURE = -405549;
 integer LM_CHANGE_CONFIG = -405551;
+integer LM_MLO_LOCK = -405564;   // lock MLO scripts (eg doors close, won't open while saving scene)
+integer LM_MLO_UNLOCK = -405565;  // unlock MLO scripts
 
 integer LM_TOUCH_NORMAL	= -66168300;
 
@@ -905,6 +908,7 @@ EndSave(string NotecardName) {
 	}
 	DisplayWindow("savestatus");
 	llListenRemove(MenuListener);
+	llMessageLinked(LINK_SET, LM_MLO_LOCK, "", AvId); // Lock MLOs (eg door scripts will close and lock doors for the duration of the save)
 	SendCommandToML("save " + NotecardName);
 }
 DeleteSavePrompt(string NotecardName) {
@@ -1751,4 +1755,4 @@ state Hang {
 		}
 	}
 }
-// HUD communicator v1.12.3
+// HUD communicator v1.12.4

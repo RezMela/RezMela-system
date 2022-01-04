@@ -1,4 +1,4 @@
-// Malleable linkset v1.22.4
+// Malleable linkset v1.22.5
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,7 @@
 // or modification, contact support@rezmela.com
 // Additional documentation about ML, ML Linkset limits http://wiki.rezmela.org/doku.php/ml-limits?s[]=primsource
 
+// v1.22.5 Add MLO lock/unlock
 // v1.22.4 Rotation changes for stickpoints altered for walls module
 // v1.22.3 Make snap-to-grid optional
 // v1.22.2 Add AOC requesting object's module ID to requested object
@@ -129,6 +130,8 @@ integer LM_CHANGE_CONFIG = -405551;
 integer LM_MOVED_ROTATED = -405560;
 integer LM_CHILD_READY = -405561;    // sent by child app to parent when ready
 integer LM_UNLINK_QUEUE = -405562;
+integer LM_MLO_LOCK = -405564;   // lock MLO scripts (eg doors close, won't open while saving scene)
+integer LM_MLO_UNLOCK = -405565;  // unlock MLO scripts
 integer LM_ANNOUNCE_OBJECT = -405570;
 
 integer LM_TOUCH_NORMAL    = -66168300;
@@ -2452,6 +2455,7 @@ string SaveData(string SaveName) {
         string SaveParams = SaveName + "|" + SerializedData;
         llMessageLinked(SfmLinkNum(), SFM_SAVE, SaveParams, UserId);
     }
+	llMessageLinked(LINK_SET, LM_MLO_UNLOCK, "", UserId); // Unlock MLOs (eg door scripts can now open doors)
     return SerializedData;
 }
 list ListModules() {
@@ -4581,4 +4585,4 @@ state Hang {
         if (Change & CHANGED_INVENTORY) llResetScript();
     }
 }
-// Malleable linkset v1.22.4
+// Malleable linkset v1.22.5

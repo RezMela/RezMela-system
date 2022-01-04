@@ -1,4 +1,4 @@
-// ML scene file manager v1.3.3
+// ML scene file manager v1.4.0
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.4.0 - use unlinked modules
 // v1.3.3 - allow export of multi-card saves
 // v1.3.2 - more efficient saving of large data
 // v1.3.1 - add script PIN
@@ -38,6 +39,8 @@
 
 integer MAX_CARD_SIZE = 60000;    // Maximum notecard size in bytes. Actually 64K, but we leave a margin
 
+integer MODULES_CHANNEL = -91823472; // listener channel for modules
+
 integer SCRIPT_PIN = -19318100;
 
 integer SFM_LIST = -3310420;
@@ -51,7 +54,11 @@ integer SFM_DELETE_ALL = -3310427;
 
 string SFM_NAME = "&SceneFileManager&";    // Name of SFM prim (also in ML main script)
 
+list Modules = []; // [ UUID ]
+
 integer ModifyingContents = FALSE; // TRUE while we're making changes to contents
+
+key OwnerId;
 
 string Load(string Name) {
 	string Contents = "";
@@ -230,10 +237,24 @@ integer CardExists(string Name) {
 default {
 	on_rez(integer Param) { llResetScript(); }
 	state_entry() {
-		llSetTimerEvent(0.0);
+		OwnerId = llGetOwner();
 		llSetRemoteScriptAccessPin(SCRIPT_PIN);
 		if (llGetObjectName() != SFM_NAME) {
 			llOwnerSay("WARNING: SFM prim name should be '" + SFM_NAME + "'!");
+		}
+		llRegionSay(MODULES_CHANNEL, "A");
+		llListen(MODULES_CHANNEL, "", NULL_KEY, "");
+	}
+	listen(integer Channel, string Name, key Id, string Text) {
+		if (Channel == MODULES_CHANNEL) {
+			string Command = llGetSubString(Text, 0, 0); // command is first char of message
+			if (Command == "M") { // if it's a module
+				if (llGetOwnerKey(Id) == OwnerId) { // if it has the same owner as the app
+					if (llListFindList(Modules, [ Id ]) == -1) { // we don't know about it yet
+						Modules += Id; // add to list
+					}
+				}
+			}
 		}
 	}
 	link_message(integer Sender, integer Number, string String, key Id) {
@@ -276,5 +297,8 @@ default {
 			}
 		}
 	}
+	changed(integer Change) {
+		if (Change & CHANGED_OWNER) OwnerId = llGetOwner();
+	}
 }
-// ML scene file manager v1.3.3
+// ML scene file manager v1.4.0
