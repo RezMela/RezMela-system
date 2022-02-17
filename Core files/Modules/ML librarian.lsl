@@ -1,4 +1,4 @@
-// ML librarian v1.3.6
+// ML librarian v1.3.7
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.3.7 - tolerate modules of >1 prim
 // v1.3.6 - add suspend feature
 // v1.3.5 - don't rename objects rezzed by other scripts
 // v1.3.4 - tolerate objects being rezzed by other scripts (eg the "rez and delete" script)
@@ -117,7 +118,6 @@ integer ObjectsStillRezzing = 0; // Count of objects that have been 580 but not 
 
 integer ContentsChanged = FALSE; // Have the prim contents changed?
 
-key AvId;
 key ObjectKey;
 key OwnerId;
 integer Enabled;
@@ -319,8 +319,6 @@ SendUuidsToApps() {
 // Sets priority based on our position and whether we're linked or not
 SetPriority() {
 	integer Priority = 0;
-	// Linked modules get higher priority
-	if (llGetNumberOfPrims() > 1) Priority = 100000;
 	vector Pos = llGetPos();
 	Priority += ((integer)Pos.y * 1000);
 	ModulePriority = (string)Priority;
@@ -397,6 +395,7 @@ integer CheckObjectsCard() {
 	return TRUE;
 }
 // Process public data sent by ML
+// not currently used (since unlinked module), so default values used instead
 ParsePublicData(string Data) {
 	list Parts = llParseStringKeepNulls(Data, [ "|" ], []);
 	ModulePosHidden = (vector)llList2String(Parts, 8);
@@ -477,7 +476,6 @@ default {
 		RezzedObjects = [];
 		SetPriority();
 		ShowDetails();
-		AvId = NULL_KEY;
 		SetTimer();
 		llListen(MODULES_CHANNEL, "", NULL_KEY, "");
 		SendDiscovery();
@@ -499,45 +497,49 @@ default {
 		}
 	}
 	link_message(integer Sender, integer Number, string Text, key Id) {
-		if (Number == LIB_SUSPEND) { // message from deployment script telling is to be inert
-			state Suspend;
+		if (Number == LIB_REZ_BATCH) {
+			RezObjectsFromQueue();
 		}
+		// Almost everything that was in here prior to unlinked modules is now commented out below.
+		// If it's not been referenced or reinstated (in a different form) in a while, just delete
+		// the comments and we'll all pretend it never existed.  -- JFH, Feb 2022
+		
+		//		else if (Number == LIB_DELETE_SCRIPT) {
+		//			llRemoveInventory(llGetScriptName());
+		//		}
+		//		if (Number == LIB_SUSPEND) { // message from deployment script telling is to be inert
+		//			state Suspend;	// Not sure this even happens now
+		//		}
 		// We shouldn't be receiving most link messages now, since the module is unlinked. I'm not
 		// deleting this code just in case, because time doesn't allow it at the moment. But next time
 		// this is revisited, this can be cleared up. -- John 2021-11-11
-		if (Sender == 1) {	// Message from script in root prim
-			if (Number == LM_RESET) {
-				llResetScript();
-			}
-			else if (Number == LM_PUBLIC_DATA) {
-				ParsePublicData(Text);
-			}
-			else if (Number == LIB_INITIALIZE) {
-				RezPosition = (vector)Text;
-				if (IsMap) RezPosition = RegionPos2LocalPos(RezPosition);	// For maps, rez position is configured as region coords.
-				AtHome = TRUE;
-			}
-			else if (Number == LIB_REPORT) {
-				ReportObject(Text, Id);
-			}
-			else if (Number == LIB_DELETE_SCRIPT) {
-				llRemoveInventory(llGetScriptName());
-			}
-		}
-		else {	// Messages from non-root prims
-			if (Number == HUD_API_LOGIN) {
-				AvId = Id;
-			}
-			else if (Number == HUD_API_LOGOUT) {
-				AvId = NULL_KEY;
-			}
-			else if (Number == LIB_REZ_BATCH) {
-				RezObjectsFromQueue();
-			}
-			else if (Number == LIB_DELETE_SCRIPT) {
-				llRemoveInventory(llGetScriptName());
-			}
-		}
+		//		if (Sender == 1) {	// Message from script in root prim
+		//			if (Number == LM_RESET) {
+		//				llResetScript();
+		//			}
+		//			else if (Number == LM_PUBLIC_DATA) {
+		//				ParsePublicData(Text);
+		//			}
+		//			else if (Number == LIB_INITIALIZE) {
+		//				RezPosition = (vector)Text;
+		//				if (IsMap) RezPosition = RegionPos2LocalPos(RezPosition);	// For maps, rez position is configured as region coords.
+		//				AtHome = TRUE;
+		//			}
+		//			else if (Number == LIB_REPORT) {
+		//				ReportObject(Text, Id);
+		//			}
+		//			else if (Number == LIB_DELETE_SCRIPT) {
+		//				llRemoveInventory(llGetScriptName());
+		//			}
+		//		}
+		//		else {	// Messages from non-root prims
+		//			if (Number == HUD_API_LOGIN) {
+		//				AvId = Id;
+		//			}
+		//			else if (Number == HUD_API_LOGOUT) {
+		//				AvId = NULL_KEY;
+		//			}
+		//			else
 	}
 	dataserver(key From, string Text) {
 		list Parts = llParseStringKeepNulls(Text, [ "|" ], []);
@@ -571,7 +573,7 @@ default {
 			}
 		}
 		else {
-			// Old format messages from detached objects. We don't use IOMs for this because that would mean replacing the 
+			// Old format messages from detached objects. We don't use IOMs for this because that would mean replacing the
 			// WorldObject and Icon scripts in a lot of legacy stuff.
 			integer Command = (integer)llList2String(Parts, 0);
 			string ParamString = llDumpList2String(llList2List(Parts, 1, -1), "|");
@@ -579,7 +581,7 @@ default {
 				// We need to inform the app that requested this object that its WO_INITIALISE message has arrived.
 				integer P = llListFindList(WOCallbackUuids, [ From ]);
 				if (P == -1) {
-					// On rare occasions, the object has time to rez, start its WorldObject script and send us 
+					// On rare occasions, the object has time to rez, start its WorldObject script and send us
 					// WO_INITIALISE before our object_rez() event fires. So when that happens, we store this UUID
 					// until that event occurs.
 					WOObjects += From;
@@ -613,7 +615,7 @@ default {
 			ActualPos.x += llFrand(RezPositionRandom);
 			ActualPos.y += llFrand(RezPositionRandom);
 			ActualPos.z += llFrand(RezPositionRandom);
-		}	
+		}
 		MoveObject(Id, ActualPos);
 		// Get UUID of App that requested this object. Note that this might not be the actual instance
 		// of this object that they requested, but (a) we have no way of tying llRezObject() calls to the
@@ -633,13 +635,13 @@ default {
 			key AppUuid = llList2Key(WOCallbackNames, C);
 			WOCallbackNames = llDeleteSubList(WOCallbackNames, C, C + 1); // delete from names list
 			WOCallbackUuids += [ AppUuid, Id ]; // and add to UUIDs list
-			// Now we need to check if we already received the WO_INITIALISE message from this object (an 
-			// unexpected and rare occurrence that occasionally happens). 
+			// Now we need to check if we already received the WO_INITIALISE message from this object (an
+			// unexpected and rare occurrence that occasionally happens).
 			integer U = llListFindList(WOObjects, [ Id ]);
 			if (U > -1) {
 				SendIom(AppUuid, "W", Id);
 				// I know we just added this, but I'm keeping this logic separate for now -- J
-				WOCallbackUuids = llDeleteSubList(WOCallbackUuids, C, C + 1);				
+				WOCallbackUuids = llDeleteSubList(WOCallbackUuids, C, C + 1);
 			}
 		}
 		ObjectsStillRezzing--;
@@ -704,4 +706,4 @@ state Hang {
 		if (Change & CHANGED_INVENTORY) llResetScript();
 	}
 }
-// ML librarian v1.3.6
+// ML librarian v1.3.7

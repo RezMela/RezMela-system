@@ -1,4 +1,4 @@
-// Malleable linkset v1.22.5
+// Malleable linkset v1.22.6
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,7 @@
 // or modification, contact support@rezmela.com
 // Additional documentation about ML, ML Linkset limits http://wiki.rezmela.org/doku.php/ml-limits?s[]=primsource
 
+// v1.22.6 YEngine fixes
 // v1.22.5 Add MLO lock/unlock
 // v1.22.4 Rotation changes for stickpoints altered for walls module
 // v1.22.3 Make snap-to-grid optional
@@ -599,8 +600,7 @@ PositionObjectOnFace(
         ObjectRot *=  (StickPointRot / llGetLocalRot());		
         ObjectPos = CpPos + (ObjectOffset * BasicRot * StickPointRot * TargetLocalRot);
         ClearStoredRotation(AvId); // stored rotations don't work well with stickpoint rotations
-    }
-    else {    // no stickpoint rotation
+    } else {    // no stickpoint rotation
         ObjectPos = CpPos + ObjectOffset * BasicRot;
     }
     if (DistanceExceeded(ObjectPos, TRUE)) return;
@@ -4575,8 +4575,8 @@ state FinishTidy {
         Message(UserId, "Finished.\n" + (string)llGetListLength(TidyDone) + " scripted object(s) found\n" + (string)TidyCount + " attempted removal(s)\nPLEASE SIGN OUT OF MAP NOW!");
         TidyDone = [];
         SetCursor(FALSE, NULL_KEY, ZERO_VECTOR);
-        Logout();    // We have to log them out because returning to Normal state assumes nobody logged in
-        state Normal;
+        Logout();    // We have to log them out because returning to default state assumes nobody logged in
+        state default;
     }
 }
 state Hang { 
@@ -4585,4 +4585,4 @@ state Hang {
         if (Change & CHANGED_INVENTORY) llResetScript();
     }
 }
-// Malleable linkset v1.22.5
+// Malleable linkset v1.22.6

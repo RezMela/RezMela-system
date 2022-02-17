@@ -1,4 +1,4 @@
-// RezMela HUD attachment v1.4.4
+// RezMela HUD attachment v1.4.5
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.4.5 - use old-style LL notecard reading (for threat level reasons); remove old debug feature
 // v1.4.4 - improved version number extraction from object name
 // v1.4.3 - fix: logo on sign-in prim disappearing
 // v1.4.2 - more prim blanking to keep Ilan and Oren happy (Market upload requirements)
@@ -54,7 +55,6 @@
 // - generic command that can be sent by the server and processed here as SetPrimitiveParams, so miscellanous modifications can be made on the fly
 
 string MyVersion; // taken from name of this script
-integer DebugMode = FALSE;
 rotation NORTH_CORRECTION = <0.0, 0.0, -0.707107, 0.707107>; // Applied to camera Z rotation to make 0° north - calculated as llEuler2Rot(<0, 0, -90> * DEG_TO_RAD)
 string CONFIG_NOTECARD = "HUD settings";
 vector VEC_NAN = <-99.0,99.0,-99.0>;    // nonsense value to indicate "not a number" for vectors
@@ -135,6 +135,11 @@ float TimerFrequency;
 key MyCreator;
 string UuidLogo;		// UUIDs of textures on HUD root
 string UuidMinMax;
+
+// Globals for reading config card
+integer ConfigLines;
+integer ConfigCurrentLine;
+key ConfigQueryId;
 
 string MESSAGE_SEPARATOR = "|";
 string MESSAGE_SEPARATOR_2 = "^";
@@ -305,7 +310,6 @@ HandleTouch(integer LinkNum, float TouchX, float TouchY) {
 	}
 }
 HandleServerMessage(string Command, list Parts) {
-	//Debug("From server: " + Command + ": " + llGetSubString(llDumpList2String(Parts, "|"), 0, 20));
 	if (Command == HUD_MESSAGE_CREATE_PAGE) {
 		CreatePage(Parts);
 	}
@@ -359,7 +363,6 @@ CreatePage(list Parts) {
 	VirtualPages += [ "P", PageIndex, NULL_KEY ];
 	VirtualPagesCount++;
 	RenderTexture(PageIndex, LinkNum, FACE_PAGE, TextureId);
-	Debug("Created page: " + (string)PageIndex);
 }
 DestroyPage(integer PageIndex) {
 	integer Ptr = llListFindList(VirtualPages, [ "P", PageIndex ]);
@@ -378,11 +381,9 @@ DestroyPageByPtr(integer Ptr, integer PageIndex) {
 			Break = TRUE;
 		}
 	} while (!Break);
-	Debug("Destroyed page: " + (string)PageIndex);
 }
 // Display a page's data. Returns link number to prim
 integer InitPage(integer PageIndex) {
-	Debug("Init page: " + (string)PageIndex);
 	// hide current prim if there is one
 	integer PrimPtr = llListFindList(PagePrims, [ "P", PageIndex ]);
 	integer LinkNum = -9999;
@@ -407,7 +408,7 @@ integer InitPage(integer PageIndex) {
 }
 DisplayPage(integer PageIndex, string ImagesString) {
 	integer VirtualPtr = llListFindList(VirtualPages, [ "P", PageIndex ]);
-	if (VirtualPtr == -1) { ShowError("Can't find page to display: " + (string)VirtualPtr); DebugDump(); return; }
+	if (VirtualPtr == -1) { ShowError("Can't find page to display: " + (string)VirtualPtr); return; }
 	string TextureId = llList2String(VirtualPages, VirtualPtr + VP_TEXTURE);
 	integer ApplyTexture = FALSE;
 	integer PrimPtr = llListFindList(PagePrims, [ "P", PageIndex ]);
@@ -448,7 +449,6 @@ DisplayPage(integer PageIndex, string ImagesString) {
 	// Let's try changing things in a separate call to llSetLinkPrimitiveParamsFast()
 	DoImagePrimsHack();
 	PagePrims = llListReplaceList(PagePrims, [ llGetTime() ], PrimPtr + PP_LAST_USED, PrimPtr + PP_LAST_USED); 	// Update "last used" time to make this page recently used
-	Debug("Displayed page: " + (string)PageIndex + " linknum: " + (string)LinkNum);
 }
 // More hacking - see calling code for more info
 // This is clumsy and inelegant, and maybe some time we can spend hours figuring what works and what doesn't, and
@@ -563,7 +563,7 @@ VisibleStatus(integer pVisible, integer pMaximised) {
 		PrimParams +=
 			PrimLinkTarget("VisibleStatus 1.5", SignInPrim) +
 			PrimPosRot(SignInButtonPos, PagePrimRot) +
-			PrimSize(SIZE_SIGNIN) + PrimColor(ALL_SIDES, COLOR_WHITE, ALPHA_NORMAL) + 
+			PrimSize(SIZE_SIGNIN) + PrimColor(ALL_SIDES, COLOR_WHITE, ALPHA_NORMAL) +
 			PrimTexture(ALL_SIDES, SignInButtonTexture, <1.0, 1.0, 0.0>, ZERO_VECTOR, 0.0);
 	}
 	else { // Sign-in not visible because we're activated
@@ -922,7 +922,6 @@ CameraJumpShow() {
 // Send message to HUD server
 MessageServer(string Command, list Params) {
 	string ParamString = llDumpList2String(Command + Params, MESSAGE_SEPARATOR);
-	Debug("Send to server: " + Command + "/" + ParamString);
 	MessageObject(ServerID, ParamString);
 }
 // Wrapper for osMessageObject() that checks to see if destination exists
@@ -1063,7 +1062,6 @@ SetFloatingText() {
 	llSetLinkPrimitiveParamsFast(FloatTextPrim, [ PRIM_TEXT, Text, Color, 1.0 ]);
 }
 ClearData() {
-	Debug("Clear data");
 	// Clear VirtualPages table
 	VirtualPages = [];
 	VirtualPagesCount = 0;
@@ -1091,68 +1089,38 @@ ClearData() {
 	CurrentPagePrim = -1;
 	CurrentPageLinkNum = -1;
 }
-integer ReadConfig() {
-	// Set config defaults
-	SignInButtonPos = <0.3, 0.11, 0.0>;
-	SignInButtonTexture = TEXTURE_DEFAULT;
-	
-	CameraJumpModeButtonPosActive = <0.2, -0.154, 0.0>;
-	CameraJumpModeButtonPosIdle = <0.2, 0.07, 0.0>;
-	CameraJumpModeButtonSize = <0.0325, 0.0325, 0.0325>;
-	CameraJumpModeOnTexture = TEXTURE_DEFAULT;
-	CameraJumpModeOffTexture = TEXTURE_BLANK;
-
-	CameraResetButtonPosActive = <0.2, -0.154, -0.038>;
-	CameraResetButtonPosIdle = <0.2, 0.07, -0.038>;
-	CameraResetButtonSize = <0.0325, 0.0325, 0.0325>;
-	CameraResetButtonTexture = TEXTURE_BLANK;
-
-	JumpBackButtonPosActive = <0.2, -0.154, -0.076>;
-	JumpBackButtonPosIdle = <0.2, 0.07, -0.076>;
-	JumpBackButtonSize = <0.0325, 0.0325, 0.0325>;
-	JumpBackButtonTexture = TEXTURE_BLANK;
-
-	MaxListSize = 1;
-	//
-	if (llGetInventoryType(CONFIG_NOTECARD) != INVENTORY_NOTECARD) {
-		//LogError("Can't find notecard '" + CONFIG_NOTECARD + "'");
-		llOwnerSay("Can't find notecard '" + CONFIG_NOTECARD + "' - execution suspended");
-		return FALSE;
-	}
-	integer Lines = osGetNumberOfNotecardLines(CONFIG_NOTECARD);
-	integer I;
-	for(I = 0; I < Lines; I++) {
-		string Line = osGetNotecardLine(CONFIG_NOTECARD, I);
-		integer Comment = llSubStringIndex(Line, "//");
-		if (Comment != 0) {    // Not a complete comment line
-			if (Comment > -1) Line = llGetSubString(Line, 0, Comment - 1);    // strip from comments characters onwards
-			if (llStringTrim(Line, STRING_TRIM) != "") {    // if there's something left after comments are removed
-				// Extract name and value from: <name>=<value>, stripping spaces and folding name to lower case
-				list L = llParseStringKeepNulls(Line, [ "=" ], [ ]);    // Separate LHS and RHS of assignment
-				if (llGetListLength(L) == 2) {    // so there is a "X = Y" kind of syntax
-					string OName = llStringTrim(llList2String(L, 0), STRING_TRIM);        // original parameter name
-					string Name = llToLower(OName);        // lower-case version for case-independent parsing
-					string Value = llStringTrim(llList2String(L, 1), STRING_TRIM);
-					// Interpret name/value pairs
-					if (Name == "signinbuttonpos") SignInButtonPos = (vector)Value;
-					else if (Name == "signinbuttontexture") SignInButtonTexture = Value;
-					else if (Name == "camerajumpmodebuttonposactive")	CameraJumpModeButtonPosActive = (vector)Value;
-					else if (Name == "camerajumpmodebuttonposidle")	CameraJumpModeButtonPosIdle = (vector)Value;
-					else if (Name == "camerajumpmodebuttonsize")	CameraJumpModeButtonSize = (vector)Value;
-					else if (Name == "camerajumpmodeontexture")		CameraJumpModeOnTexture = Value;
-					else if (Name == "camerajumpmodeofftexture")	CameraJumpModeOffTexture = Value;
-					else if (Name == "cameraresetbuttonposactive")	CameraResetButtonPosActive = (vector)Value;
-					else if (Name == "cameraresetbuttonposidle")	CameraResetButtonPosIdle = (vector)Value;
-					else if (Name == "cameraresetbuttonsize")		CameraResetButtonSize = (vector)Value;
-					else if (Name == "cameraresetbuttontexture")	CameraResetButtonTexture = Value;
-					else if (Name == "jumpbackbuttonposactive")		JumpBackButtonPosActive = (vector)Value;
-					else if (Name == "jumpbackbuttonposidle")		JumpBackButtonPosIdle = (vector)Value;
-					else if (Name == "jumpbackbuttonsize")			JumpBackButtonSize = (vector)Value;
-					else if (Name == "jumpbackbuttontexture")		JumpBackButtonTexture = Value;
-					else if (Name == "maxlistsize")					MaxListSize = (integer)Value;
-					else {
-						LogError("Invalid entry in " + CONFIG_NOTECARD + ":\n" + Line);
-					}
+integer ParseConfig(string Line) {
+	Line = llStringTrim(Line, STRING_TRIM);
+	integer Comment = llSubStringIndex(Line, "//");
+	if (Comment != 0) {    // Not a complete comment line
+		if (Comment > -1) Line = llGetSubString(Line, 0, Comment - 1);    // strip from comments characters onwards
+		if (llStringTrim(Line, STRING_TRIM) != "") {    // if there's something left after comments are removed
+			// Extract name and value from: <name>=<value>, stripping spaces and folding name to lower case
+			// Extract name and value from: <name>=<value>, stripping spaces and folding name to lower case
+			integer Equals = llSubStringIndex(Line, "=");
+			if (Equals > -1) {    // so there is a "X = Y" kind of syntax
+				string OName = llStringTrim(llGetSubString(Line, 0, Equals - 1), STRING_TRIM);        // original parameter name
+				string Name = llToLower(OName);        // lower-case version for case-independent parsing
+				string Value = llStringTrim(llGetSubString(Line, Equals + 1, -1), STRING_TRIM);
+				// Interpret name/value pairs
+				if (Name == "signinbuttonpos") SignInButtonPos = (vector)Value;
+				else if (Name == "signinbuttontexture") SignInButtonTexture = Value;
+				else if (Name == "camerajumpmodebuttonposactive")	CameraJumpModeButtonPosActive = (vector)Value;
+				else if (Name == "camerajumpmodebuttonposidle")	CameraJumpModeButtonPosIdle = (vector)Value;
+				else if (Name == "camerajumpmodebuttonsize")	CameraJumpModeButtonSize = (vector)Value;
+				else if (Name == "camerajumpmodeontexture")		CameraJumpModeOnTexture = Value;
+				else if (Name == "camerajumpmodeofftexture")	CameraJumpModeOffTexture = Value;
+				else if (Name == "cameraresetbuttonposactive")	CameraResetButtonPosActive = (vector)Value;
+				else if (Name == "cameraresetbuttonposidle")	CameraResetButtonPosIdle = (vector)Value;
+				else if (Name == "cameraresetbuttonsize")		CameraResetButtonSize = (vector)Value;
+				else if (Name == "cameraresetbuttontexture")	CameraResetButtonTexture = Value;
+				else if (Name == "jumpbackbuttonposactive")		JumpBackButtonPosActive = (vector)Value;
+				else if (Name == "jumpbackbuttonposidle")		JumpBackButtonPosIdle = (vector)Value;
+				else if (Name == "jumpbackbuttonsize")			JumpBackButtonSize = (vector)Value;
+				else if (Name == "jumpbackbuttontexture")		JumpBackButtonTexture = Value;
+				else if (Name == "maxlistsize")					MaxListSize = (integer)Value;
+				else {
+					LogError("Invalid entry in " + CONFIG_NOTECARD + ":\n" + Line);
 				}
 			}
 		}
@@ -1185,7 +1153,6 @@ Splash(integer On) {
 	llSetLinkPrimitiveParamsFast(LINK_THIS, PrimParams);
 }
 RegionChange() {
-	Debug("Clearing hash data on region change");
 	HashTable = [];
 	HashQueue = [];
 	HashQueueMode = 0;
@@ -1206,10 +1173,6 @@ string GetHudVersion() {
 		I--;
 	}
 	return("RezMela HUD version " + VersionString);
-}
-// Set debug mode according to root prim description
-SetDebug() {
-	DebugMode = (llGetObjectDesc() == "debug");
 }
 string GetVersion() {
 	string S = llGetScriptName();
@@ -1239,38 +1202,12 @@ key GetCreatorId(key Uuid) {
 ShowError(string Text) {
 	llDialog(OwnerId, "\nERROR!\n\n" + Text, [ "OK" ], -9999999);
 }
-Debug(string Text) {
-	if (DebugMode) llOwnerSay(Text);
-}
-DebugDump() {
-	llOwnerSay("Start dump ----------------------------------------------------------");
-	string D = "VirtualPages (" + (string)VirtualPagesCount + "):\n";
-	integer I;
-	for (I = 0; I < llGetListLength(VirtualPages); I += VP_STRIDE) {	// lazy, but unimportant in context
-		D += llDumpList2String(llList2List(VirtualPages, I, I + VP_STRIDE - 1), "|") + "\n";
-	}
-	llOwnerSay("Debug:\n" + D);
-	D = "PagePrims (" + (string)PagePrimsCount + "):\n";
-	for (I = 0; I < llGetListLength(PagePrims); I += PP_STRIDE) {
-		if (llList2Integer(PagePrims, I + PP_PAGE_INDEX) > -1) {	// ignore spares
-			D += llDumpList2String(llList2List(PagePrims, I, I + PP_STRIDE - 1), "|") + "\n";
-		}
-	}
-	llOwnerSay(D);
-	D = "ImagePrims (" + (string)ImagePrimsCount + "):\n" ;
-	for (I = 0; I < llGetListLength(ImagePrims); I += IM_STRIDE) {
-		D += (string)I + ": " + llDumpList2String(llList2List(ImagePrims, I, I + IM_STRIDE - 1), " ") + "\n";
-	}
-	llOwnerSay(D);
-	llOwnerSay("End dump ------------------------------------------------------------");
-}
 LogError(string Text) {
 	llMessageLinked(LINK_ROOT, -7563234, Text, OwnerId);
 }
 default {
 	on_rez(integer S) { llResetScript(); }
 	state_entry() {
-		Debug("Script starting");
 		LoggedIn = FALSE;
 		OwnerId = llGetOwner();
 		MyCreator = GetCreatorId(llGetKey());
@@ -1287,7 +1224,6 @@ default {
 		if (llGetInventoryNumber(INVENTORY_SOUND) > 0)
 			AlertSound = llGetInventoryName(INVENTORY_SOUND, 0);
 		HashQueueMode = 0;
-		//DebugMode = TRUE;
 		if (llGetNumberOfPrims() == 1) return;	// Stop doing anything if unlinked
 		if (!GetLinkNumbers()) return;
 		if (NotWorn()) state Maintenance;
@@ -1301,18 +1237,71 @@ default {
 	}
 	run_time_permissions(integer Perms) {
 		//if (Perms & PERMISSION_CONTROL_CAMERA)
-		state Standby;
+		state ReadConfig;
+	}
+}
+state ReadConfig {
+	on_rez(integer S) {
+		if (NotWorn()) llResetScript();
+	}
+	state_entry() {
+		if (llGetInventoryType(CONFIG_NOTECARD) != INVENTORY_NOTECARD) {
+			llOwnerSay("Can't find notecard '" + CONFIG_NOTECARD + "' - execution suspended");
+			state Hang;
+		}
+		// Set up default values
+		SignInButtonPos = <0.3, 0.11, 0.0>;
+		SignInButtonTexture = TEXTURE_DEFAULT;
+
+		CameraJumpModeButtonPosActive = <0.2, -0.154, 0.0>;
+		CameraJumpModeButtonPosIdle = <0.2, 0.07, 0.0>;
+		CameraJumpModeButtonSize = <0.0325, 0.0325, 0.0325>;
+		CameraJumpModeOnTexture = TEXTURE_DEFAULT;
+		CameraJumpModeOffTexture = TEXTURE_BLANK;
+
+		CameraResetButtonPosActive = <0.2, -0.154, -0.038>;
+		CameraResetButtonPosIdle = <0.2, 0.07, -0.038>;
+		CameraResetButtonSize = <0.0325, 0.0325, 0.0325>;
+		CameraResetButtonTexture = TEXTURE_BLANK;
+
+		JumpBackButtonPosActive = <0.2, -0.154, -0.076>;
+		JumpBackButtonPosIdle = <0.2, 0.07, -0.076>;
+		JumpBackButtonSize = <0.0325, 0.0325, 0.0325>;
+		JumpBackButtonTexture = TEXTURE_BLANK;
+
+		MaxListSize = 1;
+
+		// Start reading the card
+		ConfigLines = -1; // -1 means we don't know yet
+		ConfigQueryId = llGetNumberOfNotecardLines(CONFIG_NOTECARD);
+	}
+	dataserver(key QueryId, string Data) {
+		if (QueryId != ConfigQueryId) return; // guard to ignore any other scripts' data
+		if (ConfigLines == -1) { // if this is the "number of lines" query
+			ConfigLines = (integer)Data; // store the number of lines
+			ConfigCurrentLine = 0; // start with reading line 0
+			ConfigQueryId = llGetNotecardLine(CONFIG_NOTECARD, ConfigCurrentLine);
+		}
+		else if (Data == EOF) {
+			llOwnerSay("Unexpected EOF in '" + CONFIG_NOTECARD + "' - execution suspended");
+			state Hang;
+		}
+		else { // must be a line of config data
+			ParseConfig(Data);
+			ConfigCurrentLine++;
+			if (ConfigCurrentLine >= ConfigLines) { // we've read the whole card
+				state Standby;
+			}
+			// Otherwise, get the next line.
+			ConfigQueryId = llGetNotecardLine(CONFIG_NOTECARD, ConfigCurrentLine);
+		}
 	}
 }
 state Standby {
 	on_rez(integer S) {
-		Debug("on_rez Standby");
 		if (NotWorn()) llResetScript();
 	}
 	state_entry() {
-		SetDebug();
-		Debug("Standby state");
-		if (!ReadConfig()) state Hang;
 		llRegionSay(HUD_CHANNEL, "R");	// "ready" signal for HUD server
 		LoggedIn = FALSE;
 		SplashOn = FALSE;
@@ -1364,19 +1353,16 @@ state Standby {
 			RegionChange();
 			state ReStandby;
 		}
-		if (Change & CHANGED_INVENTORY) { if (!ReadConfig()) state Hang; }
+		if (Change & CHANGED_INVENTORY) llResetScript();
 	}
 }
 state ReStandby { state_entry() { state Standby; } }
 state Normal {
 	on_rez(integer S) {
-		Debug("on_rez Normal");
 		if (NotWorn()) llResetScript();
 		state Standby;
 	}
 	state_entry() {
-		SetDebug();
-		Debug("Normal state");
 		LoggedIn = TRUE;
 		llRegionSay(HTS_CHANNEL, HTSC_REQUEST_DATA);	// Requeset cache data from the Texture Store
 		// When they log in, turn off camera mode. Otherwise, we'd have to communicate the camera mode to
@@ -1397,7 +1383,6 @@ state Normal {
 		integer LinkNum = llDetectedLinkNumber(0);
 		vector TouchST = llDetectedTouchST(0);
 		//		if (LinkNum == 1 && llDetectedTouchFace(0) == 7 && llGetOwner() == (key)"7abfded3-4df7-420e-bed6-37f8eb2c9fd0") {	// John clicked on logo
-		//			DebugDump();
 		//			return;
 		//		}
 		HandleTouch(LinkNum, TouchST.x, TouchST.y);
@@ -1471,7 +1456,7 @@ state Normal {
 			RegionChange();
 			state ReStandby;
 		}
-		if (Change & CHANGED_INVENTORY) { if (!ReadConfig()) state Hang; }
+		if (Change & CHANGED_INVENTORY) { llResetScript(); }
 	}
 }
 state ReloadNormal {
@@ -1489,7 +1474,6 @@ state Maintenance {
 	}
 	state_entry() {
 		llOwnerSay("HUD rezzed in-world (" + (string)PagePrimsCount + " pages, " + (string)ImagePrimsCount + " images)");
-		SetDebug();
 		VisibleStatus(TRUE, TRUE);	// Make sure I'm not invisible
 		// Arrange prims for easy editing
 		RootPrimSize = <0.001, 0.2, 0.025>;	// default root prim size because we're not getting it from the server (because we're not connected to it)
@@ -1594,4 +1578,4 @@ state Maintenance {
 	}
 }
 state Hang { on_rez(integer S) { llResetScript(); } state_entry() { }}
-// RezMela HUD attachment v1.4.4
+// RezMela HUD attachment v1.4.5
