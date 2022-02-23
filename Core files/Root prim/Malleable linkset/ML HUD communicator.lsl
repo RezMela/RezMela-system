@@ -1,4 +1,4 @@
-// HUD communicator v1.12.4
+// HUD communicator v1.12.5
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,7 @@
 // or modification, contact support@rezmela.com
 // More detailed information about the HUD communicator script is available here http://wiki.rezmela.org/doku.php/hud-communicator-script
 
+// v1.12.5 - broadcast login/logout link messages to all prims
 // v1.12.4 - add MLO lock
 // v1.12.3 - add option to turn on/off grid snap; rationalise Settings menu
 // v1.12.2 - handle absence of modules
@@ -1271,7 +1272,7 @@ LogIn(key Id) {
 	AvId = Id;
 	IsObjectSelected = FALSE;
 	MenuChannel = -10000 - (integer)llFrand(100000.0);
-	llMessageLinked(LINK_ROOT, LM_EXTERNAL_LOGIN, "", AvId);
+	llMessageLinked(LINK_SET, LM_EXTERNAL_LOGIN, "", AvId);
 	SetRandom(FALSE, FALSE);    // Turn off randomisation by default
 	SetGridSnap(TRUE, FALSE);    // Turn on grid snap by default
 	SetAutoHide(FALSE);
@@ -1281,7 +1282,7 @@ LogOut() {
 	Deselect();
 	HudStatus("");
 	SetRandom(FALSE, FALSE);    // Turn off randomisation
-	llMessageLinked(LINK_ROOT, LM_EXTERNAL_LOGOUT, "", AvId);
+	llMessageLinked(LINK_SET, LM_EXTERNAL_LOGOUT, "", AvId);
 	AvId = NULL_KEY;
 	OldSaveString = "";
 	OldObjectsHash = "";
@@ -1755,4 +1756,4 @@ state Hang {
 		}
 	}
 }
-// HUD communicator v1.12.4
+// HUD communicator v1.12.5
