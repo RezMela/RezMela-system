@@ -1,4 +1,4 @@
-// ML librarian v1.3.7
+// ML librarian v1.3.8
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -17,6 +17,7 @@
 // from DEEPSEMAPHORE LLC. For more information, or requests for code inspection,
 // or modification, contact support@rezmela.com
 
+// v1.3.8 - fix issues with suspend
 // v1.3.7 - tolerate modules of >1 prim
 // v1.3.6 - add suspend feature
 // v1.3.5 - don't rename objects rezzed by other scripts
@@ -500,15 +501,15 @@ default {
 		if (Number == LIB_REZ_BATCH) {
 			RezObjectsFromQueue();
 		}
+		else if (Number == LIB_SUSPEND) { // message from deployment script telling is to be inert
+			state Suspend;
+		}
 		// Almost everything that was in here prior to unlinked modules is now commented out below.
 		// If it's not been referenced or reinstated (in a different form) in a while, just delete
 		// the comments and we'll all pretend it never existed.  -- JFH, Feb 2022
-		
+		//
 		//		else if (Number == LIB_DELETE_SCRIPT) {
 		//			llRemoveInventory(llGetScriptName());
-		//		}
-		//		if (Number == LIB_SUSPEND) { // message from deployment script telling is to be inert
-		//			state Suspend;	// Not sure this even happens now
 		//		}
 		// We shouldn't be receiving most link messages now, since the module is unlinked. I'm not
 		// deleting this code just in case, because time doesn't allow it at the moment. But next time
@@ -674,10 +675,10 @@ default {
 			}
 		}
 		if (ContentsChanged) {
+			ContentsChanged = FALSE;
 			if (!ReadConfig()) state Hang;
 			if (!CheckObjectsCard()) state Hang;
 			ShowDetails();
-			ContentsChanged = FALSE;
 		}
 		SetTimer();
 	}
@@ -706,4 +707,4 @@ state Hang {
 		if (Change & CHANGED_INVENTORY) llResetScript();
 	}
 }
-// ML librarian v1.3.7
+// ML librarian v1.3.8
