@@ -1,4 +1,4 @@
-// HUD communicator v1.12.5
+// HUD communicator v1.12.6
 
 // DEEPSEMAPHORE CONFIDENTIAL
 // __
@@ -18,6 +18,7 @@
 // or modification, contact support@rezmela.com
 // More detailed information about the HUD communicator script is available here http://wiki.rezmela.org/doku.php/hud-communicator-script
 
+// v1.12.6 - don't clear down objects table, etc when going idle
 // v1.12.5 - broadcast login/logout link messages to all prims
 // v1.12.4 - add MLO lock
 // v1.12.3 - add option to turn on/off grid snap; rationalise Settings menu
@@ -1524,11 +1525,14 @@ state Idle {
 	on_rez(integer S) { llResetScript(); }
 	state_entry() {
 		llSetTimerEvent(0.0);
-		// Free up memory while idle by clearing catalogue data
-		Categories = [];
-		LibraryObjects = [];
-		LibraryObjectsCount = 0;
-		CurrentInventory = [];
+		//// Free up memory while idle by clearing catalogue data
+		//// Removed next four lines for 1.12.6. It was causing "No modules found"
+		//// errors in some circumstances when signing in for the second time after
+		//// a region restart. -- JFH
+		//		Categories = [];
+		//		LibraryObjects = [];
+		//		LibraryObjectsCount = 0;
+		//		CurrentInventory = [];		
 		// Other idle settings
 		CategoryWindowsCreated = FALSE;
 		CreateModeOn = FALSE;
@@ -1756,4 +1760,4 @@ state Hang {
 		}
 	}
 }
-// HUD communicator v1.12.5
+// HUD communicator v1.12.6
